@@ -1,7 +1,9 @@
+import { MAP_FADE_S } from './view'
+
 // The one timeline every step of the 3D sequence reads (MASTERSPEC 6.3), in seconds from the moment
-// the scene starts fading in over the map. The swoop (step 1) is the map's flight, so t = 0 is the
-// camera already at rest; the pin and the ripple start at once, so the map's buildings hand straight
-// over to the 3D street growing in their place. The spec's other durations are kept.
+// the scene starts fading in over the map. The swoop (step 1) is the map's flight, so the camera is
+// nearly at rest by t = 0. The pin drops at once; the ripple waits for the map's buildings to fade
+// away, then the 3D street grows in their place. The spec's other durations are kept.
 
 export interface Span {
   start: number
@@ -49,7 +51,7 @@ export function buildTimeline(levels: number, homes: number, reduced: boolean): 
   const span = (start: number, duration: number): Span => ({ start, end: start + duration })
 
   const pin = span(0, d(DURATION.pin))
-  const ripple = span(reduced ? pin.end : 0, d(DURATION.ripple))
+  const ripple = span(reduced ? pin.end : MAP_FADE_S, d(DURATION.ripple))
   const outline = span(ripple.end - lap(OVERLAP.outline), d(DURATION.outline))
   const setbacks = span(outline.end, d(DURATION.setbacks))
   const buildable = span(setbacks.end, d(DURATION.buildable))

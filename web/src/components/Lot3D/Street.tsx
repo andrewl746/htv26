@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Group, Material } from 'three'
 import type { ContextBuilding } from '@contracts/types'
-import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, type BuiltBuilding } from './buildings'
+import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, setSlot, streetGrid, type BuiltBuilding } from './buildings'
+import { cutawayDepthMaterial } from './cutaway'
+import { setOccluders, slotOf, SLOTS } from './occlusion'
 import { growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
-
-/** MASTERSPEC 6.3 performance: at most 400 buildings, the nearest ones. */
-const MAX_BUILDINGS = 400
 
 /** One building growing in its slot of the ripple, later the further it is from the lot. */
 export function GrowingBuilding({ building, wall, roof }: { building: BuiltBuilding; wall: Material; roof: Material }) {
@@ -17,8 +16,24 @@ export function GrowingBuilding({ building, wall, roof }: { building: BuiltBuild
   })
   return (
     <group ref={group} position={[building.x, 0, building.z]} visible={false}>
-      <mesh geometry={building.body} material={wall} castShadow receiveShadow dispose={null} />
-      {building.roof && <mesh geometry={building.roof} material={roof} castShadow receiveShadow dispose={null} />}
+      <mesh
+        geometry={building.body}
+        material={wall}
+        customDepthMaterial={cutawayDepthMaterial}
+        castShadow
+        receiveShadow
+        dispose={null}
+      />
+      {building.roof && (
+        <mesh
+          geometry={building.roof}
+          material={roof}
+          customDepthMaterial={cutawayDepthMaterial}
+          castShadow
+          receiveShadow
+          dispose={null}
+        />
+      )}
     </group>
   )
 }
@@ -28,16 +43,22 @@ export function GrowingBuilding({ building, wall, roof }: { building: BuiltBuild
  * merged mesh per colour so a full 150 m street costs a handful of draw calls (MASTERSPEC 6.3).
  */
 export function Street({ buildings }: { buildings: ContextBuilding[] }) {
-  const built = useMemo(
-    () =>
-      buildings
-        .filter((b) => !b.on_lot)
-        .map(buildBuilding)
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, MAX_BUILDINGS),
-    [buildings],
-  )
+  // MASTERSPEC 6.3 performance: at most 400 buildings, the nearest ones.
+  const built = useMemo(() => {
+    const grid = streetGrid(buildings)
+    const nearest = buildings
+      .filter((b) => !b.on_lot)
+      .map((b) => buildBuilding(b, grid))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, SLOTS.buildings)
+    nearest.forEach((b, i) => setSlot(b, slotOf('buildings', i)))
+    return nearest
+  }, [buildings])
   useEffect(() => () => disposeBuilt(built), [built])
+  useLayoutEffect(() => {
+    setOccluders('buildings', built.map((b) => b.box))
+    return () => setOccluders('buildings', [])
+  }, [built])
   const materials = useStreetMaterials({ cutaway: true })
 
   const [merged, setMerged] = useState(false)
@@ -67,10 +88,28 @@ function MergedStreet({ built, materials }: { built: BuiltBuilding[]; materials:
   return (
     <group>
       {merged.bodies.map(
-        (g, i) => g && <mesh key={i} geometry={g} material={materials.walls[i]} castShadow receiveShadow dispose={null} />,
+        (g, i) =>
+          g && (
+            <mesh
+              key={i}
+              geometry={g}
+              material={materials.walls[i]}
+              customDepthMaterial={cutawayDepthMaterial}
+              castShadow
+              receiveShadow
+              dispose={null}
+            />
+          ),
       )}
       {merged.roofs && (
-        <mesh geometry={merged.roofs} material={materials.roof} castShadow receiveShadow dispose={null} />
+        <mesh
+          geometry={merged.roofs}
+          material={materials.roof}
+          customDepthMaterial={cutawayDepthMaterial}
+          castShadow
+          receiveShadow
+          dispose={null}
+        />
       )}
     </group>
   )

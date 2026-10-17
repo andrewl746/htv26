@@ -30,8 +30,10 @@
   --suplex-lot: #fafcf2; /* the searched lot in the 3D scene */
 
   --suplex-sky-top: #c5df9e;
+  /* The 3D ground and its fog take the base map's land colour (--suplex-surface), so the scene
+     fades in over the map with the same ground under it and only the buildings change hands. */
   --suplex-sky-bottom: #f4f8e5;
-  --suplex-ground: #f4f8e5; /* the base map's land colour, so the scene fades in over the map */
+  --suplex-ground: #f4f8e5;
   --suplex-sun: #f7f3d8;
   --suplex-neighbour-1: #d2e3ad;
   --suplex-neighbour-2: #c1e0de;

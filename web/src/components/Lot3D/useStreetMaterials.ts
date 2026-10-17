@@ -11,7 +11,7 @@ export interface StreetMaterials {
 
 /**
  * One material per neighbour colour token, plus the roof, shared by every building on the street.
- * Neighbours are cut away where they hide the design; the house on the lot itself is not.
+ * Neighbours sink out of the way where they hide the design; the house on the lot itself does not.
  */
 export function useStreetMaterials({ cutaway }: { cutaway: boolean }): StreetMaterials {
   const materials = useMemo(() => {

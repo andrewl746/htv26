@@ -175,6 +175,7 @@ export function Scene({
         {drawn && <PixelRatio max={quality === 'high' ? DRAWN_MAX_DPR : 1} />}
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
           <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
+          {ELEVATION_VIEW && <color attach="background" args={['white']} />}
           <Camera
             lotKey={lotKey}
             distanceM={framing.distanceM}
@@ -197,11 +198,11 @@ export function Scene({
 
           {check && (
             <>
-              <Street key={`street-${lotKey}`} buildings={check.context.buildings} />
-              {drawn && check.lot.frontage_edge_local && (
+              {!ELEVATION_VIEW && <Street key={`street-${lotKey}`} buildings={check.context.buildings} />}
+              {drawn && !ELEVATION_VIEW && check.lot.frontage_edge_local && (
                 <Frontage key={`frontage-${lotKey}`} edge={check.lot.frontage_edge_local} />
               )}
-              <Trees key={`trees-${lotKey}`} trees={check.context.trees} />
+              {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={check.context.trees} />}
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
               <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} />
               <Pin restHeight={pinHeight} leaves={placement !== null} />

@@ -33,8 +33,11 @@ export type MaterialKey =
 const BRICK = { colour: '#c4a27c', mortar: '#d9d0c2' }
 const BOARD = { colour: '#dcd8cf', groove: '#b4afa5', widthM: 0.15 }
 const PANEL = { colour: '#4b4f55', joint: '#383b40', widthM: 0.6 }
-/** The glow is a hint of each home's colour behind dark glass, not a painted panel. */
-const GLASS = { colour: '#1b252e', glow: 0.13 }
+/**
+ * The glow is a hint of each home's colour behind dark glass, not a painted panel: the colour is
+ * mixed toward warm interior light, so a red-orange home never reads like the red fail slab.
+ */
+const GLASS = { colour: '#1b252e', glow: 0.2, interior: '#fff1dc', interiorMix: 0.5 }
 
 let cache: Map<MaterialKey, Material> | null = null
 
@@ -67,7 +70,7 @@ function build(): Map<MaterialKey, Material> {
 function glass(home: number | null): MeshStandardMaterial {
   const material = new MeshStandardMaterial({ color: GLASS.colour, roughness: 0.05, metalness: 0.2, envMapIntensity: 1.6 })
   if (home !== null) {
-    material.emissive = new Color(tokenHex(`--suplex-home-${home}`))
+    material.emissive = new Color(tokenHex(`--suplex-home-${home}`)).lerp(new Color(GLASS.interior), GLASS.interiorMix)
     material.emissiveIntensity = GLASS.glow
   }
   return material

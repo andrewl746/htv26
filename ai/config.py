@@ -24,6 +24,10 @@ ALLOWED_YEARS = (2013, 2022, 2023, 2024, 2025, 2026)
 ELECTION_DAY = 26  # October 26, 2026
 BYLAW_NUMBERS = (569, 2013, 654, 2025, 848)  # By-laws 569-2013, 654-2025, 848-2025
 
+# Free-tier requests per minute, as read in AI Studio on 2026-10-17 (docs/decisions.md); pregenerate.py paces to these.
+MODEL_RPM = {"gemini-3.8-flash": 5, "gemini-3.5-flash-lite": 15}
+DEFAULT_RPM = 5
+
 # Source links for numbers that come straight from a City dataset.
 SOURCE_URLS = {
     "property_boundaries": "https://open.toronto.ca/dataset/property-boundaries/",

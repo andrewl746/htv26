@@ -14,6 +14,7 @@ from ai.gemini import generate_json
 from ai.generate import Generate, check_template, generate_validated
 from ai.models import BriefingDraft
 from ai.numbers import allowed_numbers, build_ward_numbers, render, used
+from ai.translate import translate
 from ai.validator import placeholders
 
 SECTION_IDS = ("what_may_fit", "blocking_rule", "permits", "not_checked", "questions")
@@ -91,59 +92,85 @@ def _english(ward: dict, numbers: dict, settings: Settings, generate: Generate) 
     return sections, "template", cacheable
 
 
-def briefing(body: dict, settings: Settings, cache: JsonCache, generate: Generate = generate_json) -> dict:
+def briefing(
+    body: dict, settings: Settings, cache: JsonCache, generate: Generate = generate_json, *, refresh: bool = False
+) -> dict:
+    """refresh=True skips the cache read and overwrites the entry (pregenerate.py with a different model)."""
     ward = _ward_inputs(body["ward"])
     lang = body["lang"]
     numbers = build_ward_numbers(ward, web_url=settings.suplex_web_url)
     copy = _copy()
 
+    # No model in the key: a pre-generation run with another model fills the entries the service reads.
     key = cache_key({
         "endpoint": "briefing",
         "ward": ward,
-        "lang": "en",  # the English text; translation (S7) is cached separately per language
-        "model": settings.gemini_model,
         "prompt": prompt_file("briefing.md"),
         "web_url": settings.suplex_web_url,
     })
-    hit = cache.get(key)
+    hit = None if refresh else cache.get(key)
     if hit is not None:
-        sections, source, generated_at, cached = hit["sections"], hit["source"], hit["generated_at"], True
+        sections, source, model, generated_at = hit["sections"], hit["source"], hit.get("model"), hit["generated_at"]
+        cached = True
     else:
         sections, source, cacheable = _english(ward, numbers, settings, generate)
+        model = settings.gemini_model if source == "gemini" else None
         generated_at, cached = datetime.now(UTC).isoformat(timespec="seconds"), False
         if cacheable:
-            cache.put(key, {"sections": sections, "source": source, "generated_at": generated_at})
+            cache.put(key, {"sections": sections, "source": source, "model": model, "generated_at": generated_at})
 
-    translation_unavailable = lang != "en"  # translate.py (S7) not built yet: serve English with the notice
-    text_lang = "en" if translation_unavailable else lang
-    all_text = "\n".join(sections[sid] for sid in SECTION_IDS)
+    english = {
+        "title": copy["title"],
+        **{f"heading_{sid}": copy["headings"][sid] for sid in SECTION_IDS},
+        **{f"section_{sid}": sections[sid] for sid in WRITTEN},
+        **{f"question_{i}": q for i, q in enumerate(_questions("en"), start=1)},
+        "disclaimer": contract("copy/disclaimers.json")["screening"],
+    }
+    strings, text_lang, translation_unavailable = english, "en", False
+    if lang != "en":
+        # The template fallback stays English (MASTERSPEC 7.5); a Gemini result is translated.
+        translated, translation_cached = (None, False)
+        if source == "gemini":
+            translated, translation_cached = translate(
+                english, lang, numbers=numbers, allowed=allowed_numbers(numbers), settings=settings, cache=cache,
+                generate=generate, endpoint="briefing", refresh=refresh,
+            )
+        if translated is None:
+            translation_unavailable = True
+        else:
+            strings, text_lang, cached = translated, lang, cached and translation_cached
+
+    questions = [strings[f"question_{i}"] for i in range(1, len(_questions("en")) + 1)]
+    texts = {**{sid: strings[f"section_{sid}"] for sid in WRITTEN}, "questions": "\n".join(questions)}
+    ward_name = ward["ward_name"].replace("-", "–")  # en dash between place names in the title
     return {
         "ward_id": ward["ward_id"],
         "ward_name": ward["ward_name"],
         "lang": lang,
-        "title": copy["title"].format(ward_id=ward["ward_id"], ward_name=ward["ward_name"].replace("-", "–")),
+        # replace, not format: a translated title may contain other braces
+        "title": strings["title"].replace("{ward_id}", ward["ward_id"]).replace("{ward_name}", ward_name),
         "sections": [
             {
                 "id": sid,
-                "heading": copy["headings"][sid],
-                "template_text": sections[sid],
-                "text": render(sections[sid], numbers, text_lang),
+                "heading": strings[f"heading_{sid}"],
+                "template_text": texts[sid],
+                "text": render(texts[sid], numbers, text_lang),
             }
             for sid in SECTION_IDS
         ],
-        "questions": _questions("en"),
-        "numbers": used(all_text, numbers),
+        "questions": questions,
+        "numbers": used("\n".join(texts.values()), numbers),
         "links": {
             "ward_map": f"{settings.suplex_web_url}/?ward={ward['ward_id']}",
             "datasets": copy["datasets"],
             "methodology": copy["methodology"],
         },
-        "disclaimer": contract("copy/disclaimers.json")["screening"],
+        "disclaimer": strings["disclaimer"],
         "data_dates": ward["data_dates"],
         "generated_at": generated_at,
         "validated": True,
         "source": source,
-        "model": settings.gemini_model if source == "gemini" else None,
+        "model": model,
         "cached": cached,
         "translation_unavailable": translation_unavailable,
     }

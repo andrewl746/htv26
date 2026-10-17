@@ -120,8 +120,8 @@ def test_model_never_sees_the_values(client):
     assert "7.62" not in model_input and "lot_width_actual" in model_input
 
 
-def test_other_language_serves_english_with_the_notice_until_translation_exists(client):
-    use(FakeGemini(GOOD))
+def test_failed_translation_serves_english_with_the_notice(client):
+    use(FakeGemini(GOOD, GeminiError("quota")))
     body = client.post("/explain", json={**REQUEST, "lang": "fr"}).json()
     assert body["lang"] == "fr" and body["translation_unavailable"] is True
     assert not list(RESPONSE_SCHEMA.iter_errors(body))

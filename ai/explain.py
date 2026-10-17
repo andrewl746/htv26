@@ -14,6 +14,7 @@ from ai.generate import Generate, check_template, generate_validated
 from ai.models import ExplainDraft
 from ai.numbers import allowed_numbers, build_check_numbers, design_name, pick_design, render, used
 from ai.templates import explain_template
+from ai.translate import translate
 
 RULE_PLACEHOLDERS = {
     "lot_width": ["lot_width_required", "lot_width_actual", "lot_width_margin"],
@@ -75,7 +76,10 @@ def _english(check: dict, design: dict, numbers: dict, settings: Settings, gener
     return text, "template", cacheable
 
 
-def explain(body: dict, settings: Settings, cache: JsonCache, generate: Generate = generate_json) -> dict:
+def explain(
+    body: dict, settings: Settings, cache: JsonCache, generate: Generate = generate_json, *, refresh: bool = False
+) -> dict:
+    """refresh=True skips the cache read and overwrites the entry (pregenerate.py with a different model)."""
     check = {k: v for k, v in body["check"].items() if k != "context"}
     design_id, numbers = build_check_numbers(
         check, body["design_id"], web_url=settings.suplex_web_url, ai_url=settings.suplex_ai_url
@@ -83,36 +87,51 @@ def explain(body: dict, settings: Settings, cache: JsonCache, generate: Generate
     design = pick_design(check, design_id)
     lang = body["lang"]
 
+    # No model in the key: a pre-generation run with another model fills the entries the service reads.
     key = cache_key({
         "endpoint": "explain",
         "check": check,
         "design_id": design_id,
-        "lang": "en",  # the English text; translation (S7) is cached separately per language
-        "model": settings.gemini_model,
         "prompt": prompt_file("explain.md"),
         "urls": [settings.suplex_web_url, settings.suplex_ai_url],
     })
-    hit = cache.get(key)
+    hit = None if refresh else cache.get(key)
     if hit is not None:
-        template_text, source, cached = hit["template_text"], hit["source"], True
+        template_text, source, model, cached = hit["template_text"], hit["source"], hit.get("model"), True
     else:
         template_text, source, cacheable = _english(check, design, numbers, settings, generate)
+        model = settings.gemini_model if source == "gemini" else None
         cached = False
         if cacheable:
-            cache.put(key, {"template_text": template_text, "source": source})
+            cache.put(key, {"template_text": template_text, "source": source, "model": model})
 
-    translation_unavailable = lang != "en"  # translate.py (S7) not built yet: serve English with the notice
-    text_lang = "en" if translation_unavailable else lang
+    disclaimer = contract("copy/disclaimers.json")["screening"]
+    text_template, text_lang, translation_unavailable = template_text, "en", False
+    if lang != "en":
+        # The template fallback stays English (MASTERSPEC 7.5); a Gemini result is translated.
+        strings, translation_cached = (None, False)
+        if source == "gemini":
+            strings, translation_cached = translate(
+                {"template_text": template_text, "disclaimer": disclaimer}, lang,
+                numbers=numbers, allowed=allowed_numbers(numbers), settings=settings, cache=cache,
+                generate=generate, endpoint="explain", refresh=refresh,
+            )
+        if strings is None:
+            translation_unavailable = True
+        else:
+            text_template, disclaimer, text_lang = strings["template_text"], strings["disclaimer"], lang
+            cached = cached and translation_cached
+
     return {
         "lang": lang,
         "design_id": design_id,
-        "template_text": template_text,
-        "text": render(template_text, numbers, text_lang),
-        "numbers": used(template_text, numbers),
+        "template_text": text_template,
+        "text": render(text_template, numbers, text_lang),
+        "numbers": used(text_template, numbers),
         "validated": True,
         "source": source,
-        "model": settings.gemini_model if source == "gemini" else None,
+        "model": model,
         "cached": cached,
         "translation_unavailable": translation_unavailable,
-        "disclaimer": contract("copy/disclaimers.json")["screening"],
+        "disclaimer": disclaimer,
     }

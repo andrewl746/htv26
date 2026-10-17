@@ -93,35 +93,43 @@
   "languages": {
     "en": {
       "native": "English",
-      "english": "English"
+      "english": "English",
+      "reviewed": true
     },
     "fr": {
       "native": "Français",
-      "english": "French"
+      "english": "French",
+      "reviewed": true
     },
     "zh-Hans": {
       "native": "简体中文",
-      "english": "Simplified Chinese"
+      "english": "Simplified Chinese",
+      "reviewed": false
     },
     "zh-Hant": {
       "native": "繁體中文",
-      "english": "Traditional Chinese"
+      "english": "Traditional Chinese",
+      "reviewed": false
     },
     "es": {
       "native": "Español",
-      "english": "Spanish"
+      "english": "Spanish",
+      "reviewed": false
     },
     "tl": {
       "native": "Tagalog",
-      "english": "Tagalog"
+      "english": "Tagalog",
+      "reviewed": false
     },
     "ta": {
       "native": "தமிழ்",
-      "english": "Tamil"
+      "english": "Tamil",
+      "reviewed": false
     },
     "pt": {
       "native": "Português",
-      "english": "Portuguese"
+      "english": "Portuguese",
+      "reviewed": false
     }
   },
   "briefing_page": {
@@ -129,6 +137,8 @@
     "error": "This briefing couldn't load. Please try again in a moment.",
     "fixture_notice": "Sample data for testing: these numbers are made up and describe no real ward.",
     "language": "Language",
+    "review_reviewed": "Reviewed by a speaker",
+    "review_machine": "Machine translation, not yet reviewed",
     "generated": "Written",
     "data_as_of": "Data as of",
     "ward_map_link": "See this ward on the map",

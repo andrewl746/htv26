@@ -117,6 +117,17 @@ def test_check_needs_exactly_one_lookup(bare_client, query: str) -> None:
     assert isinstance(body["detail"], str) and body["detail"]
 
 
+def test_unexpected_errors_are_json(caplog) -> None:
+    def broken(q: str, limit: int) -> list:
+        raise RuntimeError("boom")
+
+    with TestClient(create_app(store=SimpleNamespace(search=broken)), raise_server_exceptions=False) as c:
+        r = c.get("/search", params={"q": "ab"})
+    assert r.status_code == 500
+    assert r.json() == {"error": "internal_error"}
+    assert "unhandled error on /search" in caplog.text
+
+
 def test_cors_allows_localhost_ports_and_the_extra_origins(tmp_path) -> None:
     settings = Settings(data_dir=tmp_path, gpkg_path=None, ai_url="http://localhost:8001",
                         cors_origins=("https://demo.example",))

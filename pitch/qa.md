@@ -15,7 +15,7 @@ Before you build: homeowners checking, for free, whether one of the City's desig
 Most won't, and that's fine. Three quarters of the multiplex permits so far were renovations or conversions, not new buildings [6]. Whether a design could fit is still the first question, and our own numbers show far more lots where a design may fit than permits, so we say upfront that fit isn't the only barrier.
 
 **"Isn't cost the real barrier?"**
-Probably, and our gap shows it: the rules allow far more than gets built. For scale, the average declared construction value was about $1.01 million for a new-build multiplex and about $216,000 for a renovation [7]. Cost modelling is our next step.
+Probably, and our gap shows it: the rules allow far more than gets built. For scale, the average declared construction value was about $1.01 million for a new-build multiplex and about $216,000 for a renovation [7]. The City already waives development charges and parkland fees on the added homes of a multiplex of up to six units [16], so construction cost is most of what's left. Cost modelling is our next step.
 
 **"Why not LotMore?"**
 LotMore leads into its own paid architecture services. Suplex is free and neutral, uses the City's own four designs, and adds the ward picture: what could fit next to what got permitted.

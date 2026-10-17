@@ -1,14 +1,14 @@
 {
   "rows": 7342,
-  "loaded_at": "2026-10-17T03:44:28",
+  "loaded_at": "2026-10-17T12:07:27",
   "table_rows": 7342,
   "chunks": 20,
-  "before": {
-    "label": "before compression",
+  "size_at_load_end": {
+    "label": "after load, before the explicit compress_chunk call",
     "bytes": 3620864,
     "pretty": "3536 kB"
   },
-  "after": {
+  "size_after_compression": {
     "label": "after compression",
     "bytes": 3284992,
     "pretty": "3208 kB"

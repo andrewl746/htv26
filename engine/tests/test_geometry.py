@@ -207,3 +207,27 @@ def test_neighbours_footprint_crossing_the_line_is_not_a_second_building():
     neighbour = box(-6, 8, 0.3, 18)      # crosses the side lot line by 3 m2
     geo = measure(lot, [SOUTH_STREET], buildings=[house, neighbour])
     assert not geo.unmeasurable
+
+
+# ---------- rear lanes (A8 finding: 78% of Ward 04 lots with two street edges have a lane behind, not a corner) ----------
+
+LANE = box(-20, 30, 40, 34)            # a 4 m public lane along the rear lot line of box(0, 0, 10, 30)
+TAPERED = Polygon([(0, 0), (10, 0), (9.8, 30), (0.2, 30)])   # 10 m at the street, 9.6 m at the lane
+
+
+def test_rear_lane_is_not_the_frontage_when_the_address_point_faces_the_street():
+    geo = measure(box(0, 0, 10, 30), [SOUTH_STREET, LANE], address_point=Point(5, 3))
+    assert geo.front_bearing_deg == pytest.approx(180.0, abs=0.5)
+    # The lane edge being the shorter one must not win either: opposite edges are not a corner.
+    geo = measure(TAPERED, [SOUTH_STREET, LANE], address_point=Point(5, 3))
+    assert geo.front_bearing_deg == pytest.approx(180.0, abs=1.0)
+
+
+def test_corner_lot_with_a_rear_lane_still_follows_the_corner_rule_on_the_street_side():
+    geo = measure(box(0, 0, 10, 30), [SOUTH_STREET, WEST_STREET, LANE], address_point=Point(5, 3))
+    assert geo.front_bearing_deg == pytest.approx(180.0, abs=0.5)    # the 10 m south edge, not the 30 m west edge
+
+
+def test_rear_lane_without_an_address_point_falls_back_to_the_shorter_edge():
+    geo = measure(TAPERED, [SOUTH_STREET, LANE])
+    assert geo.front_bearing_deg == pytest.approx(0.0, abs=1.0)      # documented fallback: nothing says which side is the street

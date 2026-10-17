@@ -164,15 +164,43 @@ def boundary_edges(lot: Polygon, cfg: EngineConfig) -> list[LineString]:
     return _merge_segments(segs, [True] * len(segs), cfg.street_edge.merge_angle_deg)
 
 
+def _opposite(a: LineString, b: LineString, cfg: EngineConfig) -> bool:
+    """Two street edges on opposite sides of the lot: parallel (directions within the merge angle, either way
+    round) and apart by more than a dropped chamfer's length. A street and a rear lane, or a through lot."""
+    d = _angle_between_deg(_direction((a.coords[0], a.coords[-1])), _direction((b.coords[0], b.coords[-1])))
+    parallel = min(d, 180.0 - d) < cfg.street_edge.merge_angle_deg
+    return parallel and a.distance(b) > cfg.street_edge.min_length_m
+
+
+def _drop_opposite_edges(edges: list[LineString], address_point: Point, cfg: EngineConfig) -> list[LineString]:
+    """Opposite street edges are not a corner. Keep the side the lot's address point faces and drop the edges
+    opposite to it, so a rear lane never becomes the frontage; the corner rule then applies to what is left.
+
+    A8 finding on Ward 04 (2026-10-17): 78% of lots with two street edges have a public lane behind them, not a
+    second street, and the shorter-edge rule alone faced the lane in half of those. Without an address point
+    nothing says which side is the street and the by-law rule stands.
+    """
+    nearest = min(edges, key=lambda e: e.distance(address_point))
+    return [e for e in edges if e is nearest or not _opposite(e, nearest, cfg)]
+
+
 def choose_frontage(lot: Polygon, corridors: Iterable[BaseGeometry], address_point: Point | None,
                     cfg: EngineConfig) -> tuple[LineString | None, str | None]:
-    """Section 5.2 step 1. Returns (edge, None) or (None, reason)."""
+    """Section 5.2 step 1. Returns (edge, None) or (None, reason).
+
+    Street edges are lot boundary runs within `corridor_distance_m` of street space. With several, edges on the
+    far side of the lot from the address point (a rear lane) are dropped first; among the rest the shorter edge
+    is the front lot line (the by-law's corner-lot convention). With no street space at all, the boundary edge
+    nearest the address point is used.
+    """
     min_len = cfg.street_edge.min_length_m
     edges = street_edges(lot, corridors, cfg)
     if edges:
         usable = [e for e in edges if e.length >= min_len]
         if not usable:
             return None, SHORT_STREET_EDGE
+        if len(usable) > 1 and address_point is not None and not address_point.is_empty:
+            usable = _drop_opposite_edges(usable, address_point, cfg)
         # Corner lot: the front lot line is the shorter street edge (the by-law's corner-lot convention).
         return min(usable, key=lambda e: e.length), None
     if address_point is None or address_point.is_empty:
@@ -312,6 +340,20 @@ class LotGeometry:
             if d is not None:
                 depths.append(d)
         return min(depths) if depths else 0.0
+
+    def band_x_extent(self, front_setback_m: float, length_m: float) -> tuple[float, float] | None:
+        """The x range that lies inside the lot on every sampled row of the building band (the piece under
+        the centroid): the innermost left side and the innermost right side over the band."""
+        assert self.lot_street is not None and self.centroid_street is not None
+        lefts, rights = [], []
+        for y in _frange(front_setback_m, front_setback_m + length_m, self.cfg.sample_step_m):
+            sides = self.side_lines_at(y)
+            if sides is not None:
+                lefts.append(sides[0])
+                rights.append(sides[1])
+        if not lefts or max(lefts) >= min(rights):
+            return None
+        return max(lefts), min(rights)
 
     def side_lines_at(self, y: float) -> tuple[float, float] | None:
         """The lot's left and right x at height y in the street frame (the piece under the centroid)."""

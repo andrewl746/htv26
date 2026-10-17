@@ -132,7 +132,7 @@ Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branc
 
 **Decision (Simone, 2026-10-17, accepted): `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`.** At 20 requests a day, `gemini-3.8-flash` cannot support development; one clean demo pre-generation alone takes 16 requests. `gemini-3.8-flash` is used only for the one-off pre-generation after the Hour-24 lock, and `gemini-2.5-flash` is dropped. Before committing to the split she compares the validator's rejection rate for the two models; if flash-lite is as clean, it does everything. Touches `/ai/config.py` and `.env` only; no contract changes. Sections 1 (decision 12), 7.1, 7.9, 8.4, 11, 13 and Appendix I were updated to match.
 
-**Yuvi, reported 2026-10-17 (branch `yuvi`, 6 commits; full write-up in `pipeline/REPORT.md`, to go into `docs/decisions.md` through Simone)**
+**Yuvi, reported 2026-10-17 (branch `yuvi`, 6 commits, merged into `main` the same day as 2123951; full write-up in `pipeline/REPORT.md`, to go into `docs/decisions.md` through Simone)**
 
 | Task | State | How to verify |
 |---|---|---|
@@ -162,7 +162,7 @@ A stale `origin/feat/pipeline` branch also exists from before the rename; delete
 
 1. Andrew: send each teammate their kickoff prompt (section 8) and this section. Teammates clone, create `.venv`, run `pip install -r requirements.txt`, open branch `yuvi` / `jayden` / `simone` from `main`.
 2. Yuvi: put `suplex.gpkg`, the permit files and `trend_cache/` on the drive (done on his machine); sign up for Tiger Data (Y2) and load it; then Y7 when Andrew sends the test lots.
-3. Andrew: merge `yuvi` into `main`, apply the engine-side items 1, 5, 6 and 7 from Yuvi's findings above, then A7 API v1 (`api/main.py`, `api/store.py`) against the citywide `suplex.gpkg`. The engine entry point is `suplex_engine.check.run_check`, fed with a `LotInput` (see `engine/suplex_engine/models.py`): the lot row fields, corridors within 5 m, neighbour lots, buildings and trees within 150 m, the address point, multiplex permit points. Then A8 hand-checked lots (tune the `larger_building` and `attached` thresholds in `engine_config.json`).
+3. Andrew: `yuvi` is merged; apply the engine-side items 1, 5, 6 and 7 from Yuvi's findings above, then A7 API v1 (`api/main.py`, `api/store.py`) against the citywide `suplex.gpkg`. The engine entry point is `suplex_engine.check.run_check`, fed with a `LotInput` (see `engine/suplex_engine/models.py`): the lot row fields, corridors within 5 m, neighbour lots, buildings and trees within 150 m, the address point, multiplex permit points. Then A8 hand-checked lots (tune the `larger_building` and `attached` thresholds in `engine_config.json`).
 4. Jayden: J1 onward against `/contracts/fixtures`. Read `levels[]` and `homes[]` from `designs.json` (section 6.3 used to say `floors[]`).
 5. Simone: clone, open `simone` from `main`, push the S2 drafts and her `docs/decisions.md` entries, then S3 and S4 against `/contracts/fixtures` (`explain.request.json` and `check.*.json` are there); `contracts/copy/*.json` v0 is hers to rewrite. Chase the HTV 11 rules (T1) first thing.
 

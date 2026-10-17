@@ -1,0 +1,307 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CheckResponse",
+  "description": "GET /check response. Mirrors `CheckResponse` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "address_id": {"type": ["string", "null"], "minLength": 1},
+        "address_full": {"type": ["string", "null"], "minLength": 1},
+        "lon": {"type": "number"},
+        "lat": {"type": "number"}
+      },
+      "required": ["address_id", "address_full", "lon", "lat"],
+      "additionalProperties": false
+    },
+    "lot": {"$ref": "#/$defs/Lot"},
+    "designs": {"type": "array", "items": {"$ref": "#/$defs/DesignResult"}, "minItems": 4, "maxItems": 4},
+    "not_checked": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "permits_nearby": {"$ref": "#/$defs/PermitsNearby"},
+    "context": {"$ref": "#/$defs/Context"},
+    "meta": {"$ref": "#/$defs/Meta"}
+  },
+  "required": ["address", "lot", "designs", "not_checked", "permits_nearby", "context", "meta"],
+  "additionalProperties": false,
+  "$defs": {
+    "DesignId": {
+      "type": "string",
+      "enum": ["fourplex_narrow", "fourplex_wide", "sixplex_narrow", "sixplex_wide"]
+    },
+    "Result": {"type": "string", "enum": ["fits", "borderline", "no_fit", "not_checked"]},
+    "LotClass": {
+      "type": "string",
+      "enum": [
+        "condo", "non_residential", "older_bylaw", "larger_building", "unmeasurable", "attached", "checked"
+      ]
+    },
+    "RuleId": {
+      "type": "string",
+      "enum": [
+        "detached_building", "units_allowed", "lot_width", "lot_depth", "building_length", "height",
+        "lot_coverage"
+      ]
+    },
+    "FlagId": {
+      "type": "string",
+      "enum": ["heritage_register", "heritage_district", "ravine", "trca", "site_exception", "vacant"]
+    },
+    "WardId": {
+      "type": "string",
+      "description": "Two-digit zero-padded ward id, \"01\" to \"25\" (City Wards AREA_SHORT_CODE).",
+      "pattern": "^(0[1-9]|1[0-9]|2[0-5])$"
+    },
+    "Date": {
+      "type": "string",
+      "description": "YYYY-MM-DD",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "DateTime": {
+      "type": "string",
+      "description": "ISO 8601 date-time with a timezone",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]+)?)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "DataDates": {
+      "type": "object",
+      "description": "Dataset name -> last refreshed date (Record<string, string>).",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/Date"}
+    },
+    "LocalPoint": {
+      "type": "array",
+      "prefixItems": [{"type": "number"}, {"type": "number"}],
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[x east, y north] in metres from the lot centroid (EPSG:2952)"
+    },
+    "LonLat": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "number", "minimum": -180, "maximum": 180},
+        {"type": "number", "minimum": -90, "maximum": 90}
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[longitude, latitude] (EPSG:4326)"
+    },
+    "LocalRing": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/LocalPoint"},
+      "minItems": 3,
+      "description": "Polygon ring in local metres (LocalPoint[])"
+    },
+    "Reason": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "condo", "non_residential", "older_bylaw", "larger_building", "unmeasurable", "attached",
+            "checked", "outside_toronto"
+          ]
+        },
+        "label": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1}
+      },
+      "required": ["id", "label", "text"],
+      "additionalProperties": false
+    },
+    "Flag": {
+      "type": "object",
+      "properties": {
+        "id": {"$ref": "#/$defs/FlagId"},
+        "label": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1},
+        "source_url": {"type": ["string", "null"], "minLength": 1},
+        "detail": {"type": ["string", "null"]}
+      },
+      "required": ["id", "label", "text", "source_url", "detail"],
+      "additionalProperties": false
+    },
+    "ZoneInfo": {
+      "type": "object",
+      "properties": {
+        "zn_zone": {"type": ["string", "null"]},
+        "zn_string": {"type": ["string", "null"]},
+        "gen_zone": {"type": ["integer", "null"]},
+        "zbl_sectn": {"type": ["string", "null"]},
+        "zn_status": {"type": ["integer", "null"]},
+        "frontage_min_m": {"type": ["number", "null"]},
+        "units_max": {"type": ["integer", "null"]},
+        "ht_overlay_m": {"type": ["number", "null"]},
+        "coverage_overlay_pct": {"type": ["number", "null"]},
+        "exception_no": {"type": ["integer", "null"]},
+        "sixplex_overlay": {"type": "boolean"}
+      },
+      "required": [
+        "zn_zone", "zn_string", "gen_zone", "zbl_sectn", "zn_status", "frontage_min_m", "units_max",
+        "ht_overlay_m", "coverage_overlay_pct", "exception_no", "sixplex_overlay"
+      ],
+      "additionalProperties": false
+    },
+    "ExistingBuilding": {
+      "type": "object",
+      "properties": {
+        "building_id": {"type": "integer"},
+        "avg_height_m": {"type": "number", "minimum": 0},
+        "footprint_m2": {"type": "number", "minimum": 0},
+        "footprint_local": {"$ref": "#/$defs/LocalRing"}
+      },
+      "required": ["building_id", "avg_height_m", "footprint_m2", "footprint_local"],
+      "additionalProperties": false
+    },
+    "Lot": {
+      "type": "object",
+      "properties": {
+        "lot_id": {"type": "string", "minLength": 1},
+        "class": {"$ref": "#/$defs/LotClass"},
+        "reason": {"anyOf": [{"$ref": "#/$defs/Reason"}, {"type": "null"}]},
+        "ward_id": {"$ref": "#/$defs/WardId"},
+        "ward_name": {"type": "string", "minLength": 1},
+        "zone": {"$ref": "#/$defs/ZoneInfo"},
+        "width_m": {"type": ["number", "null"], "minimum": 0},
+        "depth_m": {"type": ["number", "null"], "minimum": 0},
+        "area_m2": {"type": "number", "minimum": 0},
+        "stated_area": {"type": ["string", "null"]},
+        "front_bearing_deg": {"type": ["number", "null"], "minimum": 0, "exclusiveMaximum": 360},
+        "frontage_edge_local": {
+          "type": ["array", "null"],
+          "prefixItems": [{"$ref": "#/$defs/LocalPoint"}, {"$ref": "#/$defs/LocalPoint"}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "polygon_local": {"type": "array", "items": {"$ref": "#/$defs/LocalPoint"}, "minItems": 4},
+        "polygon_wgs84": {"type": "array", "items": {"$ref": "#/$defs/LonLat"}, "minItems": 4},
+        "existing_building": {"anyOf": [{"$ref": "#/$defs/ExistingBuilding"}, {"type": "null"}]},
+        "attached": {"type": "boolean"},
+        "vacant": {"type": "boolean"},
+        "flags": {"type": "array", "items": {"$ref": "#/$defs/Flag"}}
+      },
+      "required": [
+        "lot_id", "class", "reason", "ward_id", "ward_name", "zone", "width_m", "depth_m", "area_m2",
+        "stated_area", "front_bearing_deg", "frontage_edge_local", "polygon_local", "polygon_wgs84",
+        "existing_building", "attached", "vacant", "flags"
+      ],
+      "additionalProperties": false
+    },
+    "RuleRow": {
+      "type": "object",
+      "properties": {
+        "rule_id": {"$ref": "#/$defs/RuleId"},
+        "label": {"type": "string", "minLength": 1},
+        "required": {"type": ["number", "string", "null"]},
+        "actual": {"type": ["number", "string", "null"]},
+        "unit": {"enum": ["m", "pct", "units", null]},
+        "margin": {"type": ["number", "null"]},
+        "pass": {"type": ["boolean", "null"]},
+        "borderline": {"type": "boolean"},
+        "not_applicable": {"type": "boolean"},
+        "bylaw_section": {"type": "string", "minLength": 1},
+        "detail": {"type": ["string", "null"]}
+      },
+      "required": [
+        "rule_id", "label", "required", "actual", "unit", "margin", "pass", "borderline", "not_applicable",
+        "bylaw_section", "detail"
+      ],
+      "additionalProperties": false
+    },
+    "Setbacks": {
+      "type": "object",
+      "properties": {
+        "front": {"$ref": "#/$defs/LocalRing"},
+        "rear": {"$ref": "#/$defs/LocalRing"},
+        "left": {"$ref": "#/$defs/LocalRing"},
+        "right": {"$ref": "#/$defs/LocalRing"}
+      },
+      "required": ["front", "rear", "left", "right"],
+      "additionalProperties": false
+    },
+    "DesignResult": {
+      "type": "object",
+      "properties": {
+        "design_id": {"$ref": "#/$defs/DesignId"},
+        "result": {"$ref": "#/$defs/Result"},
+        "blocking_rule": {"anyOf": [{"$ref": "#/$defs/RuleId"}, {"type": "null"}]},
+        "rules": {"type": "array", "items": {"$ref": "#/$defs/RuleRow"}},
+        "placement_local": {
+          "type": ["array", "null"],
+          "items": {"$ref": "#/$defs/LocalPoint"},
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "4 corners, front wall first"
+        },
+        "buildable_local": {"anyOf": [{"$ref": "#/$defs/LocalRing"}, {"type": "null"}]},
+        "setbacks_local": {"anyOf": [{"$ref": "#/$defs/Setbacks"}, {"type": "null"}]},
+        "fail_slices_local": {"type": "array", "items": {"$ref": "#/$defs/LocalRing"}}
+      },
+      "required": [
+        "design_id", "result", "blocking_rule", "rules", "placement_local", "buildable_local",
+        "setbacks_local", "fail_slices_local"
+      ],
+      "additionalProperties": false
+    },
+    "PermitsNearby": {
+      "type": "object",
+      "properties": {
+        "radius_m": {"type": "number", "minimum": 0},
+        "since": {"$ref": "#/$defs/Date"},
+        "count": {"type": "integer", "minimum": 0},
+        "points": {"type": "array", "items": {"$ref": "#/$defs/LonLat"}},
+        "points_local": {"type": "array", "items": {"$ref": "#/$defs/LocalPoint"}}
+      },
+      "required": ["radius_m", "since", "count", "points", "points_local"],
+      "additionalProperties": false
+    },
+    "ContextBuilding": {
+      "type": "object",
+      "properties": {
+        "building_id": {"type": "integer"},
+        "avg_height_m": {"type": "number", "minimum": 0},
+        "kind": {"type": "string", "enum": ["house", "large"]},
+        "on_lot": {"type": "boolean"},
+        "footprint_local": {"$ref": "#/$defs/LocalRing"}
+      },
+      "required": ["building_id", "avg_height_m", "kind", "on_lot", "footprint_local"],
+      "additionalProperties": false
+    },
+    "Context": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "object",
+          "properties": {
+            "lon": {"type": "number"},
+            "lat": {"type": "number"},
+            "x_2952": {"type": "number"},
+            "y_2952": {"type": "number"}
+          },
+          "required": ["lon", "lat", "x_2952", "y_2952"],
+          "additionalProperties": false
+        },
+        "radius_m": {"type": "number", "minimum": 0},
+        "buildings": {"type": "array", "items": {"$ref": "#/$defs/ContextBuilding"}},
+        "trees": {"type": "array", "items": {"$ref": "#/$defs/LocalPoint"}}
+      },
+      "required": ["origin", "radius_m", "buildings", "trees"],
+      "additionalProperties": false
+    },
+    "Meta": {
+      "type": "object",
+      "properties": {
+        "engine_version": {"type": "string", "minLength": 1},
+        "designs_version": {"type": "string", "minLength": 1},
+        "config_version": {"type": "string", "minLength": 1},
+        "data_dates": {"$ref": "#/$defs/DataDates"},
+        "disclaimer": {"type": "string", "minLength": 1},
+        "generated_at": {"$ref": "#/$defs/DateTime"},
+        "cached": {"type": "boolean"}
+      },
+      "required": [
+        "engine_version", "designs_version", "config_version", "data_dates", "disclaimer", "generated_at",
+        "cached"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

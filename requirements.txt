@@ -1,0 +1,22 @@
+# One root Python environment for engine, api, pipeline and ai (MASTERSPEC 3.2).
+# Engine (pure Python): shapely, pyproj only.
+shapely>=2.0
+pyproj>=3.6
+# Contracts
+jsonschema>=4.20
+# API and pipeline
+fastapi>=0.110
+uvicorn[standard]>=0.27
+geopandas>=1.0
+pyogrio>=0.9
+pyarrow>=15
+requests>=2.31
+# Tiger Data
+psycopg[binary]>=3.1
+# AI service
+google-genai>=1.0
+httpx>=0.27
+pydantic>=2.6
+# Dev
+pytest>=8.0
+ruff>=0.4

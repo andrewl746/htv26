@@ -1,0 +1,269 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.47005, 43.64985], [-79.46995, 43.64985], [-79.46995, 43.65015], [-79.47005, 43.65015],
+            [-79.47005, 43.64985]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 1,
+        "c": "checked",
+        "b": "borderline",
+        "r": {"fn": "borderline", "fw": "no_fit", "sn": "no_fit", "sw": "no_fit"},
+        "k": "lot_width",
+        "f": [],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46995, 43.64985], [-79.46985, 43.64985], [-79.46985, 43.65015], [-79.46995, 43.65015],
+            [-79.46995, 43.64985]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 2,
+        "c": "checked",
+        "b": "fits",
+        "r": {"fn": "fits", "fw": "fits", "sn": "fits", "sw": "fits"},
+        "k": null,
+        "f": ["hd"],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46985, 43.64985], [-79.46975, 43.64985], [-79.46975, 43.65015], [-79.46985, 43.65015],
+            [-79.46985, 43.64985]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 3,
+        "c": "checked",
+        "b": "fits",
+        "r": {"fn": "fits", "fw": "fits", "sn": "no_fit", "sw": "fits"},
+        "k": null,
+        "f": [],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46975, 43.64985], [-79.46965, 43.64985], [-79.46965, 43.65015], [-79.46975, 43.65015],
+            [-79.46975, 43.64985]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 4,
+        "c": "checked",
+        "b": "no_fit",
+        "r": {"fn": "no_fit", "fw": "no_fit", "sn": "no_fit", "sw": "no_fit"},
+        "k": "lot_width",
+        "f": [],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46965, 43.64985], [-79.46955, 43.64985], [-79.46955, 43.65015], [-79.46965, 43.65015],
+            [-79.46965, 43.64985]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 5,
+        "c": "checked",
+        "b": "no_fit",
+        "r": {"fn": "no_fit", "fw": "no_fit", "sn": "no_fit", "sw": "no_fit"},
+        "k": "lot_width",
+        "f": ["vc"],
+        "a": 0,
+        "v": 1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46955, 43.64985], [-79.46945, 43.64985], [-79.46945, 43.65015], [-79.46955, 43.65015],
+            [-79.46955, 43.64985]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 6,
+        "c": "checked",
+        "b": "borderline",
+        "r": {"fn": "borderline", "fw": "borderline", "sn": "no_fit", "sw": "no_fit"},
+        "k": "lot_depth",
+        "f": ["rv", "tr"],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.47005, 43.6502], [-79.46995, 43.6502], [-79.46995, 43.6505], [-79.47005, 43.6505],
+            [-79.47005, 43.6502]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 7,
+        "c": "attached",
+        "b": "no_fit",
+        "r": {"fn": "no_fit", "fw": "no_fit", "sn": "no_fit", "sw": "no_fit"},
+        "k": "detached_building",
+        "f": [],
+        "a": 1,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46995, 43.6502], [-79.46985, 43.6502], [-79.46985, 43.6505], [-79.46995, 43.6505],
+            [-79.46995, 43.6502]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 8,
+        "c": "condo",
+        "b": "not_checked",
+        "r": {"fn": "not_checked", "fw": "not_checked", "sn": "not_checked", "sw": "not_checked"},
+        "k": null,
+        "f": [],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46985, 43.6502], [-79.46975, 43.6502], [-79.46975, 43.6505], [-79.46985, 43.6505],
+            [-79.46985, 43.6502]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 9,
+        "c": "non_residential",
+        "b": "not_checked",
+        "r": {"fn": "not_checked", "fw": "not_checked", "sn": "not_checked", "sw": "not_checked"},
+        "k": null,
+        "f": [],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46975, 43.6502], [-79.46965, 43.6502], [-79.46965, 43.6505], [-79.46975, 43.6505],
+            [-79.46975, 43.6502]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 10,
+        "c": "older_bylaw",
+        "b": "not_checked",
+        "r": {"fn": "not_checked", "fw": "not_checked", "sn": "not_checked", "sw": "not_checked"},
+        "k": null,
+        "f": ["hr"],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46965, 43.6502], [-79.46955, 43.6502], [-79.46955, 43.6505], [-79.46965, 43.6505],
+            [-79.46965, 43.6502]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 11,
+        "c": "larger_building",
+        "b": "not_checked",
+        "r": {"fn": "not_checked", "fw": "not_checked", "sn": "not_checked", "sw": "not_checked"},
+        "k": null,
+        "f": ["ex"],
+        "a": 0,
+        "v": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-79.46955, 43.6502], [-79.46945, 43.6502], [-79.46945, 43.6505], [-79.46955, 43.6505],
+            [-79.46955, 43.6502]
+          ]
+        ]
+      },
+      "properties": {
+        "id": 12,
+        "c": "unmeasurable",
+        "b": "not_checked",
+        "r": {"fn": "not_checked", "fw": "not_checked", "sn": "not_checked", "sw": "not_checked"},
+        "k": null,
+        "f": [],
+        "a": 0,
+        "v": 0
+      }
+    }
+  ]
+}

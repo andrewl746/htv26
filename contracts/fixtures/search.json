@@ -1,0 +1,37 @@
+{
+  "query": "Fixture",
+  "results": [
+    {
+      "address_id": "fixture-1",
+      "address_full": "100 Fixture St",
+      "ward_id": "04",
+      "ward_name": "Parkdale-High Park",
+      "lon": -79.47,
+      "lat": 43.65
+    },
+    {
+      "address_id": "fixture-2",
+      "address_full": "200 Fixture St",
+      "ward_id": "04",
+      "ward_name": "Parkdale-High Park",
+      "lon": -79.475,
+      "lat": 43.653
+    },
+    {
+      "address_id": "fixture-3",
+      "address_full": "300 Fixture St",
+      "ward_id": "04",
+      "ward_name": "Parkdale-High Park",
+      "lon": -79.465,
+      "lat": 43.648
+    },
+    {
+      "address_id": "fixture-4",
+      "address_full": "400 Fixture St",
+      "ward_id": "04",
+      "ward_name": "Parkdale-High Park",
+      "lon": -79.456,
+      "lat": 43.64
+    }
+  ]
+}

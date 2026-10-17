@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BriefingResponse",
+  "description": "POST /briefing response (AI service). Mirrors `BriefingResponse` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "ward_id": {"$ref": "#/$defs/WardId"},
+    "ward_name": {"type": "string", "minLength": 1},
+    "lang": {"$ref": "#/$defs/Lang"},
+    "title": {"type": "string", "minLength": 1},
+    "sections": {"type": "array", "items": {"$ref": "#/$defs/BriefingSection"}},
+    "questions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "numbers": {"$ref": "#/$defs/NumbersMap"},
+    "links": {
+      "type": "object",
+      "properties": {
+        "ward_map": {"type": "string", "minLength": 1},
+        "datasets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {"type": "string", "minLength": 1},
+              "url": {"type": "string", "minLength": 1}
+            },
+            "required": ["label", "url"],
+            "additionalProperties": false
+          }
+        },
+        "methodology": {"type": "string", "minLength": 1}
+      },
+      "required": ["ward_map", "datasets", "methodology"],
+      "additionalProperties": false
+    },
+    "disclaimer": {"type": "string", "minLength": 1},
+    "data_dates": {"$ref": "#/$defs/DataDates"},
+    "generated_at": {"$ref": "#/$defs/DateTime"},
+    "validated": {"const": true},
+    "source": {"type": "string", "enum": ["gemini", "template"]},
+    "model": {"type": ["string", "null"], "minLength": 1},
+    "cached": {"type": "boolean"},
+    "translation_unavailable": {"type": "boolean"}
+  },
+  "required": [
+    "ward_id", "ward_name", "lang", "title", "sections", "questions", "numbers", "links", "disclaimer",
+    "data_dates", "generated_at", "validated", "source", "model", "cached", "translation_unavailable"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "WardId": {
+      "type": "string",
+      "description": "Two-digit zero-padded ward id, \"01\" to \"25\" (City Wards AREA_SHORT_CODE).",
+      "pattern": "^(0[1-9]|1[0-9]|2[0-5])$"
+    },
+    "Lang": {"type": "string", "enum": ["en", "fr", "zh-Hans", "zh-Hant", "es", "tl", "ta", "pt"]},
+    "Date": {
+      "type": "string",
+      "description": "YYYY-MM-DD",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "DateTime": {
+      "type": "string",
+      "description": "ISO 8601 date-time with a timezone",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]+)?)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "DataDates": {
+      "type": "object",
+      "description": "Dataset name -> last refreshed date (Record<string, string>).",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/Date"}
+    },
+    "NumberEntry": {
+      "type": "object",
+      "properties": {
+        "value": {"type": "number"},
+        "unit": {"type": ["string", "null"]},
+        "label": {"type": "string", "minLength": 1},
+        "source_url": {"type": "string", "minLength": 1}
+      },
+      "required": ["value", "unit", "label", "source_url"],
+      "additionalProperties": false
+    },
+    "NumbersMap": {
+      "type": "object",
+      "description": "Record<string, NumberEntry>; keys are snake_case",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/NumberEntry"}
+    },
+    "BriefingSection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": ["what_may_fit", "blocking_rule", "permits", "not_checked", "questions"]
+        },
+        "heading": {"type": "string", "minLength": 1},
+        "template_text": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1}
+      },
+      "required": ["id", "heading", "template_text", "text"],
+      "additionalProperties": false
+    }
+  }
+}

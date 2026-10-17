@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TrendResponse",
+  "description": "GET /ward/{id}/trend response. Mirrors `TrendResponse` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "ward_id": {"$ref": "#/$defs/WardId"},
+    "source": {"type": "string", "enum": ["tigerdata", "cache", "local"]},
+    "since": {"$ref": "#/$defs/Month"},
+    "series": {"type": "array", "items": {"$ref": "#/$defs/TrendPoint"}},
+    "markers": {"type": "array", "items": {"$ref": "#/$defs/TrendMarker"}},
+    "generated_at": {"$ref": "#/$defs/DateTime"}
+  },
+  "required": ["ward_id", "source", "since", "series", "markers", "generated_at"],
+  "additionalProperties": false,
+  "$defs": {
+    "WardId": {
+      "type": "string",
+      "description": "Two-digit zero-padded ward id, \"01\" to \"25\" (City Wards AREA_SHORT_CODE).",
+      "pattern": "^(0[1-9]|1[0-9]|2[0-5])$"
+    },
+    "Month": {"type": "string", "description": "YYYY-MM", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+    "DateTime": {
+      "type": "string",
+      "description": "ISO 8601 date-time with a timezone",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]+)?)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "TrendPoint": {
+      "type": "object",
+      "properties": {
+        "month": {"$ref": "#/$defs/Month"},
+        "permits": {"type": "integer", "minimum": 0},
+        "units": {"type": "integer", "minimum": 0}
+      },
+      "required": ["month", "permits", "units"],
+      "additionalProperties": false
+    },
+    "TrendMarker": {
+      "type": "object",
+      "properties": {"month": {"$ref": "#/$defs/Month"}, "label": {"type": "string", "minLength": 1}},
+      "required": ["month", "label"],
+      "additionalProperties": false
+    }
+  }
+}

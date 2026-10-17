@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "suplex_engine"
+version = "0.1.0"
+description = "Suplex rules engine: tests the City of Toronto's four free multiplex designs against a lot (pure Python)"
+requires-python = ">=3.12"
+dependencies = ["shapely>=2.0", "pyproj>=3.6"]
+
+[tool.setuptools.packages.find]
+include = ["suplex_engine*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint.isort]
+known-first-party = ["suplex_engine"]

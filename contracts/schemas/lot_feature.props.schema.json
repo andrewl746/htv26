@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LotFeatureProps",
+  "description": "properties of each feature in wards/{id}.geojson. Mirrors `LotFeatureProps` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "id": {"type": "integer"},
+    "c": {"$ref": "#/$defs/LotClass"},
+    "b": {"$ref": "#/$defs/Result"},
+    "r": {
+      "type": "object",
+      "description": "Record<DesignKey, Result>",
+      "properties": {
+        "fn": {"$ref": "#/$defs/Result"},
+        "fw": {"$ref": "#/$defs/Result"},
+        "sn": {"$ref": "#/$defs/Result"},
+        "sw": {"$ref": "#/$defs/Result"}
+      },
+      "required": ["fn", "fw", "sn", "sw"],
+      "additionalProperties": false
+    },
+    "k": {"anyOf": [{"$ref": "#/$defs/RuleId"}, {"type": "null"}]},
+    "f": {"type": "array", "items": {"$ref": "#/$defs/FlagKey"}, "uniqueItems": true},
+    "a": {"enum": [0, 1]},
+    "v": {"enum": [0, 1]}
+  },
+  "required": ["id", "c", "b", "r", "k", "f", "a", "v"],
+  "additionalProperties": false,
+  "$defs": {
+    "Result": {"type": "string", "enum": ["fits", "borderline", "no_fit", "not_checked"]},
+    "LotClass": {
+      "type": "string",
+      "enum": [
+        "condo", "non_residential", "older_bylaw", "larger_building", "unmeasurable", "attached", "checked"
+      ]
+    },
+    "RuleId": {
+      "type": "string",
+      "enum": [
+        "detached_building", "units_allowed", "lot_width", "lot_depth", "building_length", "height",
+        "lot_coverage"
+      ]
+    },
+    "FlagKey": {"type": "string", "enum": ["hr", "hd", "rv", "tr", "ex", "vc"]}
+  }
+}

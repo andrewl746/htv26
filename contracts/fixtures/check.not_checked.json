@@ -1,0 +1,157 @@
+{
+  "address": {"address_id": "fixture-4", "address_full": "400 Fixture St", "lon": -79.456, "lat": 43.64},
+  "lot": {
+    "lot_id": "fixture-lot-4",
+    "class": "condo",
+    "reason": {
+      "id": "condo",
+      "label": "Condo building",
+      "text": "This lot is a condominium. Suplex checks the City's free multiplex designs on house lots only."
+    },
+    "ward_id": "04",
+    "ward_name": "Parkdale-High Park",
+    "zone": {
+      "zn_zone": "RA",
+      "zn_string": "RA (d2.5)",
+      "gen_zone": 101,
+      "zbl_sectn": "15.10",
+      "zn_status": 0,
+      "frontage_min_m": null,
+      "units_max": null,
+      "ht_overlay_m": null,
+      "coverage_overlay_pct": null,
+      "exception_no": null,
+      "sixplex_overlay": true
+    },
+    "width_m": null,
+    "depth_m": null,
+    "area_m2": 1200.0,
+    "stated_area": null,
+    "front_bearing_deg": null,
+    "frontage_edge_local": null,
+    "polygon_local": [[-15.0, -20.0], [15.0, -20.0], [15.0, 20.0], [-15.0, 20.0], [-15.0, -20.0]],
+    "polygon_wgs84": [
+      [-79.456186, 43.63982], [-79.455814, 43.63982], [-79.455814, 43.64018], [-79.456186, 43.64018],
+      [-79.456186, 43.63982]
+    ],
+    "existing_building": {
+      "building_id": 100031,
+      "avg_height_m": 24.0,
+      "footprint_m2": 624.0,
+      "footprint_local": [[-12.0, -14.0], [12.0, -14.0], [12.0, 12.0], [-12.0, 12.0]]
+    },
+    "attached": false,
+    "vacant": false,
+    "flags": []
+  },
+  "designs": [
+    {
+      "design_id": "fourplex_narrow",
+      "result": "not_checked",
+      "blocking_rule": null,
+      "rules": [],
+      "placement_local": null,
+      "buildable_local": null,
+      "setbacks_local": null,
+      "fail_slices_local": []
+    },
+    {
+      "design_id": "fourplex_wide",
+      "result": "not_checked",
+      "blocking_rule": null,
+      "rules": [],
+      "placement_local": null,
+      "buildable_local": null,
+      "setbacks_local": null,
+      "fail_slices_local": []
+    },
+    {
+      "design_id": "sixplex_narrow",
+      "result": "not_checked",
+      "blocking_rule": null,
+      "rules": [],
+      "placement_local": null,
+      "buildable_local": null,
+      "setbacks_local": null,
+      "fail_slices_local": []
+    },
+    {
+      "design_id": "sixplex_wide",
+      "result": "not_checked",
+      "blocking_rule": null,
+      "rules": [],
+      "placement_local": null,
+      "buildable_local": null,
+      "setbacks_local": null,
+      "fail_slices_local": []
+    }
+  ],
+  "not_checked": [
+    "Site-specific exceptions",
+    "Lots still under pre-2013 bylaws",
+    "Heritage designation or districts",
+    "The ravine protection area",
+    "The TRCA regulated area",
+    "Protected trees (30 cm and over)",
+    "Sewer capacity",
+    "Main wall height",
+    "Encroachments",
+    "Bedroom caps",
+    "The 10.5 m sixplex conditions",
+    "Neighbour-averaged front setbacks",
+    "Minor variances",
+    "The exact by-law definitions of lot depth and lot frontage on irregular lots (we measure where the building would sit)"
+  ],
+  "permits_nearby": {
+    "radius_m": 500,
+    "since": "2023-05-01",
+    "count": 2,
+    "points": [[-79.459, 43.6421], [-79.4531, 43.6385]],
+    "points_local": [[-242.0, 233.3], [233.9, -166.7]]
+  },
+  "context": {
+    "origin": {"lon": -79.456, "lat": 43.64, "x_2952": 312129.4, "y_2952": 4832888.9},
+    "radius_m": 150,
+    "buildings": [
+      {
+        "building_id": 100031,
+        "avg_height_m": 24.0,
+        "kind": "large",
+        "on_lot": true,
+        "footprint_local": [[-12.0, -14.0], [12.0, -14.0], [12.0, 12.0], [-12.0, 12.0]]
+      },
+      {
+        "building_id": 100032,
+        "avg_height_m": 7.9,
+        "kind": "house",
+        "on_lot": false,
+        "footprint_local": [[17.0, -12.0], [24.0, -12.0], [24.0, 0.0], [17.0, 0.0]]
+      },
+      {
+        "building_id": 100033,
+        "avg_height_m": 8.4,
+        "kind": "house",
+        "on_lot": false,
+        "footprint_local": [[-26.0, -11.0], [-18.0, -11.0], [-18.0, 2.0], [-26.0, 2.0]]
+      }
+    ],
+    "trees": [[-10.0, -22.5], [0.0, -22.5], [10.0, -22.5]]
+  },
+  "meta": {
+    "engine_version": "0.1.0",
+    "designs_version": "2026-10-17",
+    "config_version": "0.1.0",
+    "data_dates": {
+      "address_points": "2026-10-16",
+      "property_boundaries": "2026-10-16",
+      "zoning": "2026-02-20",
+      "permits_active": "2026-10-16",
+      "permits_cleared": "2026-10-16",
+      "massing": "2025-12-02",
+      "wards": "2026-02-20"
+    },
+    "disclaimer": "Screening only, not a permit or legal advice.",
+    "generated_at": "2026-10-17T00:00:00Z",
+    "cached": false
+  }
+}

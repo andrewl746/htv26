@@ -1,0 +1,171 @@
+{
+  "version": "0.1.0",
+  "engine_version": "0.1.0",
+  "designs_version": "2026-10-17",
+  "permit_rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+  "generated_at": "2026-10-17T00:00:00Z",
+  "data_dates": {
+    "address_points": "2026-10-16",
+    "property_boundaries": "2026-10-16",
+    "zoning": "2026-02-20",
+    "permits_active": "2026-10-16",
+    "permits_cleared": "2026-10-16",
+    "massing": "2025-12-02",
+    "wards": "2026-02-20"
+  },
+  "wards": {
+    "04": {
+      "ward_id": "04",
+      "ward_name": "Parkdale-High Park",
+      "sixplex_overlay": "full",
+      "lots_total": 18000,
+      "house_lots": 12000,
+      "classes": {
+        "condo": 900,
+        "non_residential": 2100,
+        "older_bylaw": 300,
+        "larger_building": 1500,
+        "unmeasurable": 1200,
+        "attached": 4300,
+        "checked": 7700
+      },
+      "any_design": {"fits": 3900, "borderline": 1400, "no_fit": 6700, "not_checked": 6000},
+      "by_design": {
+        "fourplex_narrow": {"fits": 3900, "borderline": 1400, "no_fit": 6700, "not_checked": 6000},
+        "fourplex_wide": {"fits": 2600, "borderline": 900, "no_fit": 8500, "not_checked": 6000},
+        "sixplex_narrow": {"fits": 400, "borderline": 150, "no_fit": 11450, "not_checked": 6000},
+        "sixplex_wide": {"fits": 1700, "borderline": 600, "no_fit": 9700, "not_checked": 6000}
+      },
+      "top_blocking_rules": [
+        {"rule_id": "detached_building", "count": 4300},
+        {"rule_id": "lot_width", "count": 2100},
+        {"rule_id": "lot_depth", "count": 300}
+      ],
+      "attached_share_pct": 35.8,
+      "flags": {
+        "heritage_register": 210,
+        "heritage_district": 640,
+        "ravine": 380,
+        "trca": 150,
+        "site_exception": 420,
+        "vacant": 35,
+        "any_on_fitting_lots": 310
+      },
+      "permits": {
+        "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+        "since_may_2023": 41,
+        "by_kind_since_may_2023": {"multiplex": 41, "secondary_suite": 120, "laneway_garden": 35, "other": 10},
+        "by_year": {"2022": 6, "2023": 9, "2024": 14, "2025": 12, "2026": 8},
+        "units_since_may_2023": 139,
+        "source": "local"
+      },
+      "headline": {"could": 3900, "could_pct_of_house_lots": 32.5, "did": 41, "lots_per_permit": 95},
+      "data_dates": {"permits_active": "2026-10-16", "permits_cleared": "2026-10-16", "zoning": "2026-02-20"},
+      "generated_at": "2026-10-17T00:00:00Z"
+    },
+    "19": {
+      "ward_id": "19",
+      "ward_name": "Beaches-East York",
+      "sixplex_overlay": "full",
+      "lots_total": 21000,
+      "house_lots": 15500,
+      "classes": {
+        "condo": 700,
+        "non_residential": 1900,
+        "older_bylaw": 200,
+        "larger_building": 1300,
+        "unmeasurable": 1400,
+        "attached": 6200,
+        "checked": 9300
+      },
+      "any_design": {"fits": 4100, "borderline": 2600, "no_fit": 8800, "not_checked": 5500},
+      "by_design": {
+        "fourplex_narrow": {"fits": 4100, "borderline": 2600, "no_fit": 8800, "not_checked": 5500},
+        "fourplex_wide": {"fits": 2300, "borderline": 1500, "no_fit": 11700, "not_checked": 5500},
+        "sixplex_narrow": {"fits": 300, "borderline": 120, "no_fit": 15080, "not_checked": 5500},
+        "sixplex_wide": {"fits": 1200, "borderline": 700, "no_fit": 13600, "not_checked": 5500}
+      },
+      "top_blocking_rules": [
+        {"rule_id": "detached_building", "count": 6200},
+        {"rule_id": "lot_width", "count": 2400},
+        {"rule_id": "lot_depth", "count": 200}
+      ],
+      "attached_share_pct": 40.0,
+      "flags": {
+        "heritage_register": 90,
+        "heritage_district": 0,
+        "ravine": 520,
+        "trca": 310,
+        "site_exception": 380,
+        "vacant": 40,
+        "any_on_fitting_lots": 270
+      },
+      "permits": {
+        "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+        "since_may_2023": 33,
+        "by_kind_since_may_2023": {"multiplex": 33, "secondary_suite": 140, "laneway_garden": 48, "other": 12},
+        "by_year": {"2022": 5, "2023": 8, "2024": 11, "2025": 10, "2026": 7},
+        "units_since_may_2023": 112,
+        "source": "local"
+      },
+      "headline": {"could": 4100, "could_pct_of_house_lots": 26.5, "did": 33, "lots_per_permit": 124},
+      "data_dates": {"permits_active": "2026-10-16", "permits_cleared": "2026-10-16", "zoning": "2026-02-20"},
+      "generated_at": "2026-10-17T00:00:00Z"
+    }
+  },
+  "city": {
+    "ward_id": "city",
+    "ward_name": "City of Toronto",
+    "sixplex_overlay": "partial",
+    "lots_total": 470000,
+    "house_lots": 270000,
+    "classes": {
+      "condo": 21000,
+      "non_residential": 98000,
+      "older_bylaw": 12000,
+      "larger_building": 39000,
+      "unmeasurable": 30000,
+      "attached": 110000,
+      "checked": 160000
+    },
+    "any_design": {"fits": 62000, "borderline": 21000, "no_fit": 187000, "not_checked": 200000},
+    "by_design": {
+      "fourplex_narrow": {"fits": 60000, "borderline": 21000, "no_fit": 189000, "not_checked": 200000},
+      "fourplex_wide": {"fits": 41000, "borderline": 15000, "no_fit": 214000, "not_checked": 200000},
+      "sixplex_narrow": {"fits": 5200, "borderline": 2100, "no_fit": 262700, "not_checked": 200000},
+      "sixplex_wide": {"fits": 26000, "borderline": 9000, "no_fit": 235000, "not_checked": 200000}
+    },
+    "top_blocking_rules": [
+      {"rule_id": "detached_building", "count": 110000},
+      {"rule_id": "lot_width", "count": 52000},
+      {"rule_id": "units_allowed", "count": 31000},
+      {"rule_id": "lot_depth", "count": 9000}
+    ],
+    "attached_share_pct": 40.7,
+    "flags": {
+      "heritage_register": 6200,
+      "heritage_district": 9800,
+      "ravine": 7400,
+      "trca": 5100,
+      "site_exception": 8800,
+      "vacant": 1200,
+      "any_on_fitting_lots": 7300
+    },
+    "permits": {
+      "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+      "since_may_2023": 820,
+      "by_kind_since_may_2023": {
+        "multiplex": 820,
+        "secondary_suite": 3100,
+        "laneway_garden": 900,
+        "other": 260
+      },
+      "by_year": {"2022": 140, "2023": 210, "2024": 290, "2025": 260, "2026": 180},
+      "units_since_may_2023": 2700,
+      "source": "local"
+    },
+    "headline": {"could": 62000, "could_pct_of_house_lots": 23.0, "did": 820, "lots_per_permit": 76},
+    "data_dates": {"permits_active": "2026-10-16", "permits_cleared": "2026-10-16", "zoning": "2026-02-20"},
+    "generated_at": "2026-10-17T00:00:00Z"
+  }
+}

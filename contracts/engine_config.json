@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "uncertainty_band_m": 0.5,
+  "uncertainty_band_coverage_pp": 2,
+  "larger_building": { "avg_height_m": 12, "footprint_m2": 350, "address_points": 4 },
+  "attached": { "on_lot_m2": 10, "cross_lot_m2": 4, "shared_edge_m": 3, "tolerance_m": 0.3 },
+  "vacant_min_footprint_m2": 20,
+  "street_edge": { "corridor_distance_m": 0.5, "merge_angle_deg": 15, "min_length_m": 3 },
+  "sample_step_m": 0.5,
+  "nearby_permits_radius_m": 500,
+  "context_radius_m": 150,
+  "permits_since": "2023-05-01",
+  "permits_trend_since": "2022-01-01",
+  "sixplex_wards": ["04", "09", "10", "11", "12", "13", "14", "19"],
+  "partial_sixplex_wards": ["23"]
+}

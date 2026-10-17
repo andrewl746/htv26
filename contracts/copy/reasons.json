@@ -1,0 +1,79 @@
+{
+  "_note": "v0 by Andrew; Simone owns this file",
+  "classes": {
+    "condo": {
+      "label": "Condo building",
+      "text": "This lot is a condominium. Suplex checks the City's free multiplex designs on house lots only."
+    },
+    "non_residential": {
+      "label": "Not a residential house zone",
+      "text": "The zoning here is not one of the residential house zones (R, RD, RS, RT or RM), so the free multiplex designs are not checked."
+    },
+    "older_bylaw": {
+      "label": "An older zoning bylaw applies here",
+      "text": "This lot is not part of the citywide Zoning By-law 569-2013. An older bylaw still applies here, and Suplex does not read it."
+    },
+    "larger_building": {
+      "label": "Already a larger building",
+      "text": "There is already a larger building on this lot, such as an apartment building or a building with several addresses, so Suplex does not treat it as a house lot."
+    },
+    "unmeasurable": {
+      "label": "Lot shape too irregular to measure",
+      "text": "Suplex could not measure this lot reliably: the shape is irregular, there is no clear street edge, or there is more than one building on it."
+    },
+    "attached": {
+      "label": "Attached house (semi or row)",
+      "text": "The house on this lot shares a wall with a neighbour. The City's free designs are detached buildings that need open side yards on both sides."
+    },
+    "checked": {
+      "label": "Checked",
+      "text": "Suplex checked the City's four free multiplex designs on this lot."
+    }
+  },
+  "outside_toronto": {
+    "label": "Outside Toronto",
+    "text": "Suplex covers addresses inside the City of Toronto."
+  },
+  "flags": {
+    "heritage_register": {
+      "label": "Heritage register",
+      "text": "This property is on the City's Heritage Register. Changes to it may need heritage review.",
+      "source_url": "https://open.toronto.ca/dataset/heritage-register/"
+    },
+    "heritage_district": {
+      "label": "Heritage conservation district",
+      "text": "This lot is in a heritage conservation district. New buildings there may need heritage review.",
+      "source_url": "https://open.toronto.ca/dataset/heritage-conservation-districts/"
+    },
+    "ravine": {
+      "label": "Ravine protection area",
+      "text": "Part of this lot is in the City's ravine and natural feature protection area. Work near trees and slopes there may need a permit.",
+      "source_url": "https://open.toronto.ca/dataset/ravine-natural-feature-protection-area/"
+    },
+    "trca": {
+      "label": "TRCA regulated area",
+      "text": "Part of this lot is in the Toronto and Region Conservation Authority's regulated area. Building there may need a TRCA permit.",
+      "source_url": "https://services1.arcgis.com/d0ZCwU7eGKVeNiEE/ArcGIS/rest/services/TRCA_Regulation_Limit2/FeatureServer"
+    },
+    "site_exception": {
+      "label": "Site-specific exception",
+      "text": "The zoning on this lot has a site-specific exception that can change any of the rules checked here. Suplex does not read exceptions.",
+      "source_url": "https://open.toronto.ca/dataset/zoning-by-law/"
+    },
+    "vacant": {
+      "label": "No building here today",
+      "text": "No building was found on this lot in the City's 3D Massing data. It was checked like any other lot.",
+      "source_url": "https://open.toronto.ca/dataset/3d-massing/"
+    }
+  },
+  "rules_plain": {
+    "detached_building": "the house is attached (a semi or row house)",
+    "units_allowed": "sixplexes are not allowed in this ward",
+    "lot_width": "lot too narrow for the side yards",
+    "lot_depth": "lot too shallow for the front and rear yards",
+    "building_length": "lot not deep enough for the longer building",
+    "height": "height limit lower than the design",
+    "lot_coverage": "the building would cover too much of the lot"
+  },
+  "attached_note": "The City's free designs are for detached lots. You may still be able to add homes in other ways, such as a basement or garden suite, which Suplex doesn't check."
+}

@@ -1,0 +1,88 @@
+{
+  "_note": "v0 by Andrew; Simone owns this file",
+  "results": {
+    "fits": "Fits",
+    "borderline": "Too close to call",
+    "no_fit": "Doesn't fit",
+    "not_checked": "Not checked"
+  },
+  "results_map": {
+    "fits": "May fit",
+    "borderline": "Too close to call",
+    "no_fit": "Doesn't fit",
+    "not_checked": "Not checked"
+  },
+  "classes": {
+    "condo": "Condo building",
+    "non_residential": "Not a residential house zone",
+    "older_bylaw": "An older zoning bylaw applies here",
+    "larger_building": "Already a larger building",
+    "unmeasurable": "Lot shape too irregular to measure",
+    "attached": "Attached house (semi or row)",
+    "checked": "Checked"
+  },
+  "rules": {
+    "detached_building": "Detached lot",
+    "units_allowed": "Homes allowed",
+    "lot_width": "Lot width",
+    "lot_depth": "Lot depth",
+    "building_length": "Building length",
+    "height": "Height",
+    "lot_coverage": "Lot coverage"
+  },
+  "designs": {
+    "fourplex_narrow": "Fourplex Narrow",
+    "fourplex_wide": "Fourplex Wide",
+    "sixplex_narrow": "Sixplex Narrow",
+    "sixplex_wide": "Sixplex Wide"
+  },
+  "units": {"m": "m", "pct": "%", "units": "homes"},
+  "ui": {
+    "search_placeholder": "Type a Toronto address",
+    "try_examples": "Try:",
+    "see_your_ward": "See your ward",
+    "back_to_your_lot": "Back to your lot",
+    "get_briefing": "Get the ward briefing",
+    "what_we_dont_check": "What we don't check",
+    "what_we_checked": "What we checked",
+    "permits_near_you": "Permits near you",
+    "permits_near_you_line": "{{count}} multiplex permits within {{radius_m}} m since May 2023",
+    "extra_review": "Needs extra review",
+    "translate": "Translate",
+    "copy": "Copy",
+    "copied": "Copied",
+    "outside_toronto": "Suplex covers addresses inside the City of Toronto. Try one of the examples.",
+    "address_not_found": "We couldn't find that address. Try one of the examples.",
+    "column_required": "Needs",
+    "column_actual": "This lot",
+    "column_margin": "Margin",
+    "column_bylaw": "By-law section",
+    "no_limit_here": "no limit here",
+    "not_allowed_in_this_ward": "not allowed in this ward",
+    "all_designs": "All designs",
+    "source_gemini": "AI-written from the numbers above",
+    "source_template": "Template",
+    "explanation_loading": "Writing a plain-language explanation",
+    "translation_unavailable": "Translation is not available right now, so this is in English.",
+    "legend_fit": "May fit",
+    "legend_borderline": "Too close to call",
+    "legend_nofit": "Doesn't fit",
+    "legend_permit": "Multiplex permit since 2023",
+    "legend_screening": "Screening only, not a permit.",
+    "trend_caption": "Multiplex permits issued per month in this ward. Source: City of Toronto building permits, served from Tiger Data.",
+    "trend_marker_citywide": "Multiplexes allowed citywide",
+    "trend_marker_designs": "Free designs released",
+    "view_2d": "2D view",
+    "view_3d": "3D view"
+  },
+  "ward_panel": {
+    "could": "Could: {{could_lots}} lots may fit a free City design ({{could_pct}}% of house lots).",
+    "did": "Did: {{did_permits}} multiplex permits since May 2023.",
+    "per_permit": "That's about 1 permit for every {{lots_per_permit}} lots that could.",
+    "no_permits": "No multiplex permits have been issued here since May 2023.",
+    "blocking_rule": "The most common reason lots don't fit: {{rule_plain}}.",
+    "attached": "{{attached_pct}}% of house lots are semis or row houses, where the free designs don't apply.",
+    "flagged": "Of the lots that may fit, {{flagged_fitting_lots}} need extra review.",
+    "upper_bound": "Upper bound"
+  }
+}

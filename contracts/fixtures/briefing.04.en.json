@@ -1,0 +1,111 @@
+{
+  "ward_id": "04",
+  "ward_name": "Parkdale-High Park",
+  "lang": "en",
+  "title": "Ward 04, Parkdale–High Park: multiplexes, before you vote",
+  "sections": [
+    {
+      "id": "what_may_fit",
+      "heading": "What may fit",
+      "template_text": "In this ward, {{could_lots}} house lots may fit at least one of the City's four free multiplex designs. That is {{could_pct}}% of house lots. This count is an upper bound: it shows where a design may fit, not what gets built.",
+      "text": "In this ward, 3,900 house lots may fit at least one of the City's four free multiplex designs. That is 32.5% of house lots. This count is an upper bound: it shows where a design may fit, not what gets built."
+    },
+    {
+      "id": "blocking_rule",
+      "heading": "Why lots don't fit",
+      "template_text": "The most common reason is that the house is attached: {{top_rule_count}} lots are semis or row houses. In all, {{attached_pct}}% of house lots are attached, and the City's free designs are for detached lots.",
+      "text": "The most common reason is that the house is attached: 4,300 lots are semis or row houses. In all, 35.8% of house lots are attached, and the City's free designs are for detached lots."
+    },
+    {
+      "id": "permits",
+      "heading": "Multiplex permits issued",
+      "template_text": "Since May 2023, {{did_permits}} multiplex permits have been issued in this ward, before the free designs existed. That is about one permit for every {{lots_per_permit}} lots where a design may fit.",
+      "text": "Since May 2023, 41 multiplex permits have been issued in this ward, before the free designs existed. That is about one permit for every 95 lots where a design may fit."
+    },
+    {
+      "id": "not_checked",
+      "heading": "What isn't checked",
+      "template_text": "Suplex did not check {{not_checked_lots}} lots: condos, lots outside the residential house zones, lots under an older bylaw, larger buildings and lots too irregular to measure. It also does not check heritage rules, trees, sewers or site-specific exceptions. This is a screening, not a permit or legal advice.",
+      "text": "Suplex did not check 6,000 lots: condos, lots outside the residential house zones, lots under an older bylaw, larger buildings and lots too irregular to measure. It also does not check heritage rules, trees, sewers or site-specific exceptions. This is a screening, not a permit or legal advice."
+    },
+    {
+      "id": "questions",
+      "heading": "Questions to ask candidates",
+      "template_text": "What would you do to help residents use the City's free multiplex designs on lots where they fit?\nShould the City do more to tell residents what the multiplex rules allow on their street, and how?\nThe free designs are for detached lots. What should happen on streets where most homes are semis or row houses?",
+      "text": "What would you do to help residents use the City's free multiplex designs on lots where they fit?\nShould the City do more to tell residents what the multiplex rules allow on their street, and how?\nThe free designs are for detached lots. What should happen on streets where most homes are semis or row houses?"
+    }
+  ],
+  "questions": [
+    "What would you do to help residents use the City's free multiplex designs on lots where they fit?",
+    "Should the City do more to tell residents what the multiplex rules allow on their street, and how?",
+    "The free designs are for detached lots. What should happen on streets where most homes are semis or row houses?"
+  ],
+  "numbers": {
+    "could_lots": {
+      "value": 3900,
+      "unit": null,
+      "label": "House lots where at least one free design may fit (upper bound)",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "could_pct": {
+      "value": 32.5,
+      "unit": "%",
+      "label": "Share of house lots where a free design may fit",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "did_permits": {
+      "value": 41,
+      "unit": null,
+      "label": "Multiplex permits issued since May 2023",
+      "source_url": "https://open.toronto.ca/dataset/building-permits-active-permits/"
+    },
+    "lots_per_permit": {
+      "value": 95,
+      "unit": null,
+      "label": "Lots that may fit a design for each multiplex permit issued",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "attached_pct": {
+      "value": 35.8,
+      "unit": "%",
+      "label": "Share of house lots that are semis or row houses",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "top_rule_count": {
+      "value": 4300,
+      "unit": null,
+      "label": "House lots that don't fit because the house is attached",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "not_checked_lots": {
+      "value": 6000,
+      "unit": null,
+      "label": "Lots Suplex did not check",
+      "source_url": "http://localhost:5173/?ward=04"
+    }
+  },
+  "links": {
+    "ward_map": "http://localhost:5173/?ward=04",
+    "datasets": [
+      {
+        "label": "Building Permits – Active Permits",
+        "url": "https://open.toronto.ca/dataset/building-permits-active-permits/"
+      },
+      {
+        "label": "Building Permits – Cleared Permits",
+        "url": "https://open.toronto.ca/dataset/building-permits-cleared-permits/"
+      },
+      {"label": "Property Boundaries", "url": "https://open.toronto.ca/dataset/property-boundaries/"},
+      {"label": "Zoning By-law", "url": "https://open.toronto.ca/dataset/zoning-by-law/"}
+    ],
+    "methodology": "#methodology"
+  },
+  "disclaimer": "Screening only, not a permit or legal advice.",
+  "data_dates": {"permits_active": "2026-10-16", "permits_cleared": "2026-10-16", "zoning": "2026-02-20"},
+  "generated_at": "2026-10-17T00:00:00Z",
+  "validated": true,
+  "source": "gemini",
+  "model": "gemini-3.8-flash",
+  "cached": false,
+  "translation_unavailable": false
+}

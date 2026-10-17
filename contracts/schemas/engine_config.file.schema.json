@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EngineConfig",
+  "description": "contracts/engine_config.json. Mirrors `EngineConfig` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "version": {"type": "string", "minLength": 1},
+    "uncertainty_band_m": {"type": "number", "minimum": 0},
+    "uncertainty_band_coverage_pp": {"type": "number", "minimum": 0},
+    "larger_building": {
+      "type": "object",
+      "properties": {
+        "avg_height_m": {"type": "number", "minimum": 0},
+        "footprint_m2": {"type": "number", "minimum": 0},
+        "address_points": {"type": "integer", "minimum": 0}
+      },
+      "required": ["avg_height_m", "footprint_m2", "address_points"],
+      "additionalProperties": false
+    },
+    "attached": {
+      "type": "object",
+      "properties": {
+        "on_lot_m2": {"type": "number", "minimum": 0},
+        "cross_lot_m2": {"type": "number", "minimum": 0},
+        "shared_edge_m": {"type": "number", "minimum": 0},
+        "tolerance_m": {"type": "number", "minimum": 0}
+      },
+      "required": ["on_lot_m2", "cross_lot_m2", "shared_edge_m", "tolerance_m"],
+      "additionalProperties": false
+    },
+    "vacant_min_footprint_m2": {"type": "number", "minimum": 0},
+    "street_edge": {
+      "type": "object",
+      "properties": {
+        "corridor_distance_m": {"type": "number", "minimum": 0},
+        "merge_angle_deg": {"type": "number", "minimum": 0},
+        "min_length_m": {"type": "number", "minimum": 0}
+      },
+      "required": ["corridor_distance_m", "merge_angle_deg", "min_length_m"],
+      "additionalProperties": false
+    },
+    "sample_step_m": {"type": "number", "exclusiveMinimum": 0},
+    "nearby_permits_radius_m": {"type": "number", "minimum": 0},
+    "context_radius_m": {"type": "number", "minimum": 0},
+    "permits_since": {"$ref": "#/$defs/Date"},
+    "permits_trend_since": {"$ref": "#/$defs/Date"},
+    "sixplex_wards": {"type": "array", "items": {"$ref": "#/$defs/WardId"}, "uniqueItems": true},
+    "partial_sixplex_wards": {"type": "array", "items": {"$ref": "#/$defs/WardId"}, "uniqueItems": true}
+  },
+  "required": [
+    "version", "uncertainty_band_m", "uncertainty_band_coverage_pp", "larger_building", "attached",
+    "vacant_min_footprint_m2", "street_edge", "sample_step_m", "nearby_permits_radius_m", "context_radius_m",
+    "permits_since", "permits_trend_since", "sixplex_wards", "partial_sixplex_wards"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "WardId": {
+      "type": "string",
+      "description": "Two-digit zero-padded ward id, \"01\" to \"25\" (City Wards AREA_SHORT_CODE).",
+      "pattern": "^(0[1-9]|1[0-9]|2[0-5])$"
+    },
+    "Date": {
+      "type": "string",
+      "description": "YYYY-MM-DD",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    }
+  }
+}

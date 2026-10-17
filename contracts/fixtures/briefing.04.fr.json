@@ -1,0 +1,111 @@
+{
+  "ward_id": "04",
+  "ward_name": "Parkdale-High Park",
+  "lang": "fr",
+  "title": "Quartier 04, Parkdale–High Park : les multiplex, avant de voter",
+  "sections": [
+    {
+      "id": "what_may_fit",
+      "heading": "Ce qui pourrait convenir",
+      "template_text": "Dans ce quartier, {{could_lots}} terrains résidentiels pourraient accueillir au moins un des quatre modèles de multiplex gratuits de la Ville. Cela représente {{could_pct}} % des terrains résidentiels. Ce nombre est un maximum : il indique où un modèle pourrait convenir, et rien de plus.",
+      "text": "Dans ce quartier, 3 900 terrains résidentiels pourraient accueillir au moins un des quatre modèles de multiplex gratuits de la Ville. Cela représente 32,5 % des terrains résidentiels. Ce nombre est un maximum : il indique où un modèle pourrait convenir, et rien de plus."
+    },
+    {
+      "id": "blocking_rule",
+      "heading": "Pourquoi des terrains ne conviennent pas",
+      "template_text": "La raison la plus fréquente est que la maison est attenante : {{top_rule_count}} terrains sont des maisons jumelées ou en rangée. Au total, {{attached_pct}} % des terrains résidentiels sont attenants, et les modèles gratuits de la Ville sont prévus pour des terrains de maisons isolées.",
+      "text": "La raison la plus fréquente est que la maison est attenante : 4 300 terrains sont des maisons jumelées ou en rangée. Au total, 35,8 % des terrains résidentiels sont attenants, et les modèles gratuits de la Ville sont prévus pour des terrains de maisons isolées."
+    },
+    {
+      "id": "permits",
+      "heading": "Permis de multiplex délivrés",
+      "template_text": "Depuis mai 2023, {{did_permits}} permis de multiplex ont été délivrés dans ce quartier, avant l'existence des modèles gratuits. Cela fait environ un permis pour {{lots_per_permit}} terrains où un modèle pourrait convenir.",
+      "text": "Depuis mai 2023, 41 permis de multiplex ont été délivrés dans ce quartier, avant l'existence des modèles gratuits. Cela fait environ un permis pour 95 terrains où un modèle pourrait convenir."
+    },
+    {
+      "id": "not_checked",
+      "heading": "Ce qui n'est pas vérifié",
+      "template_text": "Suplex n'a pas vérifié {{not_checked_lots}} terrains : les condos, les terrains hors des zones résidentielles de maisons, les terrains soumis à un ancien règlement, les grands bâtiments et les terrains trop irréguliers pour être mesurés. Suplex ne vérifie pas non plus le patrimoine, les arbres, les égouts ni les exceptions propres à un site. Il s'agit d'un premier examen, pas d'un permis ni d'un avis juridique.",
+      "text": "Suplex n'a pas vérifié 6 000 terrains : les condos, les terrains hors des zones résidentielles de maisons, les terrains soumis à un ancien règlement, les grands bâtiments et les terrains trop irréguliers pour être mesurés. Suplex ne vérifie pas non plus le patrimoine, les arbres, les égouts ni les exceptions propres à un site. Il s'agit d'un premier examen, pas d'un permis ni d'un avis juridique."
+    },
+    {
+      "id": "questions",
+      "heading": "Questions à poser aux candidats",
+      "template_text": "Que feriez-vous pour aider les résidents à utiliser les modèles de multiplex gratuits de la Ville sur les terrains où ils conviennent ?\nLa Ville devrait-elle en faire plus pour expliquer aux résidents ce que les règles sur les multiplex permettent dans leur rue, et comment ?\nLes modèles gratuits sont prévus pour des terrains de maisons isolées. Que devrait-il se passer dans les rues où la plupart des maisons sont jumelées ou en rangée ?",
+      "text": "Que feriez-vous pour aider les résidents à utiliser les modèles de multiplex gratuits de la Ville sur les terrains où ils conviennent ?\nLa Ville devrait-elle en faire plus pour expliquer aux résidents ce que les règles sur les multiplex permettent dans leur rue, et comment ?\nLes modèles gratuits sont prévus pour des terrains de maisons isolées. Que devrait-il se passer dans les rues où la plupart des maisons sont jumelées ou en rangée ?"
+    }
+  ],
+  "questions": [
+    "Que feriez-vous pour aider les résidents à utiliser les modèles de multiplex gratuits de la Ville sur les terrains où ils conviennent ?",
+    "La Ville devrait-elle en faire plus pour expliquer aux résidents ce que les règles sur les multiplex permettent dans leur rue, et comment ?",
+    "Les modèles gratuits sont prévus pour des terrains de maisons isolées. Que devrait-il se passer dans les rues où la plupart des maisons sont jumelées ou en rangée ?"
+  ],
+  "numbers": {
+    "could_lots": {
+      "value": 3900,
+      "unit": null,
+      "label": "Terrains résidentiels où au moins un modèle gratuit pourrait convenir (maximum)",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "could_pct": {
+      "value": 32.5,
+      "unit": "%",
+      "label": "Part des terrains résidentiels où un modèle gratuit pourrait convenir",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "did_permits": {
+      "value": 41,
+      "unit": null,
+      "label": "Permis de multiplex délivrés depuis mai 2023",
+      "source_url": "https://open.toronto.ca/dataset/building-permits-active-permits/"
+    },
+    "lots_per_permit": {
+      "value": 95,
+      "unit": null,
+      "label": "Terrains où un modèle pourrait convenir, pour chaque permis de multiplex délivré",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "attached_pct": {
+      "value": 35.8,
+      "unit": "%",
+      "label": "Part des terrains résidentiels occupés par des maisons jumelées ou en rangée",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "top_rule_count": {
+      "value": 4300,
+      "unit": null,
+      "label": "Terrains qui ne conviennent pas parce que la maison est attenante",
+      "source_url": "http://localhost:5173/?ward=04"
+    },
+    "not_checked_lots": {
+      "value": 6000,
+      "unit": null,
+      "label": "Terrains que Suplex n'a pas vérifiés",
+      "source_url": "http://localhost:5173/?ward=04"
+    }
+  },
+  "links": {
+    "ward_map": "http://localhost:5173/?ward=04",
+    "datasets": [
+      {
+        "label": "Building Permits – Active Permits",
+        "url": "https://open.toronto.ca/dataset/building-permits-active-permits/"
+      },
+      {
+        "label": "Building Permits – Cleared Permits",
+        "url": "https://open.toronto.ca/dataset/building-permits-cleared-permits/"
+      },
+      {"label": "Property Boundaries", "url": "https://open.toronto.ca/dataset/property-boundaries/"},
+      {"label": "Zoning By-law", "url": "https://open.toronto.ca/dataset/zoning-by-law/"}
+    ],
+    "methodology": "#methodology"
+  },
+  "disclaimer": "Premier examen seulement, pas un permis ni un avis juridique.",
+  "data_dates": {"permits_active": "2026-10-16", "permits_cleared": "2026-10-16", "zoning": "2026-02-20"},
+  "generated_at": "2026-10-17T00:00:00Z",
+  "validated": true,
+  "source": "gemini",
+  "model": "gemini-3.8-flash",
+  "cached": false,
+  "translation_unavailable": false
+}

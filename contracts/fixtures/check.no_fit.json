@@ -1,0 +1,564 @@
+{
+  "address": {"address_id": "fixture-3", "address_full": "300 Fixture St", "lon": -79.465, "lat": 43.648},
+  "lot": {
+    "lot_id": "fixture-lot-3",
+    "class": "checked",
+    "reason": null,
+    "ward_id": "04",
+    "ward_name": "Parkdale-High Park",
+    "zone": {
+      "zn_zone": "RD",
+      "zn_string": "RD (f6.0; a180)",
+      "gen_zone": 0,
+      "zbl_sectn": "10.20",
+      "zn_status": 0,
+      "frontage_min_m": 6.0,
+      "units_max": null,
+      "ht_overlay_m": null,
+      "coverage_overlay_pct": 35,
+      "exception_no": null,
+      "sixplex_overlay": true
+    },
+    "width_m": 6.1,
+    "depth_m": 30.0,
+    "area_m2": 183.0,
+    "stated_area": "183.0 sq.m",
+    "front_bearing_deg": 180,
+    "frontage_edge_local": [[-3.05, -15.0], [3.05, -15.0]],
+    "polygon_local": [[-3.05, -15.0], [3.05, -15.0], [3.05, 15.0], [-3.05, 15.0], [-3.05, -15.0]],
+    "polygon_wgs84": [
+      [-79.465038, 43.647865], [-79.464962, 43.647865], [-79.464962, 43.648135], [-79.465038, 43.648135],
+      [-79.465038, 43.647865]
+    ],
+    "existing_building": null,
+    "attached": false,
+    "vacant": true,
+    "flags": [
+      {
+        "id": "vacant",
+        "label": "No building here today",
+        "text": "No building was found on this lot in the City's 3D Massing data. It was checked like any other lot.",
+        "source_url": "https://open.toronto.ca/dataset/3d-massing/",
+        "detail": null
+      }
+    ]
+  },
+  "designs": [
+    {
+      "design_id": "fourplex_narrow",
+      "result": "no_fit",
+      "blocking_rule": "lot_width",
+      "rules": [
+        {
+          "rule_id": "detached_building",
+          "label": "Detached lot",
+          "required": "detached",
+          "actual": "vacant",
+          "unit": null,
+          "margin": null,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.20 (detached houseplex)",
+          "detail": null
+        },
+        {
+          "rule_id": "units_allowed",
+          "label": "Homes allowed",
+          "required": 4,
+          "actual": 6,
+          "unit": "units",
+          "margin": 2,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.40(1)",
+          "detail": "inside the sixplex overlay"
+        },
+        {
+          "rule_id": "lot_width",
+          "label": "Lot width",
+          "required": 7.6,
+          "actual": 6.1,
+          "unit": "m",
+          "margin": -1.5,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(3)",
+          "detail": "5.5 m building + 1.2 m + 0.9 m side yards"
+        },
+        {
+          "rule_id": "lot_depth",
+          "label": "Lot depth",
+          "required": 30.5,
+          "actual": 30.0,
+          "unit": "m",
+          "margin": -0.5,
+          "pass": false,
+          "borderline": true,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(1), 10.20.40.70(2)",
+          "detail": "6.0 m front + 17.0 m building + 7.5 m rear (minimum)"
+        },
+        {
+          "rule_id": "building_length",
+          "label": "Building length",
+          "required": 17.0,
+          "actual": 17.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.20(1)",
+          "detail": null
+        },
+        {
+          "rule_id": "height",
+          "label": "Height",
+          "required": 10.0,
+          "actual": 10.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.10(1)(C)",
+          "detail": null
+        },
+        {
+          "rule_id": "lot_coverage",
+          "label": "Lot coverage",
+          "required": 45.0,
+          "actual": 51.7,
+          "unit": "pct",
+          "margin": -6.7,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.30.40(1)(D)",
+          "detail": "94.7 m² building on a 183.0 m² lot; overlay 35% raised to the 45% houseplex minimum"
+        }
+      ],
+      "placement_local": [[-2.6, -9.0], [2.9, -9.0], [2.9, 8.0], [-2.6, 8.0]],
+      "buildable_local": [[-1.85, -9.0], [2.15, -9.0], [2.15, 7.5], [-1.85, 7.5]],
+      "setbacks_local": {
+        "front": [[-3.05, -15.0], [3.05, -15.0], [3.05, -9.0], [-3.05, -9.0]],
+        "rear": [[-3.05, 7.5], [3.05, 7.5], [3.05, 15.0], [-3.05, 15.0]],
+        "left": [[-3.05, -9.0], [-1.85, -9.0], [-1.85, 7.5], [-3.05, 7.5]],
+        "right": [[2.15, -9.0], [3.05, -9.0], [3.05, 7.5], [2.15, 7.5]]
+      },
+      "fail_slices_local": [
+        [
+          [-2.6, -9.0], [-1.85, -9.0], [-1.85, 7.5], [2.15, 7.5], [2.15, -9.0], [2.9, -9.0], [2.9, 8.0],
+          [-2.6, 8.0]
+        ]
+      ]
+    },
+    {
+      "design_id": "fourplex_wide",
+      "result": "no_fit",
+      "blocking_rule": "lot_width",
+      "rules": [
+        {
+          "rule_id": "detached_building",
+          "label": "Detached lot",
+          "required": "detached",
+          "actual": "vacant",
+          "unit": null,
+          "margin": null,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.20 (detached houseplex)",
+          "detail": null
+        },
+        {
+          "rule_id": "units_allowed",
+          "label": "Homes allowed",
+          "required": 4,
+          "actual": 6,
+          "unit": "units",
+          "margin": 2,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.40(1)",
+          "detail": "inside the sixplex overlay"
+        },
+        {
+          "rule_id": "lot_width",
+          "label": "Lot width",
+          "required": 9.04,
+          "actual": 6.1,
+          "unit": "m",
+          "margin": -2.94,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(3)",
+          "detail": "6.64 m building + 1.2 m + 1.2 m side yards"
+        },
+        {
+          "rule_id": "lot_depth",
+          "label": "Lot depth",
+          "required": 30.5,
+          "actual": 30.0,
+          "unit": "m",
+          "margin": -0.5,
+          "pass": false,
+          "borderline": true,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(1), 10.20.40.70(2)",
+          "detail": "6.0 m front + 17.0 m building + 7.5 m rear (minimum)"
+        },
+        {
+          "rule_id": "building_length",
+          "label": "Building length",
+          "required": 17.0,
+          "actual": 17.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.20(1)",
+          "detail": null
+        },
+        {
+          "rule_id": "height",
+          "label": "Height",
+          "required": 10.0,
+          "actual": 10.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.10(1)(C)",
+          "detail": null
+        },
+        {
+          "rule_id": "lot_coverage",
+          "label": "Lot coverage",
+          "required": 45.0,
+          "actual": 61.9,
+          "unit": "pct",
+          "margin": -16.9,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.30.40(1)(D)",
+          "detail": "113.3 m² building on a 183.0 m² lot; overlay 35% raised to the 45% houseplex minimum"
+        }
+      ],
+      "placement_local": [[-3.32, -9.0], [3.32, -9.0], [3.32, 8.0], [-3.32, 8.0]],
+      "buildable_local": [[-1.85, -9.0], [1.85, -9.0], [1.85, 7.5], [-1.85, 7.5]],
+      "setbacks_local": {
+        "front": [[-3.05, -15.0], [3.05, -15.0], [3.05, -9.0], [-3.05, -9.0]],
+        "rear": [[-3.05, 7.5], [3.05, 7.5], [3.05, 15.0], [-3.05, 15.0]],
+        "left": [[-3.05, -9.0], [-1.85, -9.0], [-1.85, 7.5], [-3.05, 7.5]],
+        "right": [[1.85, -9.0], [3.05, -9.0], [3.05, 7.5], [1.85, 7.5]]
+      },
+      "fail_slices_local": [
+        [
+          [-3.32, -9.0], [-1.85, -9.0], [-1.85, 7.5], [1.85, 7.5], [1.85, -9.0], [3.32, -9.0], [3.32, 8.0],
+          [-3.32, 8.0]
+        ]
+      ]
+    },
+    {
+      "design_id": "sixplex_narrow",
+      "result": "no_fit",
+      "blocking_rule": "lot_width",
+      "rules": [
+        {
+          "rule_id": "detached_building",
+          "label": "Detached lot",
+          "required": "detached",
+          "actual": "vacant",
+          "unit": null,
+          "margin": null,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.20 (detached houseplex)",
+          "detail": null
+        },
+        {
+          "rule_id": "units_allowed",
+          "label": "Homes allowed",
+          "required": 6,
+          "actual": 6,
+          "unit": "units",
+          "margin": 0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.40(1)",
+          "detail": "inside the sixplex overlay"
+        },
+        {
+          "rule_id": "lot_width",
+          "label": "Lot width",
+          "required": 8.3,
+          "actual": 6.1,
+          "unit": "m",
+          "margin": -2.2,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(3)",
+          "detail": "5.9 m building + 1.2 m + 1.2 m side yards"
+        },
+        {
+          "rule_id": "lot_depth",
+          "label": "Lot depth",
+          "required": 32.5,
+          "actual": 30.0,
+          "unit": "m",
+          "margin": -2.5,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(1), 10.20.40.70(2)",
+          "detail": "6.0 m front + 19.0 m building + 7.5 m rear (minimum)"
+        },
+        {
+          "rule_id": "building_length",
+          "label": "Building length",
+          "required": 17.0,
+          "actual": 19.0,
+          "unit": "m",
+          "margin": -2.0,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.20(1)",
+          "detail": "30.0 m deep with 6.1 m frontage; 19.0 m needs a lot at least 36.0 m deep with frontage under 10.0 m, or at least 40.0 m deep with frontage of 10.0 m or more (10.20.40.20(3))"
+        },
+        {
+          "rule_id": "height",
+          "label": "Height",
+          "required": 10.0,
+          "actual": 10.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.10(1)(C)",
+          "detail": null
+        },
+        {
+          "rule_id": "lot_coverage",
+          "label": "Lot coverage",
+          "required": 45.0,
+          "actual": 62.3,
+          "unit": "pct",
+          "margin": -17.3,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.30.40(1)(D)",
+          "detail": "114.1 m² building on a 183.0 m² lot; overlay 35% raised to the 45% houseplex minimum"
+        }
+      ],
+      "placement_local": [[-2.95, -9.0], [2.95, -9.0], [2.95, 10.0], [-2.95, 10.0]],
+      "buildable_local": [[-1.85, -9.0], [1.85, -9.0], [1.85, 7.5], [-1.85, 7.5]],
+      "setbacks_local": {
+        "front": [[-3.05, -15.0], [3.05, -15.0], [3.05, -9.0], [-3.05, -9.0]],
+        "rear": [[-3.05, 7.5], [3.05, 7.5], [3.05, 15.0], [-3.05, 15.0]],
+        "left": [[-3.05, -9.0], [-1.85, -9.0], [-1.85, 7.5], [-3.05, 7.5]],
+        "right": [[1.85, -9.0], [3.05, -9.0], [3.05, 7.5], [1.85, 7.5]]
+      },
+      "fail_slices_local": [
+        [
+          [-2.95, -9.0], [-1.85, -9.0], [-1.85, 7.5], [1.85, 7.5], [1.85, -9.0], [2.95, -9.0], [2.95, 10.0],
+          [-2.95, 10.0]
+        ]
+      ]
+    },
+    {
+      "design_id": "sixplex_wide",
+      "result": "no_fit",
+      "blocking_rule": "lot_width",
+      "rules": [
+        {
+          "rule_id": "detached_building",
+          "label": "Detached lot",
+          "required": "detached",
+          "actual": "vacant",
+          "unit": null,
+          "margin": null,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.20 (detached houseplex)",
+          "detail": null
+        },
+        {
+          "rule_id": "units_allowed",
+          "label": "Homes allowed",
+          "required": 6,
+          "actual": 6,
+          "unit": "units",
+          "margin": 0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "600.60.40(1)",
+          "detail": "inside the sixplex overlay"
+        },
+        {
+          "rule_id": "lot_width",
+          "label": "Lot width",
+          "required": 10.5,
+          "actual": 6.1,
+          "unit": "m",
+          "margin": -4.4,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(3)",
+          "detail": "8.1 m building + 1.2 m + 1.2 m side yards"
+        },
+        {
+          "rule_id": "lot_depth",
+          "label": "Lot depth",
+          "required": 30.5,
+          "actual": 30.0,
+          "unit": "m",
+          "margin": -0.5,
+          "pass": false,
+          "borderline": true,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.70(1), 10.20.40.70(2)",
+          "detail": "6.0 m front + 17.0 m building + 7.5 m rear (minimum)"
+        },
+        {
+          "rule_id": "building_length",
+          "label": "Building length",
+          "required": 17.0,
+          "actual": 17.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.20(1)",
+          "detail": null
+        },
+        {
+          "rule_id": "height",
+          "label": "Height",
+          "required": 10.0,
+          "actual": 10.0,
+          "unit": "m",
+          "margin": 0.0,
+          "pass": true,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.40.10(1)(C)",
+          "detail": null
+        },
+        {
+          "rule_id": "lot_coverage",
+          "label": "Lot coverage",
+          "required": 45.0,
+          "actual": 75.2,
+          "unit": "pct",
+          "margin": -30.2,
+          "pass": false,
+          "borderline": false,
+          "not_applicable": false,
+          "bylaw_section": "10.20.30.40(1)(D)",
+          "detail": "137.6 m² building on a 183.0 m² lot; overlay 35% raised to the 45% houseplex minimum"
+        }
+      ],
+      "placement_local": [[-4.05, -9.0], [4.05, -9.0], [4.05, 8.0], [-4.05, 8.0]],
+      "buildable_local": [[-1.85, -9.0], [1.85, -9.0], [1.85, 7.5], [-1.85, 7.5]],
+      "setbacks_local": {
+        "front": [[-3.05, -15.0], [3.05, -15.0], [3.05, -9.0], [-3.05, -9.0]],
+        "rear": [[-3.05, 7.5], [3.05, 7.5], [3.05, 15.0], [-3.05, 15.0]],
+        "left": [[-3.05, -9.0], [-1.85, -9.0], [-1.85, 7.5], [-3.05, 7.5]],
+        "right": [[1.85, -9.0], [3.05, -9.0], [3.05, 7.5], [1.85, 7.5]]
+      },
+      "fail_slices_local": [
+        [
+          [-4.05, -9.0], [-1.85, -9.0], [-1.85, 7.5], [1.85, 7.5], [1.85, -9.0], [4.05, -9.0], [4.05, 8.0],
+          [-4.05, 8.0]
+        ]
+      ]
+    }
+  ],
+  "not_checked": [
+    "Site-specific exceptions",
+    "Lots still under pre-2013 bylaws",
+    "Heritage designation or districts",
+    "The ravine protection area",
+    "The TRCA regulated area",
+    "Protected trees (30 cm and over)",
+    "Sewer capacity",
+    "Main wall height",
+    "Encroachments",
+    "Bedroom caps",
+    "The 10.5 m sixplex conditions",
+    "Neighbour-averaged front setbacks",
+    "Minor variances",
+    "The exact by-law definitions of lot depth and lot frontage on irregular lots (we measure where the building would sit)"
+  ],
+  "permits_nearby": {
+    "radius_m": 500,
+    "since": "2023-05-01",
+    "count": 1,
+    "points": [[-79.4688, 43.6493]],
+    "points_local": [[-306.6, 144.4]]
+  },
+  "context": {
+    "origin": {"lon": -79.465, "lat": 43.648, "x_2952": 311403.4, "y_2952": 4833777.8},
+    "radius_m": 150,
+    "buildings": [
+      {
+        "building_id": 100021,
+        "avg_height_m": 7.5,
+        "kind": "house",
+        "on_lot": false,
+        "footprint_local": [[-9.0, -9.5], [-3.6, -9.5], [-3.6, 2.0], [-9.0, 2.0]]
+      },
+      {
+        "building_id": 100022,
+        "avg_height_m": 6.8,
+        "kind": "house",
+        "on_lot": false,
+        "footprint_local": [[3.5, -9.0], [9.1, -9.0], [9.1, 2.5], [3.5, 2.5]]
+      },
+      {
+        "building_id": 100023,
+        "avg_height_m": 13.2,
+        "kind": "large",
+        "on_lot": false,
+        "footprint_local": [[-40.0, 25.0], [-12.0, 25.0], [-12.0, 45.0], [-40.0, 45.0]]
+      }
+    ],
+    "trees": [[-4.0, -17.5], [4.5, -17.8]]
+  },
+  "meta": {
+    "engine_version": "0.1.0",
+    "designs_version": "2026-10-17",
+    "config_version": "0.1.0",
+    "data_dates": {
+      "address_points": "2026-10-16",
+      "property_boundaries": "2026-10-16",
+      "zoning": "2026-02-20",
+      "permits_active": "2026-10-16",
+      "permits_cleared": "2026-10-16",
+      "massing": "2025-12-02",
+      "wards": "2026-02-20"
+    },
+    "disclaimer": "Screening only, not a permit or legal advice.",
+    "generated_at": "2026-10-17T00:00:00Z",
+    "cached": false
+  }
+}

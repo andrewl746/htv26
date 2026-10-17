@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchResponse",
+  "description": "GET /search response. Mirrors `SearchResponse` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "query": {"type": "string"},
+    "results": {"type": "array", "items": {"$ref": "#/$defs/SearchResult"}}
+  },
+  "required": ["query", "results"],
+  "additionalProperties": false,
+  "$defs": {
+    "WardId": {
+      "type": "string",
+      "description": "Two-digit zero-padded ward id, \"01\" to \"25\" (City Wards AREA_SHORT_CODE).",
+      "pattern": "^(0[1-9]|1[0-9]|2[0-5])$"
+    },
+    "SearchResult": {
+      "type": "object",
+      "properties": {
+        "address_id": {"type": "string", "minLength": 1},
+        "address_full": {"type": "string", "minLength": 1},
+        "ward_id": {"$ref": "#/$defs/WardId"},
+        "ward_name": {"type": "string", "minLength": 1},
+        "lon": {"type": "number"},
+        "lat": {"type": "number"}
+      },
+      "required": ["address_id", "address_full", "ward_id", "ward_name", "lon", "lat"],
+      "additionalProperties": false
+    }
+  }
+}

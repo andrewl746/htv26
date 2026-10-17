@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DesignsFile",
+  "description": "contracts/designs.json. Mirrors `DesignsFile` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "version": {"type": "string", "minLength": 1},
+    "released": {"$ref": "#/$defs/Date"},
+    "designs": {"type": "array", "items": {"$ref": "#/$defs/Design"}, "minItems": 4, "maxItems": 4}
+  },
+  "required": ["version", "released", "designs"],
+  "additionalProperties": false,
+  "$defs": {
+    "DesignId": {
+      "type": "string",
+      "enum": ["fourplex_narrow", "fourplex_wide", "sixplex_narrow", "sixplex_wide"]
+    },
+    "DesignKey": {"type": "string", "enum": ["fn", "fw", "sn", "sw"]},
+    "Date": {
+      "type": "string",
+      "description": "YYYY-MM-DD",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "DesignHome": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "integer"},
+        "label": {"type": "string", "minLength": 1},
+        "bedrooms": {"type": "integer", "minimum": 0},
+        "levels": {"type": "array", "items": {"type": "integer"}, "minItems": 1},
+        "accessible": {"type": "boolean"},
+        "walkout": {"type": "boolean"}
+      },
+      "required": ["id", "label", "bedrooms", "levels", "accessible", "walkout"],
+      "additionalProperties": false
+    },
+    "DesignLevel": {
+      "type": "object",
+      "properties": {
+        "level": {"type": "integer"},
+        "name": {"type": "string", "minLength": 1},
+        "height_m": {"type": "number", "minimum": 0},
+        "visible_m": {"type": "number", "minimum": 0},
+        "area_m2": {"type": ["number", "null"], "minimum": 0},
+        "stepped_back": {"type": "boolean"}
+      },
+      "required": ["level", "name", "height_m", "visible_m", "area_m2", "stepped_back"],
+      "additionalProperties": false
+    },
+    "Design": {
+      "type": "object",
+      "properties": {
+        "id": {"$ref": "#/$defs/DesignId"},
+        "key": {"$ref": "#/$defs/DesignKey"},
+        "name": {"type": "string", "minLength": 1},
+        "units": {"type": "integer", "minimum": 0},
+        "bedrooms": {"type": "integer", "minimum": 0},
+        "width_m": {"type": "number", "minimum": 0},
+        "length_m": {"type": "number", "minimum": 0},
+        "height_m": {"type": "number", "minimum": 0},
+        "storeys": {"type": "integer", "minimum": 0},
+        "building_area_m2": {"type": "number", "minimum": 0},
+        "gfa_m2": {"type": "number", "minimum": 0},
+        "side_yards_m": {
+          "type": "array",
+          "prefixItems": [{"type": "number", "minimum": 0}, {"type": "number", "minimum": 0}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "front_setback_m": {"type": "number", "minimum": 0},
+        "rear_setback_m": {"type": "number", "minimum": 0},
+        "min_lot_width_m": {"type": "number", "minimum": 0},
+        "min_lot_depth_m": {
+          "type": "object",
+          "properties": {
+            "r_rt": {"type": "number", "minimum": 0},
+            "rd_rs_rm": {"type": "number", "minimum": 0}
+          },
+          "required": ["r_rt", "rd_rs_rm"],
+          "additionalProperties": false
+        },
+        "where_allowed": {"type": "string", "enum": ["all_residential", "sixplex_overlay"]},
+        "top_floor_stepback_m": {"type": "number", "minimum": 0},
+        "homes": {"type": "array", "items": {"$ref": "#/$defs/DesignHome"}, "minItems": 1},
+        "levels": {"type": "array", "items": {"$ref": "#/$defs/DesignLevel"}, "minItems": 1},
+        "source": {
+          "type": "object",
+          "properties": {
+            "file": {"type": "string", "minLength": 1},
+            "sheet": {"type": "string", "minLength": 1},
+            "page": {"type": "integer"},
+            "url": {"type": "string", "minLength": 1}
+          },
+          "required": ["file", "sheet", "page", "url"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id", "key", "name", "units", "bedrooms", "width_m", "length_m", "height_m", "storeys",
+        "building_area_m2", "gfa_m2", "side_yards_m", "front_setback_m", "rear_setback_m", "min_lot_width_m",
+        "min_lot_depth_m", "where_allowed", "top_floor_stepback_m", "homes", "levels", "source"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

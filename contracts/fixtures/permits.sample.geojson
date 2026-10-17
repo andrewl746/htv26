@@ -1,0 +1,65 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4712, 43.6509]},
+      "properties": {"id": 1, "d": "2024-03-14", "w": "04", "u": 4, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4688, 43.6493]},
+      "properties": {"id": 2, "d": "2025-06-02", "w": "04", "u": 3, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4768, 43.6551]},
+      "properties": {"id": 3, "d": "2023-09-21", "w": "04", "u": 3, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.479, 43.6522]},
+      "properties": {"id": 4, "d": "2025-11-12", "w": "04", "u": 4, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.459, 43.6421]},
+      "properties": {"id": 5, "d": "2026-02-19", "w": "04", "u": 6, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4531, 43.6385]},
+      "properties": {"id": 6, "d": "2024-09-05", "w": "04", "u": 3, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4655, 43.6512]},
+      "properties": {"id": 7, "d": "2022-08-16", "w": "04", "u": 3, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4721, 43.6475]},
+      "properties": {"id": 8, "d": "2024-05-27", "w": "04", "u": 1, "k": "secondary_suite"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4673, 43.6538]},
+      "properties": {"id": 9, "d": "2025-03-10", "w": "04", "u": 1, "k": "laneway_garden"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.4702, 43.6461]},
+      "properties": {"id": 10, "d": "2023-11-30", "w": "04", "u": 1, "k": "other"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.3105, 43.6802]},
+      "properties": {"id": 11, "d": "2024-10-08", "w": "19", "u": 4, "k": "multiplex"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-79.315, 43.6851]},
+      "properties": {"id": 12, "d": "2026-06-23", "w": "19", "u": 2, "k": "multiplex"}
+    }
+  ]
+}

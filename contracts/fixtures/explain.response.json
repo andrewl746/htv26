@@ -1,0 +1,32 @@
+{
+  "lang": "en",
+  "design_id": "fourplex_narrow",
+  "template_text": "The Fourplex Narrow is too close to call on this lot. It needs {{lot_width_required}} m of lot width and the lot measures about {{lot_width_actual}} m, a difference inside our {{uncertainty_band_m}} m uncertainty band, because the City's lot lines are not survey-accurate. Depth, height and lot coverage all pass. This is a screening, not a permit: a survey and the City's zoning examiner can confirm.",
+  "text": "The Fourplex Narrow is too close to call on this lot. It needs 7.6 m of lot width and the lot measures about 7.62 m, a difference inside our 0.5 m uncertainty band, because the City's lot lines are not survey-accurate. Depth, height and lot coverage all pass. This is a screening, not a permit: a survey and the City's zoning examiner can confirm.",
+  "numbers": {
+    "lot_width_required": {
+      "value": 7.6,
+      "unit": "m",
+      "label": "Lot width the Fourplex Narrow needs",
+      "source_url": "http://localhost:5173/?a=fixture-1#checklist"
+    },
+    "lot_width_actual": {
+      "value": 7.62,
+      "unit": "m",
+      "label": "This lot's width across the building",
+      "source_url": "https://open.toronto.ca/dataset/property-boundaries/"
+    },
+    "uncertainty_band_m": {
+      "value": 0.5,
+      "unit": "m",
+      "label": "Uncertainty band",
+      "source_url": "http://localhost:8001/b/04#methodology"
+    }
+  },
+  "validated": true,
+  "source": "gemini",
+  "model": "gemini-3.8-flash",
+  "cached": false,
+  "translation_unavailable": false,
+  "disclaimer": "Screening only, not a permit or legal advice."
+}

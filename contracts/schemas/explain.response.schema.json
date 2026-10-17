@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExplainResponse",
+  "description": "POST /explain response (AI service). Mirrors `ExplainResponse` in contracts/types.ts; change the schema, types.ts and the fixtures together.",
+  "type": "object",
+  "properties": {
+    "lang": {"$ref": "#/$defs/Lang"},
+    "design_id": {"$ref": "#/$defs/DesignId"},
+    "template_text": {"type": "string", "minLength": 1},
+    "text": {"type": "string", "minLength": 1},
+    "numbers": {"$ref": "#/$defs/NumbersMap"},
+    "validated": {"const": true},
+    "source": {"type": "string", "enum": ["gemini", "template"]},
+    "model": {"type": ["string", "null"], "minLength": 1},
+    "cached": {"type": "boolean"},
+    "translation_unavailable": {"type": "boolean"},
+    "disclaimer": {"type": "string", "minLength": 1}
+  },
+  "required": [
+    "lang", "design_id", "template_text", "text", "numbers", "validated", "source", "model", "cached",
+    "translation_unavailable", "disclaimer"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "DesignId": {
+      "type": "string",
+      "enum": ["fourplex_narrow", "fourplex_wide", "sixplex_narrow", "sixplex_wide"]
+    },
+    "Lang": {"type": "string", "enum": ["en", "fr", "zh-Hans", "zh-Hant", "es", "tl", "ta", "pt"]},
+    "NumberEntry": {
+      "type": "object",
+      "properties": {
+        "value": {"type": "number"},
+        "unit": {"type": ["string", "null"]},
+        "label": {"type": "string", "minLength": 1},
+        "source_url": {"type": "string", "minLength": 1}
+      },
+      "required": ["value", "unit", "label", "source_url"],
+      "additionalProperties": false
+    },
+    "NumbersMap": {
+      "type": "object",
+      "description": "Record<string, NumberEntry>; keys are snake_case",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/NumberEntry"}
+    }
+  }
+}

@@ -9,40 +9,384 @@ body {
   background: var(--suplex-paper);
   color: var(--suplex-ink);
   font-family: var(--font-ui);
+  font-size: var(--text-md);
   -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--suplex-accent);
+  outline-offset: 2px;
 }
 
 .app {
   position: relative;
   height: 100%;
+  min-width: 1024px;
   overflow: hidden;
 }
+
+.disclaimer {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--suplex-ink-muted);
+}
+
+/* ---------- Landing (6.2) ---------- */
+
+.landing {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+  background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-paper) 70%);
+}
+
+.landing-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.landing-tagline {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-lg);
+}
+
+.examples {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--suplex-ink-muted);
+}
+
+.chip {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--suplex-line);
+  border-radius: 999px;
+  background: var(--suplex-surface);
+  color: var(--suplex-ink);
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--suplex-ink-muted);
+}
+
+/* ---------- Search (J2) ---------- */
+
+.search {
+  position: relative;
+}
+
+.search-hero {
+  width: min(560px, 100%);
+}
+
+.search-compact {
+  width: 340px;
+}
+
+.search-input {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--suplex-line);
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  color: var(--suplex-ink);
+  font: inherit;
+}
+
+.search-hero .search-input {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-lg);
+  box-shadow: var(--shadow);
+}
+
+.search-compact .search-input {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.search-input:focus-visible {
+  outline-offset: 0;
+}
+
+.search-dropdown {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  border: 1px solid var(--suplex-line);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+
+.search-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-option {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+
+.search-option[aria-selected='true'] {
+  background: var(--suplex-paper);
+  box-shadow: inset 3px 0 0 var(--suplex-accent);
+}
+
+.search-option-ward {
+  font-size: var(--text-sm);
+  color: var(--suplex-ink-muted);
+  white-space: nowrap;
+}
+
+.search-message {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--suplex-ink-muted);
+}
+
+/* ---------- Address check layout (6.2) ---------- */
 
 .scene {
   position: absolute;
   inset: 0;
+  /* Keeps the floating 3D labels below the panel and the search. */
+  isolation: isolate;
   background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-sky-bottom));
 }
 
-.app-header {
+.topbar {
   position: absolute;
-  top: var(--space-6);
-  left: var(--space-6);
-  padding: var(--space-3) var(--space-4);
-  background: var(--suplex-surface);
+  z-index: 2;
+  top: var(--space-4);
+  left: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
   border-radius: var(--radius);
+  background: var(--suplex-surface);
   box-shadow: var(--shadow);
 }
 
-.app-header h1 {
+.brand {
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  background: none;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.panel {
+  position: absolute;
+  z-index: 2;
+  top: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  box-sizing: border-box;
+  width: calc(var(--panel-width) - var(--space-4));
+  overflow-y: auto;
+  padding: var(--space-6);
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+
+.panel-header {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+}
+
+.panel-address {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
-.app-header p {
-  margin: var(--space-1) 0 0;
-  font-size: var(--text-sm);
+.panel-ward,
+.panel-size {
+  margin: 0;
   color: var(--suplex-ink-muted);
+}
+
+.panel-reason {
+  margin: var(--space-2) 0;
+}
+
+.panel-message {
+  margin: 0;
+}
+
+.design-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.design-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--suplex-line);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.design-tab[aria-selected='true'] {
+  border-color: var(--suplex-ink);
+  box-shadow: inset 0 0 0 1px var(--suplex-ink);
+}
+
+.design-tab-text {
+  display: grid;
+}
+
+.design-tab-name {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.design-tab-result {
+  font-size: var(--text-xs);
+  color: var(--suplex-ink-muted);
+}
+
+/* Result icons: the shape carries the result; the fill repeats it. */
+.result-icon {
+  flex: none;
+  fill: var(--suplex-surface);
+  stroke: var(--suplex-ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.result-icon circle {
+  stroke-width: 0;
+}
+
+.result-fits circle {
+  fill: var(--suplex-fit);
+}
+
+.result-borderline circle {
+  fill: var(--suplex-borderline-base);
+}
+
+.result-no_fit circle {
+  fill: var(--suplex-nofit);
+}
+
+.result-not_checked circle {
+  fill: var(--suplex-surface);
+  stroke: var(--suplex-line);
+  stroke-width: 1;
+}
+
+.result-icon path {
+  fill: none;
+}
+
+.skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--suplex-line), var(--suplex-paper), var(--suplex-line));
+  background-size: 200% 100%;
+  animation: skeleton 1.2s ease-in-out infinite;
+}
+
+.skeleton-title {
+  height: 32px;
+  width: 70%;
+  margin-bottom: var(--space-3);
+}
+
+.skeleton-line {
+  height: 16px;
+  width: 45%;
+  margin-bottom: var(--space-6);
+}
+
+.skeleton-tabs {
+  height: 120px;
+}
+
+@keyframes skeleton {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* ---------- Labels floating in the 3D scene (6.3) ---------- */
+
+.scene-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.scene-label-muted {
+  color: var(--suplex-ink-muted);
+}
+
+.home-label-left {
+  transform: translate(calc(-100% - var(--space-2)), -50%);
+}
+
+.home-label-right {
+  transform: translate(var(--space-2), -50%);
+}
+
+.home-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(28, 31, 38, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }

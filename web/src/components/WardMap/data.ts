@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Feature, FeatureCollection, Geometry, Point } from 'geojson'
-import type { DesignKey, LotFeatureProps, PermitFeatureProps, Result, WardResponse } from '@contracts/types'
+import type { DesignKey, LotFeatureProps, PermitFeatureProps, Result, TrendResponse, WardResponse } from '@contracts/types'
 import { API_BASE } from '../../api/config'
 import lotsFixtureUrl from '@contracts/fixtures/lots.04.sample.geojson?url'
 import permitsFixtureUrl from '@contracts/fixtures/permits.sample.geojson?url'
@@ -22,6 +22,8 @@ export interface WardData {
   ward: WardResponse
   lots: LotCollection
   permits: PermitCollection
+  /** Permits per month for the trend chart; null when the trend did not load (the chart then hides). */
+  trend: TrendResponse | null
   /** The lots' bounding box (south-west and north-east corners): the ward's extent. */
   bounds: Bounds
 }
@@ -79,23 +81,42 @@ async function getJson<T>(url: string, timeoutMs: number, signal: AbortSignal): 
   return (await response.json()) as T
 }
 
-async function loadFixtures(wardId: string, signal: AbortSignal): Promise<{ ward: WardResponse; lots: RawLots; permits: PermitCollection }> {
-  const ward = (await import('@contracts/fixtures/ward.04.json')).default as unknown as WardResponse
-  if (ward.ward_id !== wardId) throw new Error(`the fixtures only cover ward ${ward.ward_id}`)
-  const [lots, permits] = await Promise.all([
-    getJson<RawLots>(lotsFixtureUrl, SMALL_TIMEOUT_MS, signal),
-    getJson<PermitCollection>(permitsFixtureUrl, SMALL_TIMEOUT_MS, signal),
-  ])
-  return { ward, lots, permits }
+interface Loaded {
+  ward: WardResponse
+  lots: RawLots
+  permits: PermitCollection
+  trend: TrendResponse | null
 }
 
-async function loadLive(wardId: string, signal: AbortSignal) {
+/** The trend is an extra: if it is missing or slow, the rest of the ward still shows. */
+async function getTrend(url: () => Promise<TrendResponse>): Promise<TrendResponse | null> {
+  try {
+    const trend = await url()
+    return Array.isArray(trend.series) ? { ...trend, markers: trend.markers ?? [] } : null
+  } catch {
+    return null
+  }
+}
+
+async function loadFixtures(wardId: string, signal: AbortSignal): Promise<Loaded> {
+  const ward = (await import('@contracts/fixtures/ward.04.json')).default as unknown as WardResponse
+  if (ward.ward_id !== wardId) throw new Error(`the fixtures only cover ward ${ward.ward_id}`)
+  const [lots, permits, trend] = await Promise.all([
+    getJson<RawLots>(lotsFixtureUrl, SMALL_TIMEOUT_MS, signal),
+    getJson<PermitCollection>(permitsFixtureUrl, SMALL_TIMEOUT_MS, signal),
+    getTrend(async () => (await import('@contracts/fixtures/trend.04.json')).default as unknown as TrendResponse),
+  ])
+  return { ward, lots, permits, trend }
+}
+
+async function loadLive(wardId: string, signal: AbortSignal): Promise<Loaded> {
   const ward = await getJson<WardResponse>(`${API_BASE}/ward/${wardId}`, SMALL_TIMEOUT_MS, signal)
-  const [lots, permits] = await Promise.all([
+  const [lots, permits, trend] = await Promise.all([
     getJson<RawLots>(`${API_BASE}${ward.lots_url}`, STATIC_TIMEOUT_MS, signal),
     getJson<PermitCollection>(`${API_BASE}${ward.permits_url}`, STATIC_TIMEOUT_MS, signal),
+    getTrend(() => getJson<TrendResponse>(`${API_BASE}${ward.trend_url}`, SMALL_TIMEOUT_MS, signal)),
   ])
-  return { ward, lots, permits }
+  return { ward, lots, permits, trend }
 }
 
 /** Loads one ward's numbers, lots and permit points together. */
@@ -104,12 +125,12 @@ export function useWardData(wardId: string): WardLoad {
 
   useEffect(() => {
     const request = new AbortController()
-    const source = API_BASE === null ? loadFixtures(wardId, request.signal) : loadLive(wardId, request.signal)
+    const source: Promise<Loaded> = API_BASE === null ? loadFixtures(wardId, request.signal) : loadLive(wardId, request.signal)
     source.then(
-      ({ ward, lots, permits }) => {
+      ({ ward, lots, permits, trend }) => {
         if (request.signal.aborted) return
         const flat = flatten(lots)
-        setState({ wardId, load: { status: 'ready', data: { ward, lots: flat, permits, bounds: boundsOf(flat) } } })
+        setState({ wardId, load: { status: 'ready', data: { ward, lots: flat, permits, trend, bounds: boundsOf(flat) } } })
       },
       () => {
         if (!request.signal.aborted) setState({ wardId, load: { status: 'error', message: pending.load_error } })

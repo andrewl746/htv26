@@ -545,4 +545,18 @@ def test_run_check_hands_the_finished_result_to_build_next_steps(monkeypatch):
 
 
 def test_next_steps_is_always_in_the_response():
-    assert run_check(rect_lot(12.0, 40.0), CFG).to_dict()["next_steps"] == []      # the stub, until Y13
+    """run_check fills next_steps (MASTERSPEC 5.10, Y13). A clean 12 x 40 m RD lot where all four designs fit,
+    with a house on it and no flags, starts with the survey, ends in the apply group and never gets the
+    alternatives. Kept loose on purpose so S14 wording changes don't break it; test_next_steps.py pins each trigger."""
+    steps = run_check(rect_lot(12.0, 40.0), CFG).to_dict()["next_steps"]
+    ids = [s["id"] for s in steps]
+    assert ids[0] == "survey"
+    assert {"zoning_check", "trees", "designer", "permit", "demolition", "fees"} <= set(ids)
+    assert len(ids) == len(set(ids))
+    order = ["confirm", "approvals", "apply", "alternatives"]
+    groups = [order.index(s["group"]) for s in steps]
+    assert groups == sorted(groups) and "alternatives" not in {s["group"] for s in steps}
+    for s in steps:
+        assert {"id", "group", "title", "text", "who", "why", "links"} <= set(s)
+        assert s["title"] and s["text"] and s["why"]
+        assert all(link["url"].startswith("https://") for link in s["links"])

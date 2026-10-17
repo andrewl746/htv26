@@ -1,0 +1,387 @@
+{
+  "checked_on": "2026-10-17",
+  "heading": "Your next steps",
+  "who_label": "Who to contact",
+  "new_tab": "opens in a new tab",
+  "groups": {
+    "confirm": "Confirm first",
+    "approvals": "Other approvals for this lot",
+    "apply": "Apply with a City design",
+    "alternatives": "If the free designs don't fit"
+  },
+  "footer": "Screening only, not a permit or legal advice. Steps and contacts come from City of Toronto pages checked on {checked_on}; confirm with the City before you rely on them.",
+  "steps": {
+    "survey": {
+      "group": "confirm",
+      "title": "Get a current survey of your lot",
+      "text": "The City's pre-approved plans need a survey or site plan with property lines referenced to a current survey, and a zoning review asks for a current land survey prepared by a licensed Ontario Land Surveyor. Suplex measures from City lot lines, which are not survey-accurate.",
+      "who": "An Ontario Land Surveyor",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        },
+        {
+          "label": "Zoning Applicable Law Certificate",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "Property lines, lot area, right-of-way or easements (referenced to a current survey)"
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/",
+          "quote": "Survey or site plan showing property lines, lot area, right-of-way or easements (based on a current land survey prepared by a licensed Ontario Land Surveyor)."
+        }
+      ]
+    },
+    "zoning_check": {
+      "group": "confirm",
+      "title": "Check the zoning with the City",
+      "text": "Toronto Building staff can answer zoning questions about this specific property: 416-397-5330, Monday to Friday, 8:30 a.m. to 4:30 p.m. For a written answer before you apply, a Zoning Applicable Law Certificate reviews your drawings (up to three reviews); if you apply for the building permit with the certificate, its fee is credited against the building permit fees.",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        },
+        {
+          "label": "Zoning Applicable Law Certificate",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/",
+          "quote": "If you have zoning questions for a specific property, please contact Toronto Building Staff at 416-397-5330 between 8:30 a.m. to 4:30 p.m., Monday to Friday or in person at a Toronto Building Customer Service counter."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/",
+          "quote": "An application for a Zoning Applicable Law Certificate includes a maximum of three reviews."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/",
+          "quote": "the fee paid for the Zoning Applicable Law Certificate will be credited to the building permit application such that the building permit fees will be reduced by the amount of the Zoning Applicable Law Certificate fee."
+        }
+      ]
+    },
+    "site_exception": {
+      "group": "confirm",
+      "title": "Look up site-specific exception x{number}",
+      "text": "Your zone label carries site-specific exception x{number}. A Chapter 900 exception can set limits that still apply to a multiplex, such as a maximum floor space index or lot coverage. Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff on 416-397-5330.",
+      "title_without_number": "Look up your site-specific exception",
+      "text_without_number": "Your zone label carries a site-specific exception. A Chapter 900 exception can set limits that still apply to a multiplex, such as a maximum floor space index or lot coverage. Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff on 416-397-5330.",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "Interactive Zoning By-law Map",
+          "url": "https://map.toronto.ca/maps/map.jsp?app=ZBL_CONSULT"
+        },
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/",
+          "quote": "If there is a Chapter 900 exception which applies to the property, indicated by an (x) followed by a number in the zone label, any maximum floor space index specified in this exception may still apply."
+        },
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/",
+          "quote": "If your property is subject to lot coverage as indicated by the Lot Coverage Overlay, the base residential standards in Chapter 10, or a Chapter 900 exception, this regulation still applies to multiplexes."
+        }
+      ]
+    },
+    "heritage": {
+      "group": "approvals",
+      "title": "Talk to Heritage Planning",
+      "text": "This property is on the City's Heritage Register or in a Heritage Conservation District. In a district, new construction, exterior alterations and additions need a heritage permit. On an individually designated property, altering or demolishing a building needs heritage permission, and some decisions go to City Council. A listed property is not protected, but its owner must give Council at least 60 days' notice before demolishing. Email Heritage Planning before you design.",
+      "who": "Heritage Planning (heritageplanning@toronto.ca)",
+      "links": [
+        {
+          "label": "Heritage permit guide",
+          "url": "https://www.toronto.ca/city-government/planning-development/heritage-preservation/heritage-permit-guide/"
+        },
+        {
+          "label": "Heritage Register",
+          "url": "https://www.toronto.ca/city-government/planning-development/heritage-preservation/heritage-register/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/heritage-preservation/heritage-conservation-districts-studies/",
+          "quote": "New construction, exterior alterations, and additions to properties within an HCD will require a heritage permit and will need to meet the policies of the relevant HCD Plan, as well as other City requirements."
+        },
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/heritage-preservation/heritage-permit-guide/",
+          "quote": "Permission is required for work that involves altering, demolishing/removing or erecting a building or structure on properties that are designated under Part IV of the Ontario Heritage Act."
+        },
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/heritage-preservation/heritage-permit-guide/",
+          "quote": "For applications that do not have delegated approval authority Heritage Planning will have to seek a decision from City Council."
+        },
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/heritage-preservation/heritage-register/",
+          "quote": "Non-designated listed properties do not have any protection under the Ontario Heritage Act, except insofar as an owner must give the council at least 60 days' notice of their intention to demolish or remove a structure on the property."
+        }
+      ]
+    },
+    "ravine": {
+      "group": "approvals",
+      "title": "Check ravine and natural feature protection",
+      "text": "Part of this lot is in a ravine or natural feature protection area. Without a ravine permit you cannot harm or remove any tree there regardless of size, change the natural land topography (dig, or add soil on slopes), place fill, or build or replace structures or retaining walls.",
+      "who": "Tree and Ravine Protection, City of Toronto",
+      "links": [
+        {
+          "label": "When to apply for a tree or ravine permit",
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
+          "quote": "Changing the natural land topography, by excavation or adding soil or other materials on slopes"
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
+          "quote": "Constructing new or replacing old structures or retaining walls"
+        }
+      ]
+    },
+    "trca": {
+      "group": "approvals",
+      "title": "Ask the conservation authority",
+      "text": "If your lot is in the Toronto and Region Conservation Authority's regulated area, building or replacing a home usually needs a TRCA permit under Ontario Regulation 41/24, and the City cannot issue a building permit until TRCA has issued a permit or clearance. Talk to a TRCA planner before you apply.",
+      "who": "Toronto and Region Conservation Authority (TRCA)",
+      "links": [
+        {
+          "label": "TRCA: building a new home",
+          "url": "https://trca.ca/planning-permits/building-a-new-home/"
+        },
+        {
+          "label": "TRCA planning and permits",
+          "url": "https://trca.ca/planning-permits/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://trca.ca/planning-permits/building-a-new-home/",
+          "quote": "Building a new home (or a replacement home) is considered DEVELOPMENT ACTIVITY under the Conservation Authorities Act and Ontario Regulation 41/24."
+        },
+        {
+          "url": "https://trca.ca/planning-permits/building-a-new-home/",
+          "quote": "your municipality cannot legally issue a building permit until a TRCA permit or clearance has been obtained."
+        },
+        {
+          "url": "https://trca.ca/planning-permits/contact-information/",
+          "quote": "Toronto and Region Conservation Authority (TRCA) encourages clients to discuss their proposals with a TRCA Planner prior to submitting a permit application."
+        }
+      ]
+    },
+    "trees": {
+      "group": "approvals",
+      "title": "Check the trees",
+      "text": "Trees 30 cm or more in diameter on your lot, and City street trees of any size, need a tree permit before any work that could injure or remove them. Having a building permit does not remove that need. The building permit application also includes a Tree Declaration Form.",
+      "who": "Urban Forestry",
+      "links": [
+        {
+          "label": "When to apply for a tree or ravine permit",
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/"
+        },
+        {
+          "label": "Tree Declaration Form",
+          "url": "https://www.toronto.ca/wp-content/uploads/2022/05/95f0-Tree-Declaration-form-2022.pdf"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
+          "quote": "Any activity that can cause a tree of 30 centimetres or more in diameter, to be injured or removed, on private property, is prohibited unless authorized with a permit under the Tree Protection By-law."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
+          "quote": "Any activity that can cause a street tree of any size to be harmed or removed is prohibited unless authorized with a permit under the Tree Protection By-law."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
+          "quote": "If your as-of-right development impacts a protected tree, you are still required to apply for a permit to remove or injure it."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "Required for all projects where there is a potential for damage to private or City trees."
+        }
+      ]
+    },
+    "designer": {
+      "group": "apply",
+      "title": "Work with a design professional",
+      "text": "A qualified design professional finishes the site-specific parts: the site plan, the lot grading plan, the zoning and code matrices on sheets A010 and A011, and signed and sealed architectural, structural and mechanical letters. Changing the plan itself, even the heating or plumbing, means it is no longer pre-approved.",
+      "who": "A design professional",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "While the plans have been pre-approved, a qualified design professional is still required to review, assume responsibility for, and finalize all site-specific aspects of the design in accordance with the Building Code and the Building Code Act."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "If any modifications are made to the pre-approved plan selected, including HVAC or plumbing modifications, the plan will no longer be considered pre-approved, and this process for applying for a building permit will NOT apply."
+        }
+      ]
+    },
+    "permit": {
+      "group": "apply",
+      "title": "Apply for the building permit",
+      "text": "Apply online through Toronto Building and enter the pre-approved plan number on the Application to Construct or Demolish; you do not resubmit the City's drawings. The application also includes forms such as the Infill Public Notice Declaration Form and the Municipal Road Damage Form.",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "When applying for a building permit, enter the pre-approved plan number on the Application to Construct or Demolish form. You do not need to submit the pre-approved drawing."
+        }
+      ]
+    },
+    "demolition": {
+      "group": "apply",
+      "title": "Add a demolition permit",
+      "text": "Replacing the existing house means a demolition permit as well. When you apply online, you can add the demolition permit after you submit the building permit application, using the reference number and access code from your confirmation email.",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "When submitting your application online, you can also apply for related demolition, mechanical, plumbing, and drain permits after submitting your building permit application."
+        }
+      ]
+    },
+    "fees": {
+      "group": "apply",
+      "title": "Check development charges",
+      "text": "A multiplex of up to six units pays no development charges on its second, third and fourth units, and the fifth and sixth are reduced to $0. Parkland cash-in-lieu is waived for the second to sixth unit. These apply when the parcel has no more than six units (a garden or laneway suite on the City's development charges deferral program does not count toward that six; for parkland, a garden or laneway suite allows up to seven in total). Some City web pages still say four units; By-law 845-2025 (July 24, 2025) is the current rule.",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "By-law 845-2025",
+          "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf",
+          "quote": "(a) Shall not be imposed with respect to the second, third or fourth residential dwelling unit; and"
+        },
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf",
+          "quote": "(b) For the fifth or sixth residential dwelling unit, shall be reduced to zero dollars ($ 0.00);"
+        },
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf",
+          "quote": "provided that such exemption applies to developments of no more than six total residential dwelling units (or seven residential dwelling units where there is a Garden or Laneway Suite) on a single parcel of land"
+        }
+      ]
+    },
+    "attached_options": {
+      "group": "alternatives",
+      "title": "Look at options for a semi or row house",
+      "text": "The City's free designs are for detached lots. On a semi or row-house lot you may still convert part of the existing house to up to four homes if the new homes fit entirely inside the building as it stood before May 15, 2023, or add a garden suite where the rules allow. A semi or a row house cannot be converted to a fiveplex or sixplex (By-law 654-2025, 600.60.40(3)(D)).",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        },
+        {
+          "label": "Garden suites",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/garden-suites/"
+        },
+        {
+          "label": "By-law 474-2023",
+          "url": "https://www.toronto.ca/legdocs/bylaws/2023/law0474.pdf"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2023/law0474.pdf",
+          "quote": "In the Residential Zone category, a portion of a semi-detached house located on one lot may be converted to contain up to four dwelling units"
+        },
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0654.pdf",
+          "quote": "no portion of a semi-detached houseplex, a semi-detached house or a townhouse may be converted to a fiveplex or sixplex through the construction of additional dwelling units."
+        }
+      ]
+    },
+    "custom_or_variance": {
+      "group": "alternatives",
+      "title": "Look at other options",
+      "text": "None of the City's four designs fits as checked. A design professional can prepare a custom design and apply through the regular building permit process. If that design goes beyond the zoning rules, you can apply to the Committee of Adjustment for a minor variance; approval is not assured.",
+      "who": "A design professional; the Committee of Adjustment",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        },
+        {
+          "label": "Committee of Adjustment",
+          "url": "https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/",
+          "quote": "You can apply to the City of Toronto Committee of Adjustment to request a minor variance to the Zoning By-law."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "You may apply for a building permit through the regular application process."
+        }
+      ]
+    },
+    "ask_zoning": {
+      "group": "alternatives",
+      "title": "Ask the City's zoning staff",
+      "text": "Suplex could not check this lot ({reason}). Toronto Building staff can answer zoning questions about this specific property: 416-397-5330, Monday to Friday, 8:30 a.m. to 4:30 p.m.",
+      "who": "Toronto Building",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/",
+          "quote": "If you have zoning questions for a specific property, please contact Toronto Building Staff at 416-397-5330 between 8:30 a.m. to 4:30 p.m., Monday to Friday or in person at a Toronto Building Customer Service counter."
+        }
+      ]
+    }
+  },
+  "why": {
+    "borderline": "Because the {design} is too close to call on {rule}: this lot measures {actual} m against {required} m needed.",
+    "borderline_pct": "Because the {design} is too close to call on {rule}: this lot measures {actual} against {required} allowed.",
+    "any_fit": "Because at least one City design may fit this lot.",
+    "flag": "Because this lot is flagged: {flag_label}.",
+    "has_building": "Because there is a house on this lot today.",
+    "attached": "Because this is a semi or row-house lot.",
+    "no_fit": "Because none of the four City designs fits as checked.",
+    "not_checked": "Because Suplex could not check this lot."
+  }
+}

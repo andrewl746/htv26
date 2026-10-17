@@ -1,5 +1,5 @@
 {
-  "_note": "v0 by Andrew; Simone owns this file",
+  "_note": "v1, reviewed by Simone 2026-10-17 (S9); Simone owns this file",
   "results": {
     "fits": "Fits",
     "borderline": "Too close to call",
@@ -36,7 +36,11 @@
     "sixplex_narrow": "Sixplex Narrow",
     "sixplex_wide": "Sixplex Wide"
   },
-  "units": {"m": "m", "pct": "%", "units": "homes"},
+  "units": {
+    "m": "m",
+    "pct": "%",
+    "units": "homes"
+  },
   "ui": {
     "search_placeholder": "Type a Toronto address",
     "try_examples": "Try:",
@@ -47,6 +51,7 @@
     "what_we_checked": "What we checked",
     "permits_near_you": "Permits near you",
     "permits_near_you_line": "{{count}} multiplex permits within {{radius_m}} m since May 2023",
+    "permits_near_you_line_one": "{{count}} multiplex permit within {{radius_m}} m since May 2023",
     "extra_review": "Needs extra review",
     "translate": "Translate",
     "copy": "Copy",
@@ -67,7 +72,7 @@
     "legend_fit": "May fit",
     "legend_borderline": "Too close to call",
     "legend_nofit": "Doesn't fit",
-    "legend_permit": "Multiplex permit since 2023",
+    "legend_permit": "Multiplex permit since May 2023",
     "legend_screening": "Screening only, not a permit.",
     "trend_caption": "Multiplex permits issued per month in this ward. Source: City of Toronto building permits, served from Tiger Data.",
     "trend_marker_citywide": "Multiplexes allowed citywide",
@@ -78,11 +83,73 @@
   "ward_panel": {
     "could": "Could: {{could_lots}} lots may fit a free City design ({{could_pct}}% of house lots).",
     "did": "Did: {{did_permits}} multiplex permits since May 2023.",
-    "per_permit": "That's about 1 permit for every {{lots_per_permit}} lots that could.",
+    "per_permit": "That's about one permit for every {{lots_per_permit}} lots that could.",
     "no_permits": "No multiplex permits have been issued here since May 2023.",
     "blocking_rule": "The most common reason lots don't fit: {{rule_plain}}.",
     "attached": "{{attached_pct}}% of house lots are semis or row houses, where the free designs don't apply.",
     "flagged": "Of the lots that may fit, {{flagged_fitting_lots}} need extra review.",
     "upper_bound": "Upper bound"
+  },
+  "languages": {
+    "en": {
+      "native": "English",
+      "english": "English"
+    },
+    "fr": {
+      "native": "Français",
+      "english": "French"
+    },
+    "zh-Hans": {
+      "native": "简体中文",
+      "english": "Simplified Chinese"
+    },
+    "zh-Hant": {
+      "native": "繁體中文",
+      "english": "Traditional Chinese"
+    },
+    "es": {
+      "native": "Español",
+      "english": "Spanish"
+    },
+    "tl": {
+      "native": "Tagalog",
+      "english": "Tagalog"
+    },
+    "ta": {
+      "native": "தமிழ்",
+      "english": "Tamil"
+    },
+    "pt": {
+      "native": "Português",
+      "english": "Portuguese"
+    }
+  },
+  "briefing_page": {
+    "loading": "Loading the ward briefing…",
+    "error": "This briefing couldn't load. Please try again in a moment.",
+    "fixture_notice": "Sample data for testing: these numbers are made up and describe no real ward.",
+    "language": "Language",
+    "generated": "Written",
+    "data_as_of": "Data as of",
+    "ward_map_link": "See this ward on the map",
+    "print": "Print",
+    "trend_heading": "Multiplex permits per month",
+    "trend_table": "Show the chart as a table",
+    "trend_month": "Month",
+    "trend_permits": "Multiplex permits",
+    "trend_tooltip_one": "{month}: 1 multiplex permit",
+    "trend_tooltip_other": "{month}: {count} multiplex permits",
+    "trend_source_cache": "Cached data",
+    "sources_heading": "Sources for the numbers",
+    "methodology_heading": "How these numbers were computed",
+    "methodology": [
+      "Suplex tests the City of Toronto's four free pre-approved multiplex designs against every house lot in the ward, using the lot shapes and zoning in the City's open data and the rules of Zoning By-law 569-2013. The rules are applied by code, not by AI.",
+      "Lot lines in the City's data are not survey-accurate. When a design passes or fails a rule by less than {band_m} m, or {band_pp} percentage points of lot coverage, the result is \"too close to call\".",
+      "Counts of lots where a design may fit are upper bounds: they show where a design may fit under the rules Suplex checks, not what gets built.",
+      "Multiplex permits are building permits issued since May 2023 that create 2 to 6 homes, counted once per project, following the Toronto Multiplex Tracker's rule. They were issued before the free designs existed.",
+      "The written summary is phrased by Google's Gemini model. It writes placeholders instead of numbers; every number is filled in from the rules engine's results and links to its source, and a validator rejects any text containing a number the engine did not produce."
+    ],
+    "not_checked_heading": "What Suplex doesn't check",
+    "datasets_heading": "Data sources"
   }
 }

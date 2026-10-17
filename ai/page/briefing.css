@@ -1,0 +1,185 @@
+/* The shareable ward briefing (MASTERSPEC 7.7). Colours and type come from /static/design-tokens.css. */
+
+:root {
+  color-scheme: light;
+  /* Trend bars: a darker step of --suplex-permit. The token itself (#FFC83D) is 1.5:1 against white,
+     too faint for bars; this step passes the dataviz palette checks on both --suplex-surface and
+     --suplex-paper while still reading as the permit gold. Candidate for a shared token. */
+  --trend-bar: #B47F00;
+  --trend-bar-hover: #8A6100;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--suplex-paper);
+  color: var(--suplex-ink);
+  font: var(--text-md)/1.55 var(--font-ui);
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.status { color: var(--suplex-ink-muted); }
+
+a { color: var(--suplex-accent); }
+a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--suplex-accent);
+  outline-offset: 2px;
+}
+
+/* Header */
+.brand {
+  margin: 0 0 var(--space-2);
+  font: 600 var(--text-sm)/1.2 var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--suplex-ink-muted);
+}
+h1 {
+  margin: 0 0 var(--space-3);
+  font: 600 var(--text-xl)/1.2 var(--font-display);
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-4);
+  color: var(--suplex-ink-muted);
+  font-size: var(--text-sm);
+}
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--suplex-line);
+  border-radius: 999px;
+  background: var(--suplex-surface);
+  font-size: var(--text-xs);
+  color: var(--suplex-ink-muted);
+  white-space: nowrap;
+}
+
+.notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--suplex-line);
+  background: var(--suplex-surface);
+  font-size: var(--text-sm);
+}
+.notice.sample { border-color: var(--suplex-permit-outline); background: #FFF6DC; }
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-6);
+}
+.toolbar label { font-size: var(--text-sm); color: var(--suplex-ink-muted); }
+select, button {
+  font: inherit;
+  font-size: var(--text-sm);
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--suplex-line);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  color: var(--suplex-ink);
+}
+button { cursor: pointer; }
+button.primary { background: var(--suplex-accent); border-color: var(--suplex-accent); color: var(--suplex-accent-ink); }
+.toolbar a { font-size: var(--text-sm); }
+
+/* Sections */
+.card {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+.card h2 {
+  margin: 0 0 var(--space-2);
+  font: 600 var(--text-lg)/1.3 var(--font-display);
+}
+.card p { margin: 0; }
+.card ol { margin: 0; padding-left: 1.4em; }
+.card li + li { margin-top: var(--space-2); }
+
+a.num {
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.disclaimer {
+  margin: var(--space-6) 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--suplex-ink);
+  background: var(--suplex-surface);
+  font-weight: 600;
+}
+
+/* Trend chart */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .grid { stroke: var(--suplex-line); stroke-width: 1; }
+.chart .axis-text { fill: var(--suplex-ink-muted); font: 11px var(--font-ui); font-variant-numeric: tabular-nums; }
+.chart .bar { fill: var(--trend-bar); }
+.chart .bar.active { fill: var(--trend-bar-hover); }
+.chart .marker { stroke: var(--suplex-ink-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .marker-text { fill: var(--suplex-ink); font: 11px var(--font-ui); }
+.chart .hit { fill: transparent; }
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-ink);
+  color: var(--suplex-surface);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 8px));
+}
+.caption { margin: var(--space-2) 0 0; color: var(--suplex-ink-muted); font-size: var(--text-sm); }
+details { margin-top: var(--space-3); font-size: var(--text-sm); }
+details table { border-collapse: collapse; margin-top: var(--space-2); font-variant-numeric: tabular-nums; }
+details th, details td { padding: 2px var(--space-3) 2px 0; text-align: left; border-bottom: 1px solid var(--suplex-line); }
+details td:last-child, details th:last-child { text-align: right; }
+
+/* Sources and methodology */
+.sources, .methodology { font-size: var(--text-sm); }
+.sources ol { padding-left: 1.6em; }
+.sources li { overflow-wrap: anywhere; }
+.methodology p + p { margin-top: var(--space-2); }
+.methodology h3 { margin: var(--space-4) 0 var(--space-1); font-size: var(--text-md); }
+.methodology ul { margin: 0; padding-left: 1.2em; }
+
+@media (max-width: 520px) {
+  .card { padding: var(--space-4); }
+  h1 { font-size: var(--text-lg); }
+}
+
+/* Print: one column, no controls, black text, each number's source as a numbered footnote. */
+@media print {
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .page { max-width: none; padding: 0; }
+  .toolbar, .tooltip, details, .no-print { display: none !important; }
+  .card { box-shadow: none; padding: 0; margin: 0 0 12pt; break-inside: avoid; }
+  a, a.num { color: #000; text-decoration: none; }
+  a.num::after {
+    content: "[" attr(data-fn) "]";
+    font-size: 0.7em;
+    vertical-align: super;
+    font-weight: 400;
+  }
+  .chart .bar { fill: #555; }
+  .badge, .notice { border-color: #999; background: #fff; }
+}

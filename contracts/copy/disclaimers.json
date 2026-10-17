@@ -1,8 +1,8 @@
 {
-  "_note": "v0 by Andrew; Simone owns this file",
+  "_note": "v1, reviewed by Simone 2026-10-17 (S9); Simone owns this file",
   "screening": "Screening only, not a permit or legal advice.",
   "illustrative": "Illustrative new-build scenario",
-  "upper_bound": "Counts are upper bounds: a design may fit; nothing here says it will be built.",
+  "upper_bound": "Counts are upper bounds: they show where a design may fit, not what gets built.",
   "permits_label": "Multiplex permits since May 2023, before the free designs existed.",
   "massing": "Neighbouring buildings are illustrative, from the City's 3D Massing data.",
   "no_building": "No building here today.",

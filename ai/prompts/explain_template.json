@@ -1,0 +1,25 @@
+{
+  "_note": "The plain-template fallback for /explain (MASTERSPEC 7.5). English only; same placeholders and neutral tone as the AI text. {design} is the design's name. A sentence is used only when every placeholder in it is in the numbers map.",
+  "opening": {
+    "fits": "The {design} may fit on this lot: every rule we checked passes with room to spare.",
+    "borderline": "The {design} is too close to call on this lot.",
+    "no_fit": "The {design} doesn't fit on this lot.",
+    "not_checked": "Suplex did not check the {design} on this lot."
+  },
+  "rule": {
+    "lot_width": "It needs {{lot_width_required}} m of lot width, and this lot measures about {{lot_width_actual}} m.",
+    "lot_depth": "It needs {{lot_depth_required}} m of lot depth, and this lot measures about {{lot_depth_actual}} m.",
+    "building_length": "The design is {{building_length_design}} m long, and {{building_length_allowed}} m is allowed on this lot.",
+    "height": "The design is {{height_design}} m tall, and {{height_allowed}} m is allowed on this lot.",
+    "lot_coverage": "It would cover {{coverage_actual_pct}}% of the lot, and {{coverage_allowed_pct}}% is allowed.",
+    "units_allowed": "The design has {{units_design}} homes, and {{units_allowed}} are allowed on this lot.",
+    "detached_building": "The City's free designs are detached buildings, and the house on this lot is attached."
+  },
+  "band": {
+    "m": "That difference is inside our {{uncertainty_band_m}} m uncertainty band, because the City's lot lines are not survey-accurate.",
+    "pct": "That difference is inside our {{uncertainty_band_coverage_pp}} percentage point uncertainty band, because the City's lot lines are not survey-accurate."
+  },
+  "screening": "This is a screening, not a permit.",
+  "next_step": "A designer or the City's zoning examiner can confirm.",
+  "next_step_borderline": "A survey and the City's zoning examiner can confirm."
+}

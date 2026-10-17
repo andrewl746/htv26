@@ -19,9 +19,11 @@ export function DrawnDesign({ placement, spec, model }: { placement: LocalPoint[
   useEffect(() => () => facade.levels.forEach((l) => l.parts.forEach((p) => p.geometry.dispose())), [facade])
 
   // The model's frame (u across from the left wall, v back from the front) onto the placement:
-  // its centre on the placement's centre, its u axis along the front wall.
+  // its centre on the placement's centre, its v axis along the placement's front-to-back
+  // direction, so the front always faces the street. (Placements run counter-clockwise, front-left
+  // first as seen from the street, so u then lies along the front wall.)
   const frame = useMemo(() => placementFrame(placement), [placement])
-  const [ax, ay] = [frame.across[0] / frame.width, frame.across[1] / frame.width]
+  const [bx, by] = frame.back
   const [cx, cy] = frame.centre
   const scale: [number, number, number] = [frame.width / model.width, 1, frame.length / model.length]
 
@@ -38,7 +40,7 @@ export function DrawnDesign({ placement, spec, model }: { placement: LocalPoint[
   })
 
   return (
-    <group position={[cx, 0, -cy]} rotation={[0, Math.atan2(ay, ax), 0]} scale={scale}>
+    <group position={[cx, 0, -cy]} rotation={[0, Math.atan2(-bx, by), 0]} scale={scale}>
       {facade.levels.map((level, i) => (
         <group
           key={level.level.level}

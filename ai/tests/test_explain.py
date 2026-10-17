@@ -16,7 +16,7 @@ from ai.config import contract, load_settings
 from ai.gemini import GeminiError
 from ai.main import app, get_generate, get_settings
 from ai.models import ExplainDraft
-from ai.numbers import allowed_numbers, build_check_numbers, pick_design
+from ai.numbers import allowed_numbers, build_check_numbers, pick_design, render
 from ai.templates import explain_template
 from ai.validator import validate
 
@@ -145,5 +145,6 @@ def test_every_template_passes_the_validator(fixture, design_id):
     _, numbers = build_check_numbers(check, design_id, web_url="w", ai_url="a")
     text = explain_template(check, pick_design(check, design_id), numbers)
     assert validate(text, numbers, allowed_numbers(numbers)).ok, text
+    assert "{" not in render(text, numbers, "en"), text  # no placeholder mangled into single braces
     assert "Screening" in text or "screening" in text
     assert "will be built" not in text

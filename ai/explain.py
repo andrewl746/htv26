@@ -5,20 +5,15 @@ complaint → plain template. Nothing unvalidated is returned or cached.
 """
 from __future__ import annotations
 
-import hashlib
 import json
-from collections.abc import Callable
-from datetime import UTC, datetime
 
 from ai.cache import JsonCache, cache_key
 from ai.config import Settings, contract, prompt_file
-from ai.gemini import GeminiError, generate_json
+from ai.gemini import generate_json
+from ai.generate import Generate, check_template, generate_validated
 from ai.models import ExplainDraft
 from ai.numbers import allowed_numbers, build_check_numbers, design_name, pick_design, render, used
 from ai.templates import explain_template
-from ai.validator import ValidationResult, validate
-
-Generate = Callable[..., ExplainDraft]
 
 RULE_PLACEHOLDERS = {
     "lot_width": ["lot_width_required", "lot_width_actual", "lot_width_margin"],
@@ -65,42 +60,18 @@ def model_input(check: dict, design: dict, numbers: dict) -> dict:
     }
 
 
-def _log_rejection(settings: Settings, prompt: str, attempt: int, result: ValidationResult) -> None:
-    settings.log_dir.mkdir(parents=True, exist_ok=True)
-    entry = {
-        "at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "endpoint": "explain",
-        "model": settings.gemini_model,
-        "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
-        "attempt": attempt,
-        "invented": sorted(result.invented),
-        "unknown": sorted(result.unknown),
-        "missing": sorted(result.missing),
-    }
-    with (settings.log_dir / "rejections.jsonl").open("a", encoding="utf-8") as f:
-        f.write(json.dumps(entry) + "\n")
-
-
 def _english(check: dict, design: dict, numbers: dict, settings: Settings, generate: Generate) -> tuple[str, str, bool]:
     """Returns (template_text, source, cacheable). Gemini failures fall back without caching."""
     allowed = allowed_numbers(numbers)
     prompt = prompt_file("explain.md") + json.dumps(model_input(check, design, numbers), ensure_ascii=False, indent=1)
-    try:
-        for attempt in (1, 2):
-            draft = generate(prompt, ExplainDraft, model=settings.gemini_model)
-            result = validate(draft.template_text, numbers, allowed)
-            if result.ok:
-                return draft.template_text, "gemini", True
-            _log_rejection(settings, prompt, attempt, result)
-            prompt = f"{prompt}\n\n{result.complaint()}"
-        cacheable = True  # rejected twice: the same inputs would be rejected again
-    except GeminiError:
-        cacheable = False  # quota or network: try Gemini again next time
-
+    texts, cacheable = generate_validated(
+        endpoint="explain", prompt=prompt, schema=ExplainDraft, numbers=numbers, allowed=allowed,
+        settings=settings, generate=generate,
+    )
+    if texts is not None:
+        return texts["template_text"], "gemini", True
     text = explain_template(check, design, numbers)
-    check_template = validate(text, numbers, allowed)
-    if not check_template.ok:  # a bug in the template copy, never shown
-        raise RuntimeError(f"explain template failed the validator: {check_template}")
+    check_template({"template_text": text}, numbers, allowed)
     return text, "template", cacheable
 
 

@@ -1,5 +1,5 @@
 {
-  "_note": "Labels for the numbers map (MASTERSPEC 7.3). Shown as the title of each linked number. {design} is the design's name from contracts/copy/labels.json.",
+  "_note": "Labels for the numbers map (MASTERSPEC 7.3). Shown as the title of each linked number. {design} is the design's name from contracts/copy/labels.json; {year} is a calendar year.",
   "labels": {
     "lot_width_actual": "This lot's width across the building",
     "lot_width_required": "Lot width the {design} needs",
@@ -20,6 +20,29 @@
     "lot_area_m2": "This lot's area",
     "design_bedrooms": "Bedrooms in the {design}",
     "uncertainty_band_m": "Uncertainty band",
-    "uncertainty_band_coverage_pp": "Uncertainty band for lot coverage"
+    "uncertainty_band_coverage_pp": "Uncertainty band for lot coverage",
+
+    "could_lots": "House lots where at least one free design may fit (upper bound)",
+    "could_pct": "Share of house lots where a free design may fit",
+    "did_permits": "Multiplex permits issued since May 2023",
+    "lots_per_permit": "Lots that may fit a design for each multiplex permit issued",
+    "borderline_lots": "House lots where the closest design is too close to call",
+    "nofit_lots": "House lots where no free design fits",
+    "not_checked_lots": "Lots Suplex did not check",
+    "house_lots": "House lots (detached houses, semis and row houses)",
+    "attached_pct": "Share of house lots that are semis or row houses",
+    "flagged_fitting_lots": "Lots where a design may fit that need extra review (heritage, ravine or flood area)",
+    "permits_year": "Multiplex permits issued in {year}",
+    "units_since_may_2023": "Homes created by multiplex permits since May 2023",
+    "by_design_fits": "House lots where the {design} may fit (upper bound)"
+  },
+  "top_rule_count": {
+    "detached_building": "House lots that don't fit because the house is attached",
+    "units_allowed": "House lots that don't fit because sixplexes are not allowed in this ward",
+    "lot_width": "House lots that don't fit because the lot is too narrow for the side yards",
+    "lot_depth": "House lots that don't fit because the lot is too shallow for the front and rear yards",
+    "building_length": "House lots that don't fit because the lot is not deep enough for the longer building",
+    "height": "House lots that don't fit because the height limit is lower than the design",
+    "lot_coverage": "House lots that don't fit because the building would cover too much of the lot"
   }
 }

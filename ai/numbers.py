@@ -108,6 +108,43 @@ def build_check_numbers(
     return did, numbers
 
 
+def build_ward_numbers(ward: dict, *, web_url: str) -> dict[str, dict]:
+    """The numbers map for one ward (a WardSummaryEntry, or a WardResponse with its urls)."""
+    copy = load_json(PROMPTS_DIR / "numbers.json")
+    labels = copy["labels"]
+    ward_map = f"{web_url}/?ward={ward['ward_id']}"
+    permits_url = SOURCE_URLS["building_permits"]
+    headline, any_design, permits = ward["headline"], ward["any_design"], ward["permits"]
+    numbers: dict[str, dict] = {}
+
+    def add(key: str, value: Any, unit: str | None, label: str, source_url: str = ward_map) -> None:
+        if _is_number(value):
+            numbers[key] = {"value": value, "unit": unit, "label": label, "source_url": source_url}
+
+    add("could_lots", headline["could"], None, labels["could_lots"])
+    add("could_pct", headline["could_pct_of_house_lots"], "%", labels["could_pct"])
+    add("did_permits", headline["did"], None, labels["did_permits"], permits_url)
+    add("lots_per_permit", headline["lots_per_permit"], None, labels["lots_per_permit"])
+    add("borderline_lots", any_design["borderline"], None, labels["borderline_lots"])
+    add("nofit_lots", any_design["no_fit"], None, labels["nofit_lots"])
+    add("not_checked_lots", any_design["not_checked"], None, labels["not_checked_lots"])
+    add("house_lots", ward["house_lots"], None, labels["house_lots"])
+    add("attached_pct", ward["attached_share_pct"], "%", labels["attached_pct"])
+    if ward["top_blocking_rules"]:
+        top = ward["top_blocking_rules"][0]
+        add("top_rule_count", top["count"], None, copy["top_rule_count"][top["rule_id"]])
+    add("flagged_fitting_lots", ward["flags"]["any_on_fitting_lots"], None, labels["flagged_fitting_lots"])
+    first_year = int(contract("engine_config.json")["permits_since"][:4])
+    for year, count in sorted(permits["by_year"].items()):
+        if int(year) >= first_year:
+            add(f"permits_{year}", count, None, labels["permits_year"].format(year=year), permits_url)
+    add("units_since_may_2023", permits["units_since_may_2023"], None, labels["units_since_may_2023"], permits_url)
+    for design_id, counts in ward["by_design"].items():
+        add(f"by_design_{design_id}_fits", counts["fits"], None,
+            labels["by_design_fits"].format(design=design_name(design_id)))
+    return numbers
+
+
 # --- allowed numbers ---------------------------------------------------------------------------
 
 

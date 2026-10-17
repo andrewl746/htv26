@@ -46,3 +46,60 @@ class ExplainResponse(BaseModel):
 class ExplainDraft(BaseModel):
     """What Gemini returns for /explain (structured output schema)."""
     template_text: str
+
+
+class BriefingRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ward: dict[str, Any]
+    trend: dict[str, Any] | None
+    lang: Lang
+
+
+class BriefingSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: Literal["what_may_fit", "blocking_rule", "permits", "not_checked", "questions"]
+    heading: str
+    template_text: str
+    text: str
+
+
+class DatasetLink(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: str
+    url: str
+
+
+class BriefingLinks(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ward_map: str
+    datasets: list[DatasetLink]
+    methodology: str
+
+
+class BriefingResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ward_id: str
+    ward_name: str
+    lang: Lang
+    title: str
+    sections: list[BriefingSection]
+    questions: list[str]
+    numbers: dict[str, NumberEntry]
+    links: BriefingLinks
+    disclaimer: str
+    data_dates: dict[str, str]
+    generated_at: str
+    validated: Literal[True]
+    source: Literal["gemini", "template"]
+    model: str | None
+    cached: bool
+    translation_unavailable: bool
+
+
+class BriefingDraft(BaseModel):
+    """What Gemini returns for /briefing: one field per written section, flat as 7.9 advises.
+    The title and the three questions are fixed copy and never generated."""
+    what_may_fit: str
+    blocking_rule: str
+    permits: str
+    not_checked: str

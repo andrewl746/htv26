@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import '@contracts/design-tokens.css'
 import './styles/palette.css'
+import './styles/typography.css'
 import './styles/app.css'
 import App from './App.tsx'
 

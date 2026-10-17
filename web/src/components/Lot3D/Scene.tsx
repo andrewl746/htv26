@@ -1,28 +1,34 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Stats } from '@react-three/drei'
-import { NeutralToneMapping } from 'three'
+import { ContactShadows, PerformanceMonitor, Stats } from '@react-three/drei'
+import { ACESFilmicToneMapping, NeutralToneMapping } from 'three'
 import type { CheckResponse, DesignId } from '@contracts/types'
 import engineConfig from '@contracts/engine_config.json'
 import { designById } from '../../designs'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { tokenHex } from '../../styles/tokens'
 import { buildingTop } from './buildings'
-import { Camera } from './Camera'
+import { Camera, type FixedPose } from './Camera'
 import { CutawayFocus } from './CutawayFocus'
-import { Design } from './Design'
+import { ELEVATION_VIEW } from './debug'
+import { Effects } from './Effects'
+import { ClassicDesign } from './ClassicDesign'
+import { DrawnDesign } from './DrawnDesign'
 import { failSlab } from './failSlabs'
 import { FailSlices } from './FailSlices'
 import { FLAT, openRing, toScene, vertexMean } from './geometry'
 import { LabelProjector } from './LabelProjector'
 import { failLabel, homeLabels, oldHouseLabels } from './labels'
 import { Lighting } from './Lighting'
+import { LOOK } from './look'
 import { Lot } from './Lot'
+import { FACADES } from './models'
 import { OldHouse } from './OldHouse'
 import { Pin } from './Pin'
 import { SceneLabels } from './SceneLabels'
 import { Sequence } from './Sequence'
 import { Street } from './Street'
+import { Studio } from './Studio'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
 import { lotFraming, type Framing } from './framing'
@@ -37,6 +43,14 @@ const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg
 const CUT_MARGIN_M = 2
 const FOG_NEAR_M = 90
 const FOG_FAR_M = 320
+/** Dev elevation view: how far in front of the design the camera stands. */
+const ELEVATION_DISTANCE_M = 70
+/** A15: under this frame rate the drawn look drops ambient occlusion and shadows. */
+const MIN_FPS = 45
+/** Contact shadows: just above every flat layer on the ground, over the lot and its neighbours. */
+const CONTACT = { y: 0.09, scaleM: 90, farM: 12, blur: 2.2, opacity: 0.45, resolution: 1024 }
+/** The drawn look renders at most this many pixels per CSS pixel: the ambient occlusion is per pixel. */
+const DRAWN_MAX_DPR = 1.5
 
 /** `?stats=1` in dev shows the frame rate, for the 60 fps check (J1). */
 const SHOW_STATS = import.meta.env.DEV && new URLSearchParams(window.location.search).has('stats')
@@ -61,6 +75,10 @@ export function Scene({
   rightInsetPx: number
 }) {
   const reduced = useReducedMotion()
+  // Lowered for good once the frame rate stays under MIN_FPS (the drawn look only).
+  const [quality, setQuality] = useState<'high' | 'low'>('high')
+  const drawn = LOOK === 'drawn'
+  const rich = drawn && quality === 'high'
   const result = check?.designs.find((d) => d.design_id === designId) ?? null
   const placement = result?.placement_local ?? null
   const spec = result && placement ? designById(result.design_id) : null
@@ -68,6 +86,8 @@ export function Scene({
     () => buildTimeline(spec?.levels.length ?? 0, spec?.homes.length ?? 0, reduced),
     [spec, reduced],
   )
+  // A16: the design as the City drew it, unless ?look=classic or it is not modelled yet.
+  const facade = spec && LOOK === 'drawn' ? FACADES[spec.id] : undefined
   // J8: where the selected design fails, or is too close to call.
   const slab = useMemo(() => (result && spec ? failSlab(result, spec) : null), [result, spec])
 
@@ -107,6 +127,21 @@ export function Scene({
     return { centre: toScene([0, 0], pinHeight / 2), radius: lotRadius }
   }, [check, placement, spec, pinHeight, lotRadius])
 
+  // Dev only: square to the design's front, at half its height (debug.ts).
+  const fixedPose = useMemo((): FixedPose | null => {
+    if (!ELEVATION_VIEW || !placement || !spec) return null
+    const [fl, fr, , rl] = placement
+    const mid: [number, number] = [(fl[0] + fr[0]) / 2, (fl[1] + fr[1]) / 2]
+    const back = [rl[0] - fl[0], rl[1] - fl[1]]
+    const len = Math.hypot(back[0], back[1])
+    const out: [number, number] = [-back[0] / len, -back[1] / len]
+    const h = spec.height_m / 2
+    return {
+      position: toScene([mid[0] + out[0] * ELEVATION_DISTANCE_M, mid[1] + out[1] * ELEVATION_DISTANCE_M], h),
+      target: toScene(mid, h),
+    }
+  }, [placement, spec])
+
   return (
     <div
       className={visible ? 'scene scene-visible' : 'scene'}
@@ -117,9 +152,10 @@ export function Scene({
       <Canvas
         frameloop={visible ? 'always' : 'never'}
         shadows="percentage"
-        dpr={[1, 2]}
-        gl={{ antialias: true, toneMapping: NeutralToneMapping }}
+        dpr={[1, drawn ? DRAWN_MAX_DPR : 2]}
+        gl={{ antialias: true, toneMapping: drawn ? ACESFilmicToneMapping : NeutralToneMapping }}
       >
+        {drawn && <PerformanceMonitor bounds={() => [MIN_FPS, Infinity]} onDecline={() => setQuality('low')} />}
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
           <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
           <Camera
@@ -127,9 +163,10 @@ export function Scene({
             distanceM={framing.distanceM}
             viewBearingDeg={framing.viewBearingDeg}
             rightInsetPx={rightInsetPx}
+            fixed={fixedPose}
           />
           <CutawayFocus focus={focus} />
-          <Lighting />
+          {drawn ? <Studio shadows={rich} /> : <Lighting />}
 
           <mesh rotation={FLAT} receiveShadow>
             <circleGeometry args={[groundRadius * GROUND_SCALE, 96]} />
@@ -145,15 +182,32 @@ export function Scene({
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
               <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} />
               <Pin restHeight={pinHeight} leaves={placement !== null} />
-              {placement && spec && <Design key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} />}
+              {placement &&
+                spec &&
+                (facade ? (
+                  <DrawnDesign key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} model={facade} />
+                ) : (
+                  <ClassicDesign key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} />
+                ))}
               {slab && spec && <FailSlices key={`fail-${lotKey}-${spec.id}`} slab={slab} />}
             </>
           )}
+          {rich && check && (
+            <ContactShadows
+              position={[0, CONTACT.y, 0]}
+              scale={CONTACT.scaleM}
+              far={CONTACT.farM}
+              blur={CONTACT.blur}
+              opacity={CONTACT.opacity}
+              resolution={CONTACT.resolution}
+            />
+          )}
           <LabelProjector labels={labels} elements={labelElements} />
         </Sequence>
+        {rich && <Effects />}
         {SHOW_STATS && <Stats />}
       </Canvas>
-      <SceneLabels labels={labels} elements={labelElements} />
+      {!ELEVATION_VIEW && <SceneLabels labels={labels} elements={labelElements} />}
     </div>
   )
 }

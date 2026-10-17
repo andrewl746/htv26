@@ -1,0 +1,55 @@
+import { Environment, Lightformer } from '@react-three/drei'
+import { Color } from 'three'
+import { tokenHex } from '../../styles/tokens'
+import { sunPosition } from './sun'
+
+// A15: the drawn look's light. The image-based light comes from an environment built in the scene
+// from drei Lightformers, rendered once into a cube map: no HDR file is downloaded, so the demo
+// runs with the Wi-Fi off. A low warm sun from the south-west (the same direction as the shadow
+// light), a soft sky above, a warm bounce from the ground and two cool fills that give the glass
+// something to reflect.
+const ENV_RESOLUTION = 256
+const ENV_INTENSITY = 0.85
+/** The sun's direct light, a little softer than the classic look's: the environment adds the rest. */
+const SUN_INTENSITY = 2.6
+const SHADOW = { mapSize: 2048, radius: 5, halfExtentM: 70, bias: -0.0004, normalBias: 0.04 }
+const HEMI_INTENSITY = 0.35
+const SUN_WHITE_MIX = 0.45
+
+export function Studio({ shadows }: { shadows: boolean }) {
+  const sun = new Color(tokenHex('--suplex-sun')).lerp(new Color('white'), SUN_WHITE_MIX)
+  const [x, y, z] = sunPosition()
+  return (
+    <>
+      <Environment frames={1} resolution={ENV_RESOLUTION} environmentIntensity={ENV_INTENSITY}>
+        {/* The sun disc, low in the south-west. */}
+        <Lightformer form="circle" intensity={6} color="#ffd29a" position={[x / 4, y / 4, z / 4]} scale={14} target={[0, 0, 0]} />
+        {/* The sky: a wide soft panel overhead and a pale ring round the horizon. */}
+        <Lightformer form="rect" intensity={1.4} color="#eef3ff" position={[0, 40, 0]} rotation-x={Math.PI / 2} scale={[80, 80, 1]} />
+        <Lightformer form="ring" intensity={0.8} color="#fff4e2" position={[0, 6, 0]} rotation-x={Math.PI / 2} scale={60} />
+        {/* Warm bounce from the street. */}
+        <Lightformer form="rect" intensity={0.5} color="#e9dcc4" position={[0, -8, 0]} rotation-x={-Math.PI / 2} scale={[80, 80, 1]} />
+        {/* Cool fills to the north and east, for reflections in the windows. */}
+        <Lightformer form="rect" intensity={0.9} color="#cfe0ff" position={[0, 10, -40]} scale={[50, 14, 1]} target={[0, 4, 0]} />
+        <Lightformer form="rect" intensity={0.6} color="#dfe9ff" position={[40, 8, 0]} scale={[40, 12, 1]} target={[0, 4, 0]} />
+      </Environment>
+      <hemisphereLight args={[tokenHex('--suplex-sky-bottom'), tokenHex('--suplex-ground'), HEMI_INTENSITY]} />
+      <directionalLight
+        position={[x, y, z]}
+        color={sun}
+        intensity={SUN_INTENSITY}
+        castShadow={shadows}
+        shadow-mapSize={[SHADOW.mapSize, SHADOW.mapSize]}
+        shadow-radius={SHADOW.radius}
+        shadow-bias={SHADOW.bias}
+        shadow-normalBias={SHADOW.normalBias}
+        shadow-camera-left={-SHADOW.halfExtentM}
+        shadow-camera-right={SHADOW.halfExtentM}
+        shadow-camera-top={SHADOW.halfExtentM}
+        shadow-camera-bottom={-SHADOW.halfExtentM}
+        shadow-camera-near={1}
+        shadow-camera-far={Math.hypot(x, y, z) * 2}
+      />
+    </>
+  )
+}

@@ -1,4 +1,4 @@
-# Suplex masterspec, version 3 (status board updated 2026-10-17 18:05, see section 0)
+# Suplex masterspec, version 3 (status board updated 2026-10-17 18:10, see section 0)
 
 **Hack the Valley 11 · Hack the Valley × School of Cities challenge · 4 people · about 36 hours**
 
@@ -12,7 +12,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-17, 18:05, about Hour 20 of 36)](#0-status-board-updated-2026-10-17-1805-about-hour-20-of-36)
+- [0. Status board (updated 2026-10-17, 18:10, about Hour 20 of 36)](#0-status-board-updated-2026-10-17-1810-about-hour-20-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
   - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
@@ -109,7 +109,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ---
 
-## 0. Status board (updated 2026-10-17, 18:05, about Hour 20 of 36)
+## 0. Status board (updated 2026-10-17, 18:10, about Hour 20 of 36)
 
 Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 
@@ -141,9 +141,9 @@ Andrew's session has also written the A10 batch (code and tests, committed local
 | Person | Done and merged | Waiting for Andrew to merge | Now and next |
 |---|---|---|---|
 | Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8, T19 and T22 closed; approved next steps and the re-plan; merged PRs #8 and #9; T21 settled (six units, By-law 845-2025) | the A10 batch with tests (dfecfb2) and a three times faster engine (c3ddfe1), committed by his A9-A10 session but not yet pushed | A9 and A10 in his main session; the 3D scene (J8, A16, A15) in a separate session on its own branch, started at 18:00; then A11 at Hour 24, A14, the palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13 |
-| Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9) | PR #12: a 2D plan view tab (the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and permit diamonds on a street map; zoom and pan; no addresses, no lists), which also carries Jayden's four unmerged commits with their palette conflict resolved; merged together with #13 onto `main` in a test checkout it builds and lints clean | J5 the ward map now, on a neutral base (Simone measured the fit green at 1.83:1 against the new green parks), then next steps Y11 to Y14; the Hour-24 refresh (Y9) |
-| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | PR #14 (his four commits) now conflicts with `main` and is superseded by #12, which contains them | away for a few hours, then J4 the result panel (with the 3D Massing disclaimer, which is not shown anywhere yet), J6 the transition, J9 the demo mode, the landing search card and the non-3D UI; after #13 merges, switch the pending strings in `copy.ts` and `Plan/copy.ts` to `labels.json` |
-| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary, PR #8; S8 part one: the explanations on the 19 hand-checked lots with the real API and Gemini, 19 of 19 passing the number check and matching Andrew's table after she caught and fixed a margin read as a depth ("the lot depth is -0.37 m"); the plan-view strings; the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A and the README draft, with [LOCKED] markers for numbers that only exist after Hour 24 | PR #13: J7 `TrendChart.tsx` (the briefing chart for the ward panel, checked against the fixture) and the web's five pending strings in `labels.json`; 118 tests pass | after A10: S8's briefing page on real data (`/ward` answers 503 until the batch runs) and S9, the backup addresses (the landing chips, 326 Quebec Ave and 281 Armadale Ave, check out on real data); after Hour 24: the [LOCKED] numbers, screenshots, the one `gemini-3.8-flash` pass and a re-read of the French; S14; translation sheets (Tamil drops "if anything" in question 1) |
+| Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9); merged at 18:08 (PR #12: a 2D plan view tab (the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and permit diamonds on a street map; zoom and pan; no addresses, no lists), which also carries Jayden's four unmerged commits with their palette conflict resolved; merged together with #13 onto `main` in a test checkout it builds and lints clean) | nothing open | J5 the ward map now, on a neutral base (Simone measured the fit green at 1.83:1 against the new green parks), then next steps Y11 to Y14; the Hour-24 refresh (Y9) |
+| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | nothing open: his four commits reached `main` through #12 at 18:08, so GitHub shows #14 as merged too | away for a few hours, then J4 the result panel (with the 3D Massing disclaimer, which is not shown anywhere yet), J6 the transition, J9 the demo mode, the landing search card and the non-3D UI; after #13 merges, switch the pending strings in `copy.ts` and `Plan/copy.ts` to `labels.json` |
+| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary, PR #8; S8 part one: the explanations on the 19 hand-checked lots with the real API and Gemini, 19 of 19 passing the number check and matching Andrew's table after she caught and fixed a margin read as a depth ("the lot depth is -0.37 m"); the plan-view strings; the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A and the README draft, with [LOCKED] markers for numbers that only exist after Hour 24; merged at 18:08 (PR #13: J7 `TrendChart.tsx` (the briefing chart for the ward panel, checked against the fixture) and the web's five pending strings in `labels.json`; 118 tests pass); the pitch facts, Devpost and Q&A now say "up to six units, By-law 845-2025" (d64baa4) | nothing open | after A10: S8's briefing page on real data (`/ward` answers 503 until the batch runs) and S9, the backup addresses (the landing chips, 326 Quebec Ave and 281 Armadale Ave, check out on real data); after Hour 24: the [LOCKED] numbers, screenshots, the one `gemini-3.8-flash` pass and a re-read of the French; S14; translation sheets (Tamil drops "if anything" in question 1) |
 
 ### 0.3 Critical path and the approved re-plan
 
@@ -220,7 +220,7 @@ Section 9.1 says only Andrew merges into `main` and everyone edits only their ow
 Nothing broke: `main` builds, type-checks and lints clean, and the engine, API and AI tests pass. But after Hour 24 a self-merge that breaks `main` costs the demo, and two people restyling the same folder is how a demo ends up half one palette and half the other. From now on: every change goes in as a PR to Andrew; nobody merges their own PR; a change someone wants in another person's folder is a message to that person. The palette that wins must also land in `contracts/design-tokens.css` (through Andrew) so Simone's briefing page matches the app.
 
 
-PR #12 (Yuvi) changed Jayden's files and carried Jayden's unmerged commits. It was opened before the new ownership rules were pushed, and it resolves the palette conflict that blocks Jayden's own PR #14, so it is the one to merge; #14 is then superseded. From now on `CLAUDE.md` applies: in `/web`, Yuvi edits only `WardMap/` and the next-steps component.
+PR #12 (Yuvi) changed Jayden's files and carried Jayden's unmerged commits. It was opened before the new ownership rules were pushed, and it resolves the palette conflict that blocks Jayden's own PR #14, so it was merged (with Simone's #13) at 18:08, and GitHub shows #14 as merged through it. From now on `CLAUDE.md` applies: in `/web`, Yuvi edits only `WardMap/` and the next-steps component.
 ---
 
 ## 1. Summary, decisions locked, assumptions
@@ -1499,7 +1499,7 @@ Visual extras are not on this list because they never start before the core work
 | T18 | **Done (Yuvi):** the real Tiger Data service is loaded and checked for all 25 wards; compression 3.59 MB to 2.60 MB; trend cache rebuilt from it; `TIGER_DSN` shared privately | Yuvi | Hour 12 | the Hour-14 go/no-go is passed |
 | T19 | **Done 2026-10-17:** the site-exception policy is confirmed and built (`classify.INFORMATIONAL_FLAGS`, `review_flags`): the flag stays in the address check with the exception number, never an icon on the map, never counted as "need extra review"; `ward_summary.flags.site_exception` still counts it | Andrew | Hour 8 | 88% of Ward 04 lots carry an exception number |
 | T20 | Fix the skewed-lot placement so the depth row stops reading short on lots whose sides lean more than about 8° (542 pessimistic Ward 04 results, `docs/test-lots.md` fix 2) | Andrew | before A10 | fit accuracy on tapered lots |
-| T21 | **Done 2026-10-17:** [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf) (enacted July 24, 2025) waives development charges on the second to fourth units, reduces the fifth and sixth to $0, and waives parkland cash-in-lieu on the second to sixth, for lots with no more than six units. Say "up to six units" and cite the by-law; never name the councillors who moved it. The City's "Considerations" page saying four is out of date. Simone updates `pitch/facts.md` row 16 and the Devpost | Simone | Hour 26 | a wrong fee claim in the pitch |
+| T21 | **Done 2026-10-17:** [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf) (enacted July 24, 2025) waives development charges on the second to fourth units, reduces the fifth and sixth to $0, and waives parkland cash-in-lieu on the second to sixth, for lots with no more than six units. Say "up to six units" and cite the by-law; never name the councillors who moved it. The City's "Considerations" page saying four is out of date. Simone updated `pitch/facts.md`, the Devpost and the Q&A (d64baa4) | Simone | Hour 26 | a wrong fee claim in the pitch |
 | T22 | **Done 2026-10-17 (Andrew):** next steps and the re-plan approved; `CLAUDE.md` and section 9 list the ownership exceptions | Andrew | Hour 20 | done |
 | T23 | The 3D work (J8, A16, A15) merges from branch `andrew-3d` by Hour 27, or the current look ships; `?look=classic` stays as the fallback either way, and the demo laptop is tested at 50 fps or better before the merge | Andrew | Hour 27 | a half-finished 3D scene on stage |
 | T12 | Pick the two backup addresses and confirm the demo ward from real batch results | Simone, Andrew | Hour 20 | demo safety |
@@ -2293,6 +2293,12 @@ You asked for every decision to be made rather than asked. Here is each one, why
 ## Appendix J. Status log (every report, word for word)
 
 Section 0 is rewritten on each update; this appendix keeps what it said before, so nothing is lost. Newest first. The entries below were section 0 from 2026-10-17 03:40 to 17:00.
+
+### 2026-10-17, 18:10: PRs 12 and 13 merged
+
+- Andrew had PRs #12 (Yuvi's 2D plan view, carrying Jayden's four commits) and #13 (Simone's `TrendChart.tsx` and pending strings) merged at 18:08; GitHub marks Jayden's #14 merged through #12.
+- Andrew's 3D session was asked to commit, then merge `origin/main` into its branch, because #12 changed 11 files in `Lot3D/`.
+- Simone pushed the six-unit development-charge wording to the pitch files (d64baa4).
 
 ### 2026-10-17, 18:05: Simone's evening report, PRs 12 to 14, development charges settled
 

@@ -2308,7 +2308,7 @@ Section 0 is rewritten on each update; this appendix keeps what it said before, 
 - Demo addresses, checked on the citywide batch: 326 Quebec Ave (all four fit), 281 Armadale Ave (the Fourplex Narrow too close to call), 155 Vine Ave (a row house).
 - Simone's PR #17 (Ward 20 across the pitch) is not merged; she revises it to Ward 04. Updated: decision 18, decision 11, 0.3, 7.7, 7.9, 8.4, T12, T25.
 
-### 2026-10-17, 19:06: Simone's S9 report, Ward 20 recorded across the spec
+### 2026-10-17, 19:00: Simone's S9 report, Ward 20 recorded across the spec
 
 - Simone (PR #17, clean, `pitch/` and `docs/` only): S9 on real data; 73 Manderley Dr proposed as the "fits" opener beside Andrew's picks (88 Manderley Dr, 37 Wanstead Ave); 12 of 12 explanations clean on real data; Ward 20 across the demo file, script, deck, Devpost, Q&A, rehearsal log and README draft; a facts warning that Ward 20's permit count differs from the City's (16 against our 23).
 - Her two flags, fixed here: 0.3 step 3 said Ward 04 for the demo cache (now Ward 20), and the one `gemini-3.8-flash` pass cannot cover everything (about 28 requests against 20 a day), so it runs about 18 in stage order (7.9).

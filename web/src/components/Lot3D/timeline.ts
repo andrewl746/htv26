@@ -17,6 +17,8 @@ export interface Timeline {
   oldHouse: Span
   /** One per level of the design, basement first. */
   floors: Span[]
+  /** The red or striped slab where a design does not fit, once its floors have landed (J8). */
+  fail: Span
   /** One per home of the design. */
   labels: Span[]
   orbitStart: number
@@ -34,6 +36,7 @@ const DURATION = {
   oldHouse: 0.6,
   floor: 0.45,
   label: 0.3,
+  fail: 0.5,
   grow: 0.45,
 }
 const STAGGER = { floor: 0.15, label: 0.1 }
@@ -56,6 +59,7 @@ export function buildTimeline(levels: number, homes: number, reduced: boolean): 
   const oldHouse = span(buildable.end, d(DURATION.oldHouse))
   const floors = Array.from({ length: levels }, (_, i) => span(oldHouse.end + lap(STAGGER.floor) * i, d(DURATION.floor)))
   const floorsEnd = floors.at(-1)?.end ?? oldHouse.end
+  const fail = span(floorsEnd, d(DURATION.fail))
   const labels = Array.from({ length: homes }, (_, i) => span(floorsEnd + lap(STAGGER.label) * i, d(DURATION.label)))
 
   return {
@@ -66,8 +70,9 @@ export function buildTimeline(levels: number, homes: number, reduced: boolean): 
     buildable,
     oldHouse,
     floors,
+    fail,
     labels,
-    orbitStart: labels.at(-1)?.end ?? floorsEnd,
+    orbitStart: Math.max(labels.at(-1)?.end ?? floorsEnd, fail.end),
     growS: d(DURATION.grow),
     delayPerM: reduced ? 0 : RIPPLE_DELAY_PER_M,
   }

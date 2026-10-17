@@ -29,7 +29,9 @@ export function LabelProjector({
     labels.forEach((label, i) => {
       const el = elements.current[i]
       if (!el) return
-      const span = label.appear.step === 'oldHouse' ? timeline.oldHouse : timeline.labels[label.appear.index]
+      const { appear } = label
+      const span =
+        appear.step === 'oldHouse' ? timeline.oldHouse : appear.step === 'fail' ? timeline.fail : timeline.labels[appear.index]
       const p = span ? ease.outCubic(progress(t, span)) : 0
       const ndc = scratch.copy(points[i]).project(camera)
       // Behind the camera, or not yet due.

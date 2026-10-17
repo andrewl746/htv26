@@ -11,9 +11,11 @@ import { buildingTop } from './buildings'
 import { Camera } from './Camera'
 import { CutawayFocus } from './CutawayFocus'
 import { Design } from './Design'
+import { failSlab } from './failSlabs'
+import { FailSlices } from './FailSlices'
 import { FLAT, openRing, toScene, vertexMean } from './geometry'
 import { LabelProjector } from './LabelProjector'
-import { homeLabels, oldHouseLabels } from './labels'
+import { failLabel, homeLabels, oldHouseLabels } from './labels'
 import { Lighting } from './Lighting'
 import { Lot } from './Lot'
 import { OldHouse } from './OldHouse'
@@ -66,6 +68,8 @@ export function Scene({
     () => buildTimeline(spec?.levels.length ?? 0, spec?.homes.length ?? 0, reduced),
     [spec, reduced],
   )
+  // J8: where the selected design fails, or is too close to call.
+  const slab = useMemo(() => (result && spec ? failSlab(result, spec) : null), [result, spec])
 
   const labels = useMemo(
     () =>
@@ -78,9 +82,10 @@ export function Scene({
               squash: placement !== null,
             }),
             ...(placement && spec ? homeLabels(placement, spec) : []),
+            ...(slab ? [failLabel(slab)] : []),
           ]
         : [],
-    [check, placement, spec],
+    [check, placement, spec, slab],
   )
   const labelElements = useRef<(HTMLDivElement | null)[]>([])
 
@@ -141,6 +146,7 @@ export function Scene({
               <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} />
               <Pin restHeight={pinHeight} leaves={placement !== null} />
               {placement && spec && <Design key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} />}
+              {slab && spec && <FailSlices key={`fail-${lotKey}-${spec.id}`} slab={slab} />}
             </>
           )}
           <LabelProjector labels={labels} elements={labelElements} />

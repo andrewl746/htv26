@@ -135,7 +135,12 @@ def check_design(design: Design, lot: LotInput, geo: LotGeometry, zone: str, lot
     rear = rules.rear_setback(zone, geo.depth_m)
     pl = place(design, geo, yard_l, yard_r, rear.value)
     req_d = front.value + design.length_m + rear.value
-    act_d = geo.depth_across_width(pl.x_left, pl.x_right)
+    # A design wider than the lot at the building band has already failed on width and cannot be placed, so
+    # its depth row reports the lot's own depth (centre line, 5.2 step 3) instead of samples taken past a
+    # leaning side lot line, which exit the lot part-way back and read as a false short depth.
+    inside = geo.band_x_extent(design.front_setback_m, design.length_m)
+    overhangs = inside is None or pl.x_left < inside[0] - 1e-6 or pl.x_right > inside[1] + 1e-6
+    act_d = geo.depth_m if overhangs else geo.depth_across_width(pl.x_left, pl.x_right)
     margin_d = act_d - req_d
     pass_d, bord_d = _banded(margin_d, band_m)
     rear_txt = f"{_fmt(rear.value)} m rear" + (f" ({rear.detail})" if rear.detail else "")

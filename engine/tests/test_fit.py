@@ -490,3 +490,18 @@ def test_fixture_lots_reproduce_their_fixture(name):
     assert res["meta"]["disclaimer"] == fx["meta"]["disclaimer"]
     assert res["meta"]["designs_version"] == fx["meta"]["designs_version"]
     assert res["meta"]["config_version"] == fx["meta"]["config_version"]
+
+
+# ---------- depth across the building's width when the design is wider than the lot (A8 finding) ----------
+
+def test_depth_is_measured_inside_the_lot_when_the_design_is_wider_than_the_lot():
+    # 34 Rexford Rd: a 6.40 x 33.5 m lot whose side lot lines lean 0.1 m over their length, as surveyed lines do.
+    # The Fourplex Wide (6.64 m) overhangs both sides; its depth row must still report the lot's depth, not a
+    # sample taken just past a leaning side line, which exits the lot halfway back.
+    skewed = Polygon([(OX, OY), (OX + 6.4, OY), (OX + 6.3, OY + 33.5), (OX - 0.1, OY + 33.5)])
+    lot = rect_lot(6.4, 33.5, geometry=skewed,
+                   buildings=[BuildingInput(building_id=1, geometry=box(OX + 0.5, OY + 8, OX + 5.9, OY + 18), avg_height_m=7.0)])
+    res = run_check(lot, CFG)
+    assert rule(res, "fourplex_narrow", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
+    assert rule(res, "fourplex_wide", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
+    assert rule(res, "sixplex_wide", "lot_depth").actual == pytest.approx(33.5, abs=0.05)

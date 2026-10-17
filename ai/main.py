@@ -1,20 +1,22 @@
 """The Suplex AI service (MASTERSPEC 7.1), port 8001: `uvicorn ai.main:app --reload --port 8001`.
 
-/explain and /briefing now; the briefing page at /b/{ward_id} (S6) comes next.
+POST /explain, POST /briefing, the shareable briefing page at GET /b/{ward_id}?lang=xx, GET /health.
 """
 from __future__ import annotations
 
+import json
+import re
 from functools import cache
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from jsonschema import Draft202012Validator
 
 from ai.briefing import briefing
 from ai.cache import JsonCache
-from ai.config import CONTRACTS_DIR, Settings, contract, load_settings
+from ai.config import AI_DIR, CONTRACTS_DIR, Settings, contract, load_settings
 from ai.explain import explain
 from ai.gemini import generate_json
 from ai.generate import Generate
@@ -22,6 +24,9 @@ from ai.models import BriefingRequest, BriefingResponse, ExplainRequest, Explain
 
 app = FastAPI(title="Suplex AI service")
 app.mount("/static", StaticFiles(directory=CONTRACTS_DIR), name="static")
+app.mount("/page", StaticFiles(directory=AI_DIR / "page"), name="page")
+
+WARD_ID = re.compile(r"0[1-9]|1[0-9]|2[0-5]")
 
 
 @cache
@@ -84,3 +89,22 @@ def post_briefing(
 ) -> dict:
     payload = body.model_dump()
     return _contract_error("briefing", payload) or briefing(payload, settings, cache, generate)
+
+
+@app.get("/b/{ward_id}", response_class=HTMLResponse)
+def briefing_page(ward_id: str, settings: SettingsDep, lang: str = "en") -> HTMLResponse:
+    """The shareable briefing page (MASTERSPEC 7.7): index.html with window.SUPLEX injected."""
+    if not WARD_ID.fullmatch(ward_id):
+        return JSONResponse({"error": "ward_not_found"}, status_code=404)
+    if lang not in settings.langs:
+        lang = "en"
+    boot = {
+        "apiUrl": settings.suplex_api_url,
+        "webUrl": settings.suplex_web_url,
+        "wardId": ward_id,
+        "lang": lang,
+        "langs": list(settings.langs),
+    }
+    script = "<script>window.SUPLEX = " + json.dumps(boot).replace("</", "<\\/") + ";</script>"
+    html = (AI_DIR / "page" / "index.html").read_text(encoding="utf-8")
+    return HTMLResponse(html.replace("<!--SUPLEX-->", script))

@@ -36,17 +36,50 @@ button {
   color: var(--suplex-ink-muted);
 }
 
+/* ---------- Base map: the city on the landing page, under the 3D scene later ---------- */
+
+.basemap {
+  position: absolute;
+  inset: 0;
+  /* Offline the tiles never load, and this is the landing page's background instead. */
+  background: var(--suplex-paper);
+}
+
 /* ---------- Landing (6.2) ---------- */
 
 .landing {
-  height: 100%;
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-6);
+  pointer-events: none;
+  transition: opacity 300ms ease-out;
+}
+
+.landing-leaving {
+  opacity: 0;
+}
+
+.landing-card {
+  box-sizing: border-box;
+  width: min(640px, 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: var(--space-4);
-  padding: 0 var(--space-6);
-  background: linear-gradient(to bottom, var(--suplex-paper) 55%, var(--suplex-surface));
+  padding: var(--space-8) var(--space-8) var(--space-6);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--suplex-surface) 86%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.landing-leaving .landing-card {
+  pointer-events: none;
 }
 
 .landing-title {
@@ -173,10 +206,24 @@ button {
 
 .scene {
   position: absolute;
+  z-index: 1;
   inset: 0;
   /* Keeps the floating 3D labels below the panel and the search. */
   isolation: isolate;
   background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-sky-bottom));
+  /* Fades in over the base map, which has just landed on the same view. */
+  animation: fade-in 400ms ease-out both;
+}
+
+.topbar,
+.panel {
+  animation: fade-in 300ms ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .topbar {
@@ -357,7 +404,18 @@ button {
 
 /* ---------- Labels floating in the 3D scene (6.3) ---------- */
 
+.scene-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .scene-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform, opacity;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -376,14 +434,6 @@ button {
   color: var(--suplex-ink-muted);
 }
 
-.home-label-left {
-  transform: translate(calc(-100% - var(--space-2)), -50%);
-}
-
-.home-label-right {
-  transform: translate(var(--space-2), -50%);
-}
-
 .home-swatch {
   width: 10px;
   height: 10px;
@@ -392,7 +442,14 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skeleton {
+  .skeleton,
+  .scene,
+  .topbar,
+  .panel {
     animation: none;
+  }
+
+  .landing {
+    transition: none;
   }
 }

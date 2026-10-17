@@ -10,6 +10,11 @@
  * Grey on Tea Green 3.8:1 (borders only; too low for text).
  */
 :root {
+  --palette-charcoal: #605b56;
+  --palette-grey: #837a75;
+  --palette-olive: #acc18a;
+  --palette-tea: #dafeb7;
+
   --suplex-ink: #2e2a27; /* Charcoal deepened for body text */
   --suplex-ink-muted: #605b56; /* Charcoal */
   --suplex-paper: #dafeb7; /* Tea Green */

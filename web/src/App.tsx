@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { BaseMap } from './components/BaseMap/BaseMap'
 import { Landing } from './components/Landing/Landing'
 import { Scene } from './components/Lot3D/Scene'
 import { ResultPanel } from './components/ResultPanel/ResultPanel'
@@ -12,7 +13,9 @@ export default function App() {
   const view = useApp((s) => s.view)
   return (
     <main className="app" style={{ '--panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties}>
-      {view === 'landing' ? <Landing /> : <LotView />}
+      <BaseMap />
+      {(view === 'landing' || view === 'flying') && <Landing leaving={view === 'flying'} />}
+      {view === 'lot' && <LotView />}
     </main>
   )
 }

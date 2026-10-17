@@ -54,7 +54,7 @@ export function Search({ variant }: { variant: 'hero' | 'compact' }) {
     if (!result) return
     setQuery(result.address_full)
     setOpen(false)
-    openAddress(result.address_id)
+    openAddress(result.address_id, { flyTo: [result.lon, result.lat] })
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {

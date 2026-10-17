@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Stats } from '@react-three/drei'
 import { NeutralToneMapping } from 'three'
@@ -10,11 +10,13 @@ import { buildingTop } from './buildings'
 import { Camera } from './Camera'
 import { Design } from './Design'
 import { FLAT } from './geometry'
-import { HomeLabels } from './HomeLabels'
+import { LabelProjector } from './LabelProjector'
+import { homeLabels, oldHouseLabels } from './labels'
 import { Lighting } from './Lighting'
 import { Lot } from './Lot'
 import { OldHouse } from './OldHouse'
 import { Pin } from './Pin'
+import { SceneLabels } from './SceneLabels'
 import { Sequence } from './Sequence'
 import { Street } from './Street'
 import { buildTimeline } from './timeline'
@@ -50,6 +52,20 @@ export function Scene({
   const pinHeight = Math.max(0, ...context.buildings.filter((b) => b.on_lot).map(buildingTop))
   const lotKey = lot.lot_id
 
+  const labels = useMemo(
+    () => [
+      ...oldHouseLabels({
+        buildings: context.buildings,
+        vacant: lot.vacant,
+        frontage: lot.frontage_edge_local,
+        squash: placement !== null,
+      }),
+      ...(placement && spec ? homeLabels(placement, spec) : []),
+    ],
+    [context.buildings, lot.vacant, lot.frontage_edge_local, placement, spec],
+  )
+  const labelElements = useRef<(HTMLDivElement | null)[]>([])
+
   return (
     <div className="scene" aria-hidden="true">
       <Canvas shadows="percentage" dpr={[1, 2]} gl={{ antialias: true, toneMapping: NeutralToneMapping }}>
@@ -66,19 +82,14 @@ export function Scene({
           <Street key={`street-${lotKey}`} buildings={context.buildings} />
           <Trees key={`trees-${lotKey}`} trees={context.trees} />
           <Lot key={`lot-${lotKey}`} polygon={lot.polygon_local} design={result} />
-          <OldHouse
-            key={`old-${lotKey}`}
-            buildings={context.buildings}
-            vacant={lot.vacant}
-            frontage={lot.frontage_edge_local}
-            squash={placement !== null}
-          />
+          <OldHouse key={`old-${lotKey}`} buildings={context.buildings} squash={placement !== null} />
           <Pin restHeight={pinHeight} leaves={placement !== null} />
           {placement && spec && <Design key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} />}
-          {placement && spec && <HomeLabels key={`labels-${lotKey}-${spec.id}`} placement={placement} spec={spec} />}
+          <LabelProjector labels={labels} elements={labelElements} />
         </Sequence>
         {SHOW_STATS && <Stats />}
       </Canvas>
+      <SceneLabels labels={labels} elements={labelElements} />
     </div>
   )
 }

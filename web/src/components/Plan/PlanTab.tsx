@@ -7,12 +7,13 @@ import { PANEL_ID, tabId } from '../ResultPanel/tabs'
 import { Legend } from './Legend'
 import { PlanMap } from './PlanMap'
 import { planCopy } from './copy'
-import type { PlanScale } from './geometry'
+import type { PlanScale, Preset } from './geometry'
 import '../../styles/plan.css'
 
 const SCALES: { id: PlanScale; label: string }[] = [
-  { id: 'neighbourhood', label: planCopy.zoom_neighbourhood },
   { id: 'lot', label: planCopy.zoom_lot },
+  { id: 'street', label: planCopy.zoom_street },
+  { id: 'neighbourhood', label: planCopy.zoom_neighbourhood },
 ]
 
 /**
@@ -27,7 +28,10 @@ export function PlanTab() {
   const setDesign = useApp((s) => s.setDesign)
   const showLot = useApp((s) => s.showLot)
   const showLanding = useApp((s) => s.showLanding)
-  const [scale, setScale] = useState<PlanScale>('neighbourhood')
+  // The street is where the building data is, so the plan opens there.
+  const [preset, setPreset] = useState<Preset>({ scale: 'street' })
+  // The wheel, a drag or a zoom button moves the view off every preset.
+  const [manual, setManual] = useState(false)
 
   const design = check?.designs.find((d) => d.design_id === designId) ?? null
   const ready = status === 'ready' && check !== null
@@ -45,10 +49,19 @@ export function PlanTab() {
 
       {ready ? (
         <>
-          <PlanMap check={check} design={design} scale={scale} />
+          <PlanMap check={check} design={design} preset={preset} onManual={() => setManual(true)} />
           <div className="plan-zoom" role="group" aria-label={planCopy.zoom_group}>
             {SCALES.map((s) => (
-              <button key={s.id} type="button" className="plan-zoom-button" aria-pressed={scale === s.id} onClick={() => setScale(s.id)}>
+              <button
+                key={s.id}
+                type="button"
+                className="plan-zoom-button"
+                aria-pressed={!manual && preset.scale === s.id}
+                onClick={() => {
+                  setPreset({ scale: s.id })
+                  setManual(false)
+                }}
+              >
                 {s.label}
               </button>
             ))}

@@ -7,7 +7,10 @@
 export const planCopy = {
   zoom_group: 'How far to zoom',
   zoom_lot: 'Lot',
+  zoom_street: 'Street',
   zoom_neighbourhood: 'Neighbourhood',
+  zoom_in: 'Zoom in',
+  zoom_out: 'Zoom out',
   legend: 'Legend',
   legend_lot: 'Your lot',
   legend_yards: 'Required yards',

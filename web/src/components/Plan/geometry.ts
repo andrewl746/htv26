@@ -1,4 +1,4 @@
-import type { CheckResponse, DesignResult, LocalPoint } from '@contracts/types'
+import type { CheckResponse, LocalPoint } from '@contracts/types'
 
 // The plan is drawn in the contract's local metres (x east, y north, from the lot centroid).
 // SVG's y runs down, so every point is flipped once, here.
@@ -10,7 +10,12 @@ export interface ViewBox {
   h: number
 }
 
-export type PlanScale = 'lot' | 'neighbourhood'
+export type PlanScale = 'lot' | 'street' | 'neighbourhood'
+
+/** A zoom preset. Each press makes a new object, so the same preset can be asked for again. */
+export interface Preset {
+  scale: PlanScale
+}
 
 export const svgPoint = ([x, y]: LocalPoint): string => `${x},${-y}`
 
@@ -25,14 +30,12 @@ export function centre(ring: LocalPoint[]): LocalPoint {
 const FALLBACK_HALF_M = 15
 const LOT_MARGIN = 0.35
 const MIN_LOT_MARGIN_M = 8
+const STREET_MARGIN = 1.15
+const NEIGHBOURHOOD_MARGIN = 1.06
 
 /** The lot with a margin round it, in SVG coordinates. */
-function lotBox(check: CheckResponse, design: DesignResult | null): ViewBox {
-  const points: LocalPoint[] = [
-    ...check.lot.polygon_local,
-    ...(design?.placement_local ?? []),
-    ...(design?.setbacks_local ? Object.values(design.setbacks_local).flat() : []),
-  ]
+function lotBox(check: CheckResponse): ViewBox {
+  const points = check.lot.polygon_local
   if (points.length === 0) return { x: -FALLBACK_HALF_M, y: -FALLBACK_HALF_M, w: FALLBACK_HALF_M * 2, h: FALLBACK_HALF_M * 2 }
   const xs = points.map((p) => p[0])
   const ys = points.map((p) => p[1])
@@ -44,14 +47,20 @@ function lotBox(check: CheckResponse, design: DesignResult | null): ViewBox {
   return { x: minX - margin, y: -maxY - margin, w: maxX - minX + margin * 2, h: maxY - minY + margin * 2 }
 }
 
-/** Every permit within the radius, centred on the lot. */
-function neighbourhoodBox(check: CheckResponse): ViewBox {
-  const r = check.permits_nearby.radius_m || check.context.radius_m
-  return { x: -r, y: -r, w: r * 2, h: r * 2 }
+/** A square round the lot, `half` metres from its centre to each side. */
+function squareBox(half: number): ViewBox {
+  return { x: -half, y: -half, w: half * 2, h: half * 2 }
 }
 
-export function viewBoxFor(scale: PlanScale, check: CheckResponse, design: DesignResult | null): ViewBox {
-  return scale === 'lot' ? lotBox(check, design) : neighbourhoodBox(check)
+/** Where the data ends: the buildings and trees come from `context`, the permits from further out. */
+export function permitRadius(check: CheckResponse): number {
+  return check.permits_nearby.radius_m || check.context.radius_m
+}
+
+export function viewBoxFor(scale: PlanScale, check: CheckResponse): ViewBox {
+  if (scale === 'lot') return lotBox(check)
+  if (scale === 'street') return squareBox(check.context.radius_m * STREET_MARGIN)
+  return squareBox(permitRadius(check) * NEIGHBOURHOOD_MARGIN)
 }
 
 /** A round number of metres that makes a scale bar about `targetM` long. */

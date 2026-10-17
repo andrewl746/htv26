@@ -29,6 +29,17 @@
   display: block;
   width: 100%;
   height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.plan-svg[data-dragging] {
+  cursor: grabbing;
+}
+
+.plan-stage:focus-visible {
+  outline-offset: -3px;
 }
 
 /* Marks: shape and pattern carry the meaning, colour only repeats it. */
@@ -139,6 +150,36 @@
   padding-top: var(--space-1);
   border-top: 2px solid var(--suplex-ink-muted);
   text-align: center;
+}
+
+/* Zoom in and out */
+.plan-steps {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+
+.plan-step {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  font-size: var(--text-xl);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.plan-step + .plan-step {
+  border-top: 1px solid var(--suplex-line);
+}
+
+.plan-step:hover {
+  background: var(--suplex-highlight);
 }
 
 /* Zoom switch */

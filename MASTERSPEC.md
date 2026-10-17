@@ -120,15 +120,26 @@ Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branc
 | A6 classification, attached, fit, placement | done: `classify.py`, `attached.py`, `fit.py`, `models.py`, `copy.py`, `check.py` with `run_check(LotInput, cfg, designs, data_dates) -> CheckResult` (`.to_dict()` is the `CheckResponse`); the four `check.*.json` fixtures are reproduced; 38 tests | `pytest engine` prints 105 passed |
 | Web scaffold (start of J1) | done by Andrew: Vite + React 19 + TypeScript in `/web`, `@contracts/types` alias, dev proxy to :8000 and :8001, three / fiber / drei / maplibre / zustand installed; `App.tsx` renders only a heading (TODO: disclaimer from `contracts/copy/disclaimers.json`) | `cd web && npm install && npm run build` |
 
-**Simone, reported 2026-10-17 (not yet in git; she clones and pushes to `simone` on the morning of 2026-10-18)**
+**Simone, four reports on 2026-10-17 (branch `simone`, 17 commits, PR #3 open, merges cleanly, touches only `ai/`, `docs/`, `pitch/` and `contracts/copy/`; `pytest ai/tests` gives 107 passed)**
 
-| Task | State | Where |
+| Task | State | How to verify |
 |---|---|---|
-| S1 Gemini key and free-tier limits | done: key obtained; limits read in AI Studio and recorded (table in section 7.1); the model decision below made | her local `docs/decisions.md`, to be pushed |
-| S1 Sixplex Wide bedroom split | closed: already verified in Appendix H (3 and 4 bedrooms in the two upper homes, 12 in total); she records it, no re-check needed | Appendix H |
-| S1 Hack the Valley 11 rules (prize count; prepared spec, contracts and fixtures) | **still open**, the one item that changes what anyone may build before Hour 0 | T1 |
-| S2 story drafts | done: `pitch/hook.md` (the 30-second pitch with [X] and [Y] blank until the Hour-24 lock), `docs/devpost.md` (outline, every section 4.2 dataset linked, the Toronto Multiplex Tracker credited), `pitch/qa.md` (all eleven section 12 questions with draft answers) | her local copy, to be pushed |
-| S3 AI service, S4 validator | not started; was blocked on the repo and on A2, both of which are now on `main` | start after cloning |
+| S1 Gemini key and limits | done; recorded in `docs/decisions.md` with the model split (section 7.1) | `docs/decisions.md` |
+| S1 Sixplex Wide bedroom split | recorded (3 and 4 bedrooms in the two upper homes, 12 in total) | `docs/decisions.md` |
+| S1 Hack the Valley 11 rules | **closed (T1):** one project may enter the School of Cities challenge and the MLH prizes; all work must happen during the event, which began 10 p.m. Eastern on 2026-10-16, and every commit is dated after that. **Do not rewrite or squash git history: the timestamps are the evidence.** Section 1 assumption 2 is withdrawn | `docs/decisions.md` |
+| S2 story drafts | done: `pitch/hook.md`, `docs/devpost.md`, `pitch/qa.md` | `pitch/` |
+| S3 `/explain` | done: FastAPI on 8001, `POST /explain`, `GET /health`, structured output, sha256 cache, template fallback; Gemini only ever sees placeholder names, never values | `curl` per 8.4 S3 |
+| S4 validator | done test-first: every 7.4 case; reject, one retry, then template; every rejection logged for the Devpost count; Gemini mocked in tests | `pytest ai/tests` |
+| S5 `/briefing` | done: ward numbers map, the three fixed questions, shared validation policy | `pytest ai/tests` |
+| S6 briefing page | done: `/b/{ward_id}?lang=xx` with linked numbers, language picker, copy and print, a monthly chart, a methodology footer; works with Wi-Fi off; `&fixture=1` shows sample data behind a "made-up numbers" banner. Differences from 7.7: an inline SVG chart instead of Chart.js (no external request), bars in `#B47F00` because the permit gold is 1.5:1 on white | `localhost:8001/b/04?lang=en&fixture=1` |
+| S7 translation and pre-generation | done: all eight languages revalidated per language with the English placeholders required; `pregenerate.py` paces to the model's rate limit and resumes; Ward 04 cached in all eight languages and served with Gemini off; about 25 of the day's 500 requests used. One allowance: translations may write the month of `permits_since` as a digit (Chinese writes "2023年5月"); English stays strict | `python -m ai.pregenerate --ward 04 --langs all` |
+| T13 pitch facts | done: `pitch/facts.md` with page numbers; "216 variance applications" and "guidance is missing" cut; the 48.9% figure confirmed (13,928 starts in 2025 against a 28,500 annual target); costs become "declared value"; the Mayor is not named | `pitch/facts.md` |
+| S10 drafts | done: full Devpost, demo script with both sponsor walkthroughs, 11-slide deck content, sourced Q&A, README draft; Hour-24 numbers marked [LOCKED] | `pitch/`, `docs/devpost.md` |
+| S9 copy | first pass done: no "will be built" even negated, "since May 2023" everywhere, a singular line for one permit; backup-address sheet ready | `contracts/copy/*.json` |
+| S11 | rehearsal log ready for the ten timed runs | `pitch/rehearsal-log.md` |
+| S8, S9 addresses | waiting on A7 (API) and A10 (batch) | — |
+
+**Simone asks of others:** Andrew: `.env.example` gets `GEMINI_MODEL=gemini-3.5-flash-lite`, `SUPLEX_AI_URL=http://localhost:8001` and optionally `AI_LOG_DIR=ai/logs`; fix "1-6 units" in the two fixtures; decide the site-exception policy (T19); pick one percentage unit across fixtures (`pct` in the check rows, `%` in the briefing fixture). Jayden: `/explain` is live on the dev proxy (show `text` and `disclaimer`, badge from `source`, notice from `translation_unavailable`, the singular permit line when the count is 1); "Get the ward briefing" links to `/b/{ward_id}`; add `--suplex-permit-bar: #B47F00` as a shared token so both charts match. Everyone: ten minutes each on a translation review sheet for the language you read. Team: whether the first candidate question should be more neutral.
 
 **Decision (Simone, 2026-10-17, accepted): `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`.** At 20 requests a day, `gemini-3.8-flash` cannot support development; one clean demo pre-generation alone takes 16 requests. `gemini-3.8-flash` is used only for the one-off pre-generation after the Hour-24 lock, and `gemini-2.5-flash` is dropped. Before committing to the split she compares the validator's rejection rate for the two models; if flash-lite is as clean, it does everything. Touches `/ai/config.py` and `.env` only; no contract changes. Sections 1 (decision 12), 7.1, 7.9, 8.4, 11, 13 and Appendix I were updated to match.
 
@@ -164,7 +175,7 @@ A stale `origin/feat/pipeline` branch also exists from before the rename; delete
 2. Yuvi: put `suplex.gpkg`, the permit files and `trend_cache/` on the drive (done on his machine); sign up for Tiger Data (Y2) and load it; then Y7 when Andrew sends the test lots.
 3. Andrew: `yuvi` is merged; apply the engine-side items 1, 5, 6 and 7 from Yuvi's findings above, then A7 API v1 (`api/main.py`, `api/store.py`) against the citywide `suplex.gpkg`. The engine entry point is `suplex_engine.check.run_check`, fed with a `LotInput` (see `engine/suplex_engine/models.py`): the lot row fields, corridors within 5 m, neighbour lots, buildings and trees within 150 m, the address point, multiplex permit points. Then A8 hand-checked lots (tune the `larger_building` and `attached` thresholds in `engine_config.json`).
 4. Jayden: J1 onward against `/contracts/fixtures`. Read `levels[]` and `homes[]` from `designs.json` (section 6.3 used to say `floors[]`).
-5. Simone: clone, open `simone` from `main`, push the S2 drafts and her `docs/decisions.md` entries, then S3 and S4 against `/contracts/fixtures` (`explain.request.json` and `check.*.json` are there); `contracts/copy/*.json` v0 is hers to rewrite. Chase the HTV 11 rules (T1) first thing.
+5. Simone: S1 to S7, S10 drafts and T13 are done on PR #3 (awaiting Andrew's merge); next are the translation review sheets, then S8 and S9 once the API and the batch exist.
 
 **Decisions made in the first session without Andrew** (full list with reasons in `docs/decisions.md`): `attached.on_lot_m2 = 10` added to `engine_config.json`, its schema and `types.ts`; lot-level `width_m` is the cross-section at the 6.0 m setback line and `depth_m` the centroid line; the band is inclusive (|margin| of 0.5 m is still borderline); street edges under 3 m are never the frontage; the buildable area is the lot clipped by the setback lines; `ward.04.json` `by_year` changed to sum to 41; the city summary entry uses `ward_id: "city"`; `BriefingRequest.ward` also accepts the full `/ward/{id}` response; 8.375 rounds to 8.38; React 19 rather than 18; branches renamed to `main` / `yuvi` / `jayden` / `simone`.
 
@@ -202,7 +213,7 @@ A stale `origin/feat/pipeline` branch also exists from before the rename; delete
 **Assumptions made while writing.** Each one that could change the build is also a TODO in section 13.
 
 1. The four plan sets, the data table and the bylaw numbers in the prompt are correct as given; only the VERIFY items were re-checked.
-2. Hack the Valley 11 allows a team to enter the School of Cities challenge plus MLH sponsor prizes with one project, and allows a spec and contracts written before the event but no prepared code. Simone confirms both at Hour 0; nothing online confirmed either way on 2026-10-17.
+2. *Withdrawn 2026-10-17 (T1 closed):* one project may enter the School of Cities challenge and the MLH prizes, and all work must happen during the event, which began at 10 p.m. Eastern on 2026-10-16. Everything here was written after kickoff and every commit is dated 2026-10-17 or later; the git history stays unrewritten as the evidence.
 3. The permits field `GEO_ID` is the same key as Address Points `ADDRESS_POINT_ID`. The Toronto Multiplex Tracker joins permits to address points on `GEO_ID`, and the current Address Points schema names its id `ADDRESS_POINT_ID`. Yuvi measures the join rate in the first hour; the fallback is a street-number-plus-street-name match.
 4. The mockup video (`suplex-animated.mp4`) and ward-view image (`06-ward-could-vs-did.png`) were not on disk when this was written. Andrew puts both in `/docs/mockups/` at Hour 0. The visual direction in section 6 was written from the prompt alone.
 5. Every "hour" below is relative: Hour 0 is when the team starts building from this spec. Each person has about 24 to 27 working hours in the 36.
@@ -883,7 +894,7 @@ Plain HTML, CSS and JavaScript (no build step), served by the AI service at `GET
 2. `POST /briefing` with `{ward, trend, lang}` and renders the `BriefingResponse`: the title ("Ward 04, Parkdale–High Park: multiplexes, before you vote"), the generated date and data dates, the sections in order (what may fit · the most common blocking rule · permits issued · what isn't checked · three questions to ask candidates), the trend chart, the disclaimer, and a "How these numbers were computed" footer with the dataset links.
 3. Renders every `{{key}}` as `<a class="num" href="{source_url}" title="{label}">{formatted value}</a>`, so each number links to its source: the ward map (`{webUrl}/?ward=04`) for engine counts, the City dataset page for permit counts, and this page's methodology footer for the uncertainty band.
 4. Language picker: a `<select>` of the eight languages that reloads with `?lang=`. Copy button: copies the resolved plain text plus the page link. Print styles: single column, no buttons, black text, links printed as footnotes.
-5. Trend chart with Chart.js from a pinned CDN URL (bar chart, two annotation lines for the markers, the same caption as the web app). Styles import `/static/design-tokens.css` so the page matches the app.
+5. Trend chart as a small inline SVG (built that way by Simone instead of Chart.js, so the page makes no external request and works in the Wi-Fi-off rehearsal): bars, two marker lines, a hover tooltip per month, a "show as a table" view, the same caption as the web app. Bars use `--suplex-permit-bar` (`#B47F00`), a darker step of the permit gold that passes 3:1 on both surfaces. Styles import `/static/design-tokens.css` so the page matches the app.
 
 Cached briefings: `pregenerate.py --ward 04 --langs all` fills the cache for the demo ward in every language and for the two backup addresses' explanations. The page serves from cache first, so the demo does not wait on Gemini.
 
@@ -1255,7 +1266,7 @@ Visual extras are not on this list because they never start before the core work
 
 | # | TODO | Owner | By | Why it matters |
 |---|---|---|---|---|
-| T1 | Confirm Hack the Valley 11's rules: how many prizes one project can enter, and whether a spec, contracts and fixtures written before the event are allowed | Simone | Hour 0 | changes the sponsor-prize plan or forces the contracts to be rewritten at the event |
+| T1 | **Done (Simone):** one project may enter the challenge and the MLH prizes; all work after the 10 p.m. 2026-10-16 kickoff, which holds; never rewrite git history | Simone | Hour 0 | changes the sponsor-prize plan or forces the contracts to be rewritten at the event |
 | T2 | **Done 2026-10-17 (Simone):** limits read in AI Studio; `GEMINI_MODEL` now defaults to `gemini-3.5-flash-lite` (section 7.1). Remaining: compare validator rejection rates between the two models before the Hour-24 pre-generation | Simone | Hour 20 | the pre-generation run must fit the quota |
 | T3 | Re-read the Sixplex Narrow A011 zoning matrix: does its "19 m allowable" refer to building depth (10.20.40.30(1)) rather than building length? Keep decision 17 unless the sheet shows a different provision | Andrew | Hour 0 | decides how often the Sixplex Narrow fits |
 | T4 | **Done (Yuvi):** the height overlay column is `HT_LABEL`; coverage is `PRCNT_CVER` | Yuvi | Hour 1 | the pipeline's overlay join |
@@ -1269,11 +1280,11 @@ Visual extras are not on this list because they never start before the core work
 | T18 | Sign up for the free Tiger Data service, set `TIGER_DSN`, run `load.py` and `cache_trends.py`, re-measure the compression sizes for `/docs/tiger.md` | Yuvi | Hour 12 | the Hour-14 go/no-go; until then the trend cache from the Docker run serves the chart |
 | T19 | Confirm the site-exception policy (section 0, Yuvi's finding 7): muted line in the address check, no map icon, excluded from the "need extra review" count | Andrew | Hour 8 | 88% of Ward 04 lots carry an exception number |
 | T12 | Pick the two backup addresses and confirm the demo ward from real batch results | Simone, Andrew | Hour 20 | demo safety |
-| T13 | Verify the pitch facts before any goes on a slide: the variance figure (about 216 applications; do not use "about 10%"), the construction costs (about $1.01M new build, about $216K renovation), the housing target (285,000 homes 2022–2031; the "48.9% of annual target" figure could not be confirmed, cut it unless confirmed) | Simone | Hour 28 | every slide number has a source or is cut |
+| T13 | **Done (Simone):** every fact in `pitch/facts.md` with its page. Cut: the variance figure and "guidance is missing". Confirmed: 452 and 726, 75% renovations, declared values $1,012,782 and $216,090, the 285,000 target, 48.9% (13,928 starts against 28,500 in 2025), 23.3% single-detached, the 69% poll | Simone | Hour 28 | every slide number has a source or is cut |
 | T14 | Put the mockup video and the ward-view image in `/docs/mockups/` | Andrew | Hour 0 | Jayden's visual target |
 | T15 | Check the Street Tree GPKG field names before building the trees layer (not verified; optional layer) | Yuvi | Hour 20 | decoration only |
 | T16 | Decide whether to use Vultr; only if free and under one hour of work | Andrew | Hour 26 | optional MLH prize |
-| T17 | Write the methodology footer for the briefing page and the Devpost's "limitations" paragraph (uncertainty band, what isn't checked, upper bounds) | Simone | Hour 26 | the Responsible interpretation criterion |
+| T17 | Half done (Simone): the briefing page's methodology footer is written in `contracts/copy/labels.json`; the Devpost's limitations paragraph is drafted and waits on the locked numbers | Simone | Hour 26 | the Responsible interpretation criterion |
 
 ---
 
@@ -1651,6 +1662,7 @@ The three map colours are locked by the product spec. Everything else is a start
   --suplex-nofit: #C9CCD6;           /* doesn't fit */
   --suplex-permit: #FFC83D;          /* multiplex permit dot */
   --suplex-permit-outline: #3A2E00;
+  --suplex-permit-bar: #B47F00;      /* chart bars: the gold fails 1.5:1 on white; this step passes 3:1 (Simone, 2026-10-17) */
 
   /* v0: result and UI colours */
   --suplex-borderline-base: #DDF3E7; /* pale green under the stripes */

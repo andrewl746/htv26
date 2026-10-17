@@ -1,0 +1,48 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--suplex-paper);
+  color: var(--suplex-ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-sky-bottom));
+}
+
+.app-header {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  background: var(--suplex-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.1;
+}
+
+.app-header p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--suplex-ink-muted);
+}

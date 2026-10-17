@@ -29,13 +29,15 @@ If the pipeline falls back to Rule B, [Y] becomes "permits for new residential b
 - *Four free designs, checked on every lot.*
 - *What's allowed, and what got built.*
 
-## Facts in the hook, and their sources (check before they go on a slide, T13)
+## Facts in the hook, and their sources (checked 2026-10-17, T13)
 
-| Claim | Source | Checked? |
+Full wording, page numbers and what was cut: [`facts.md`](facts.md).
+
+| Claim | Source | Checked |
 |---|---|---|
-| Multiplexes (up to four homes) allowed on residential lots citywide since May 2023 | [City of Toronto: multiplex housing](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/) | not yet |
-| Four free pre-approved designs released October 2, 2026 | [City news release](https://www.toronto.ca/news/city-of-toronto-introduces-pre-approved-multiplex-designs-making-it-easier-to-build-more-homes-faster/) | not yet |
-| Background, if asked: 452 permits and about 726 net new homes in the first 18 months | [Multiplex monitoring report (2025)](https://www.toronto.ca/legdocs/mmis/2025/ph/bgrd/backgroundfile-256251.pdf) | not yet |
+| Multiplexes (up to four homes) allowed on residential lots citywide since May 2023 | facts.md row 1 (Attachment 4 p3; Oct 2 news release) | yes |
+| Free pre-approved designs, four types, released October 2, 2026 | facts.md row 3 (news release; plans page) | yes |
+| Background, if asked: 452 permits and about 726 net new homes in the first 18 months; 75% were renovations | facts.md rows 4–6 (monitoring presentation p11–12) | yes |
 
 ## Wording rules for anyone presenting
 

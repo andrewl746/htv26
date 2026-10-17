@@ -1,0 +1,58 @@
+/*
+ * One serif family for the whole UI: Newsreader, drawn for reading on screen, with an optical-size
+ * axis so the large headings get finer details than the small text. It overrides the font and size
+ * tokens of contracts/design-tokens.css for /web only, the way palette.css does for colour, until
+ * Andrew moves the same values into that shared file so the briefing page matches.
+ *
+ * The stack falls back to serifs that ship with the OS, so the offline demo still looks serif.
+ * Sizes step up from the sans-serif scale: a serif at the same pixel size looks smaller.
+ */
+:root {
+  --font-ui: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-display: var(--font-ui);
+
+  --text-xs: 13px;
+  --text-sm: 15px;
+  --text-md: 17px;
+  --text-lg: 21px;
+  --text-xl: 30px;
+  --text-2xl: 52px;
+}
+
+body {
+  line-height: 1.5;
+  font-optical-sizing: auto;
+  /* Lining, even-width figures: addresses, ward numbers and counts line up in the panel. */
+  font-variant-numeric: lining-nums tabular-nums;
+  text-rendering: optimizeLegibility;
+}
+
+.landing-title {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.landing-tagline {
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.panel-address {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.search-input::placeholder {
+  font-style: italic;
+}
+
+.chip,
+.scene-label {
+  line-height: 1.3;
+}

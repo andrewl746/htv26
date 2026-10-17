@@ -30,6 +30,9 @@ SIXPLEX_FULL_WARDS = ["04", "09", "10", "11", "12", "13", "14", "19"]  # By-law 
 BUFFER_BBOX_DEG = 0.004      # ~300 m read margin around a ward, in degrees
 NEIGHBOUR_M = 150            # buildings kept this far outside the ward (3D neighbours)
 MIN_ZONE_OVERLAP = 0.25      # a lot takes a zone only if the zone covers at least this share of it
+MIN_BUILDING_ON_LOT_M2 = 5.0  # a building counts as being on a lot when at least this much of it is inside
+SLIVER_AREA_M2 = 30.0
+SLIVER_WIDTH_M = 3.0         # a lot narrower than this cannot be measured by the engine either
 MIN_OVERLAY_OVERLAP_M2 = 1.0  # sliver guard for the "intersects" flags
 LOT_TYPES = ["COMMON", "CONDO"]
 STREET_TILE_M = 250          # derived street space is cut into tiles this big so spatial lookups stay cheap
@@ -83,6 +86,32 @@ def intersects_flag(lots: gpd.GeoDataFrame, layer: gpd.GeoDataFrame, min_area: f
     inter = shapely.area(shapely.intersection(lots.geometry.loc[pairs.index].values, layer.geometry.loc[pairs["index_right"]].values))
     flag.loc[pairs.index[inter > min_area].unique()] = True
     return flag
+
+
+def rect_short_side(rects) -> np.ndarray:
+    """Length of the shorter side of each minimum rotated rectangle (polygons); 0 for degenerate shapes."""
+    out = np.zeros(len(rects))
+    for i, r in enumerate(rects):
+        if r is None or r.geom_type != "Polygon":
+            continue
+        c = np.asarray(r.exterior.coords)
+        out[i] = min(np.hypot(*(c[1] - c[0])), np.hypot(*(c[2] - c[1])))
+    return out
+
+
+def unwrap_single_parts(geoms: np.ndarray, keep_largest: bool = False) -> np.ndarray:
+    """Single-part MultiPolygon -> Polygon. Real multi-part shapes stay MultiPolygon, or with keep_largest only
+    their biggest part is kept (the engine's footprint code cannot read multi-part buildings)."""
+    out = []
+    for g in geoms:
+        if g.geom_type == "MultiPolygon":
+            parts = list(g.geoms)
+            if len(parts) == 1:
+                g = parts[0]
+            elif keep_largest:
+                g = max(parts, key=lambda x: x.area)
+        out.append(g)
+    return np.array(out, dtype=object)
 
 
 def nullify(s: pd.Series, bad: tuple = (-1,)) -> pd.Series:
@@ -160,6 +189,19 @@ def street_space(parcels: gpd.GeoDataFrame, wgeom, ward_num: int) -> gpd.GeoData
     parts = [g for p in pieces for g in getattr(p, "geoms", [p]) if g.geom_type == "Polygon" and g.area >= MIN_STREET_PIECE_M2]
     ids = [-(ward_num * 1_000_000 + i + 1) for i in range(len(parts))]
     return gpd.GeoDataFrame({"parcelid": ids}, geometry=parts, crs=CRS_M)
+
+
+def read_trees(bbox: tuple, wgeom) -> gpd.GeoDataFrame:
+    """The optional `trees` layer (Y8): street tree points inside the ward, decoration only."""
+    path = RAW / "street-trees-4326.gpkg"
+    if not path.exists():
+        return gpd.GeoDataFrame({"tree_id": []}, geometry=[], crs=CRS_M)
+    t = pyogrio.read_dataframe(path, bbox=bbox, fid_as_index=True, columns=[])
+    t = t[t.geometry.notna() & ~t.geometry.is_empty]
+    t["geometry"] = shapely.get_geometry(t.geometry.values, 0) if t.geom_type.iloc[0].startswith("Multi") else t.geometry.values
+    t = t.set_crs(4326, allow_override=True).to_crs(CRS_M)
+    t = t[shapely.contains_xy(wgeom, t.geometry.x.values, t.geometry.y.values)]
+    return gpd.GeoDataFrame({"tree_id": t.index.astype("int64")}, geometry=t.geometry.values, crs=CRS_M)
 
 
 def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame, ctx: dict) -> dict[str, gpd.GeoDataFrame]:
@@ -245,13 +287,21 @@ def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame,
     addr = addr.rename(columns={"ADDRESS_POINT_ID": "address_point_id", "ADDRESS_FULL": "address_full", "LO_NUM": "lo_num",
                                 "LINEAR_NAME_FULL": "linear_name_full", "ADDRESS_CLASS": "address_class",
                                 "CLASS_FAMILY_DESC": "class_family_desc", "MAINT_STAGE": "maint_stage"})
+    # one primary address per lot (autocomplete shows each lot once, T7): land points first, regular stage first,
+    # then the lowest street number, then the lowest id
+    addr["_rank"] = (addr["address_class"] != "L").astype(int) * 2 + (addr["maint_stage"] != "REGULAR").astype(int)
+    addr["_num"] = pd.to_numeric(addr["lo_num"], errors="coerce").fillna(1e9)
+    order = addr.sort_values(["parcelid", "_rank", "_num", "address_point_id"]).index
+    first = ~addr.loc[order, "parcelid"].duplicated() & addr.loc[order, "parcelid"].notna()
+    addr["is_primary"] = False
+    addr.loc[order[first.to_numpy()], "is_primary"] = True
     addr["address_norm"] = addr["address_full"].fillna("").str.lower().str.replace(r"\s+", " ", regex=True).str.strip()
     counts = addr["parcelid"].value_counts()
     lots["address_count"] = lots["parcelid"].map(counts).fillna(0).astype("int64")
     land = addr[(addr["address_class"] == "L") & (addr["maint_stage"] == "REGULAR")]["parcelid"].value_counts()
     lots["address_count_land"] = lots["parcelid"].map(land).fillna(0).astype("int64")
     addr = addr[["address_point_id", "address_full", "address_norm", "lo_num", "linear_name_full", "ward_id", "parcelid",
-                 "address_class", "class_family_desc", "maint_stage", "geometry"]]
+                 "address_class", "class_family_desc", "maint_stage", "is_primary", "geometry"]]
 
     # ---- buildings (3D massing is EPSG:3857 despite its file name)
     b_bbox = tuple(gpd.GeoSeries([area_zone], crs=4326).to_crs(3857).total_bounds)
@@ -261,6 +311,7 @@ def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame,
     b.geometry = shapely.make_valid(b.geometry.values)
     near = b.intersects(w.buffer(NEIGHBOUR_M).union_all())
     b = b[near].copy()
+    b["geometry"] = unwrap_single_parts(b.geometry.values, keep_largest=True)  # 221 of 428,184 are multi-part
     b["building_id"] = b.index.astype("int64")
     b["footprint_m2"] = b.geometry.area
     bj = largest_overlap(b, all_lots, ["parcelid"])
@@ -268,15 +319,35 @@ def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame,
     b = b.rename(columns={"AVG_HEIGHT": "avg_height_m", "MAX_HEIGHT": "max_height_m", "HEIGHT_SRC": "height_src"})
     b = b[["building_id", "avg_height_m", "max_height_m", "height_src", "footprint_m2", "parcelid", "geometry"]].reset_index(drop=True)
 
+    # Massing polygons often span several houses, so `parcelid` (largest overlap) misses most lots in a row.
+    # These columns come from geometry intersection instead (Y7); the engine can use them for vacant / larger_building.
+    pairs = gpd.sjoin(lots[["geometry"]], b[["building_id", "footprint_m2", "avg_height_m", "geometry"]], how="inner", predicate="intersects")
+    on_lot = shapely.area(shapely.intersection(lots.geometry.loc[pairs.index].values, b.geometry.loc[pairs["index_right"]].values))
+    pairs = pairs.assign(on_lot_m2=on_lot)
+    pairs = pairs[pairs["on_lot_m2"] >= MIN_BUILDING_ON_LOT_M2]
+    grp = pairs.groupby(level=0)
+    lots["bldg_count"] = grp.size().reindex(lots.index).fillna(0).astype("int64")
+    lots["bldg_area_on_lot_m2"] = grp["on_lot_m2"].sum().reindex(lots.index).fillna(0.0)
+    lots["bldg_max_footprint_m2"] = grp["footprint_m2"].max().reindex(lots.index)
+    wh = (pairs["avg_height_m"] * pairs["on_lot_m2"]).groupby(level=0).sum() / grp["on_lot_m2"].sum()
+    lots["bldg_avg_height_m"] = wh.reindex(lots.index)
+    short = shapely.minimum_rotated_rectangle(lots.geometry.values)
+    lots["is_sliver"] = (lots["area_m2"] < SLIVER_AREA_M2) | (rect_short_side(short) < SLIVER_WIDTH_M)
+
+    trees = read_trees(bbox, wgeom)
+
     lots = lots.drop(columns=["ward_id"]).assign(ward_id=ward_id)
     lot_cols = ["parcelid", "feature_type", "stated_area", "stated_area_m2", "area_m2", "ward_id", "zn_zone", "gen_zone",
                 "zbl_sectn", "zn_string", "frontage_min_m", "zn_area", "units_max", "coverage", "zn_exception",
                 "exception_no", "zn_status", "zone_overlap_frac", "ht_overlay_m", "coverage_overlay_pct", "sixplex_overlay",
                 "flag_heritage_register", "flag_heritage_district", "flag_ravine", "flag_trca", "address_count",
-                "address_count_land", "geometry"]
+                "address_count_land", "bldg_count", "bldg_area_on_lot_m2", "bldg_max_footprint_m2", "bldg_avg_height_m",
+                "is_sliver", "geometry"]
     lots = lots[lot_cols].reset_index(drop=True)
-    log(f"ward {ward_id}: {len(lots):,} lots, {len(corridors):,} corridors, {len(addr):,} addresses, {len(b):,} buildings in {time.time() - t0:.0f}s")
-    return {"lots": lots, "corridors": corridors.reset_index(drop=True), "addresses": addr.reset_index(drop=True), "buildings": b}
+    lots["geometry"] = unwrap_single_parts(lots.geometry.values)  # the ~30 real multi-part lots stay MultiPolygon (engine: unmeasurable)
+    log(f"ward {ward_id}: {len(lots):,} lots, {len(corridors):,} corridors, {len(addr):,} addresses, {len(b):,} buildings, {len(trees):,} trees in {time.time() - t0:.0f}s")
+    return {"lots": lots, "corridors": corridors.reset_index(drop=True), "addresses": addr.reset_index(drop=True), "buildings": b,
+            "trees": trees}
 
 
 # ---------------------------------------------------------------- main
@@ -301,7 +372,7 @@ def main() -> None:
 
     seen_corr: set = set()
     seen_bld: set = set()
-    first = {k: True for k in ["lots", "corridors", "addresses", "buildings"]}
+    first = {k: True for k in ["lots", "corridors", "addresses", "buildings", "trees"]}
     tmp = dest.with_name(dest.stem + ".building.gpkg")
     if tmp.exists():
         tmp.unlink()
@@ -314,7 +385,8 @@ def main() -> None:
         for layer, gdf in res.items():
             if gdf.empty:
                 continue
-            pyogrio.write_dataframe(gdf, tmp, layer=layer, driver="GPKG", append=not first[layer])
+            pyogrio.write_dataframe(gdf, tmp, layer=layer, driver="GPKG", append=not first[layer],
+                                    geometry_type="Unknown" if layer == "lots" and first[layer] else None)
             first[layer] = False
     pyogrio.write_dataframe(wards, tmp, layer="wards", driver="GPKG", append=True)
     pyogrio.write_dataframe(overlay, tmp, layer="sixplex_overlay", driver="GPKG", append=True)

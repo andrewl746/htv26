@@ -96,7 +96,10 @@ def build_check_numbers(
             continue
         for key, field in zip(keys, ("required", "actual", "margin")):
             if key is not None:
-                add(key, row[field], row["unit"])
+                value = row[field]
+                if field == "margin" and _is_number(value):
+                    value = abs(value)  # a difference to name ("short by"), never a signed number to misread
+                add(key, value, row["unit"])
 
     permits = check["permits_nearby"]
     add("permits_nearby_count", permits["count"], None)

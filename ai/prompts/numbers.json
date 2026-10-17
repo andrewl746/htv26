@@ -3,10 +3,10 @@
   "labels": {
     "lot_width_actual": "This lot's width across the building",
     "lot_width_required": "Lot width the {design} needs",
-    "lot_width_margin": "Lot width margin for the {design}",
+    "lot_width_margin": "Difference between this lot's width and what the {design} needs",
     "lot_depth_actual": "This lot's depth",
     "lot_depth_required": "Lot depth the {design} needs",
-    "lot_depth_margin": "Lot depth margin for the {design}",
+    "lot_depth_margin": "Difference between this lot's depth and what the {design} needs",
     "building_length_allowed": "Building length allowed on this lot",
     "building_length_design": "Length of the {design}",
     "height_allowed": "Height allowed on this lot",

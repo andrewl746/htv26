@@ -4,7 +4,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 import pyogrio
+import shapely
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "out"
 GPKG = OUT / "suplex.gpkg"
@@ -70,6 +72,25 @@ def run(ward: str | None, failures: list[str], check) -> None:
     # building join rate on lots: share of lots with a building over 20 m²
     with_b = lots["parcelid"].isin(b.loc[b["footprint_m2"] > 20, "parcelid"])
     print(f"  lots with a building footprint over 20 m² assigned to them: {pct(with_b.sum(), n)} (the rest are 'vacant' or share a footprint)")
+    # Y7 QA: one primary address per lot, building columns, slivers, ward straddlers
+    prim = addr[addr["is_primary"]]
+    check(not prim["parcelid"].duplicated().any(), "exactly one primary address per lot (autocomplete shows each lot once)",
+          f"{len(prim):,} primary of {len(addr):,} addresses; lots with 2+ address points {int((lots['address_count'] > 1).sum()):,}")
+    check(bool((lots["bldg_count"] >= 0).all()), "bldg_* columns present on lots")
+    print(f"  lots with a building by intersection (bldg_count > 0): {pct((lots['bldg_count'] > 0).sum(), n)} "
+          f"(by largest-overlap parcelid only: {pct(with_b.sum(), n)}: row-house massing polygons span several lots)")
+    print(f"  no building at all (vacant): {int((lots['bldg_count'] == 0).sum()):,}")
+    print(f"  is_sliver (area under 30 m² or shorter side under 3 m): {int(lots['is_sliver'].sum()):,} ({pct(lots['is_sliver'].sum(), n)})")
+    wards = gpd.read_file(GPKG, layer="wards", engine="pyogrio")
+    cen = lots.geometry.centroid
+    in_ward = pd.Series(False, index=lots.index)
+    for r in wards.itertuples():
+        sel = (lots["ward_id"] == r.ward_id).to_numpy()
+        if sel.any():
+            in_ward[sel] = shapely.contains_xy(r.geometry, cen.x.values[sel], cen.y.values[sel])
+    print(f"  lots whose centroid lies outside their assigned ward (straddlers): {int((~in_ward).sum()):,} ({pct((~in_ward).sum(), n)})")
+    if "trees" in layers:
+        print(f"  trees layer: {pyogrio.read_info(GPKG, layer='trees')['features']:,} points")
     dup = lots["parcelid"].duplicated().sum()
     check(dup == 0, "lot parcelid unique", f"{dup} duplicates")
     sliver = (lots["area_m2"] < 30).sum()

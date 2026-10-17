@@ -13,7 +13,13 @@ const STRIPES_IMAGE = 'borderline-stripes'
 
 const STRIPE_TILE_PX = 12
 const STRIPE_WIDTH_PX = 3
-const LOT_FILL_OPACITY = 0.8
+/**
+ * Opaque: a see-through fill blends the "may fit" green into the ground and lowers its contrast
+ * (measured 1.88:1 against a park at 0.8; the token's ceiling on the light ground is 2.38:1).
+ */
+const LOT_FILL_OPACITY = 1
+/** The base map layers that carry a green tint; the ward map flattens them to the plain land colour. */
+const GREEN_BASE_LAYERS = ['park', 'landcover_wood', 'landcover_grass']
 const OUTLINE_FROM_ZOOM = 15
 const PERMIT_RADIUS: [zoomA: number, radiusA: number, zoomB: number, radiusB: number] = [12, 6, 17, 10]
 const PERMIT_STROKE_PX = 1.5
@@ -68,6 +74,16 @@ function searchedFilter(lotId: string | null): FilterSpecification {
   const id = lotId === null ? NaN : Number(lotId)
   // No lot, or an id that is not a number, matches nothing.
   return Number.isFinite(id) ? ['==', ['get', 'id'], id] : ['==', ['get', 'id'], -1]
+}
+
+/**
+ * Keeps green out of the base map (MASTERSPEC 6.5: the lot colours must read): parks and woods take
+ * the land colour, so the only green on the ward map is "may fit". A blank fallback style has none.
+ */
+export function neutraliseBase(map: MapLibreMap): void {
+  const land = map.getLayer('background') ? map.getPaintProperty('background', 'background-color') : undefined
+  if (typeof land !== 'string') return
+  for (const id of GREEN_BASE_LAYERS) if (map.getLayer(id)) map.setPaintProperty(id, 'fill-color', land)
 }
 
 /** Adds the sources and layers; safe to call again after the style is swapped. */

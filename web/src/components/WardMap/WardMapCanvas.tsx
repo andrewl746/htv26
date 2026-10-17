@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Map as MapLibreMap, type MapGeoJSONFeature, type MapMouseEvent } from 'maplibre-gl'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { PANEL_WIDTH_PX } from '../../layout'
-import { applyData, applyDesign, applySearched, addLayers, blankStyle } from './layers'
+import { applyData, applyDesign, applySearched, addLayers, blankStyle, neutraliseBase } from './layers'
 import type { DesignFilter } from './designs'
 import type { LotProps, WardData } from './data'
 import { tooltipText } from './tooltip'
@@ -77,6 +77,7 @@ export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLa
     map.on('style.load', () => {
       window.clearTimeout(timer)
       const { data: d, filter: f, searchedLotId: s } = live.current
+      neutraliseBase(map)
       addLayers(map, d, f, s)
       map.fitBounds(d.bounds, { padding: { top: FIT_PADDING_PX, left: FIT_PADDING_PX, bottom: FIT_PADDING_PX, right: PANEL_WIDTH_PX + FIT_PADDING_PX }, duration: 0 })
       setReady(true)

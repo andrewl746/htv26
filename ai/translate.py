@@ -11,7 +11,7 @@ import json
 from pydantic import create_model
 
 from ai.cache import JsonCache, cache_key
-from ai.config import Settings, contract, prompt_file
+from ai.config import PROMPTS_DIR, Settings, contract, load_json, prompt_file
 from ai.gemini import GeminiError
 from ai.generate import Generate, log_rejection
 from ai.validator import ValidationResult, placeholders, validate
@@ -20,7 +20,7 @@ TOKENS = ("{ward_id}", "{ward_name}")  # single-brace tokens in the briefing tit
 
 
 # Bump when the translation checks change, so cached results (and cached rejections) are redone.
-RULES_VERSION = 2
+RULES_VERSION = 3
 
 
 def month_forms() -> set[str]:
@@ -32,6 +32,22 @@ def month_forms() -> set[str]:
 
 def language_name(lang: str) -> str:
     return contract("copy/labels.json")["languages"][lang]["english"]
+
+
+def glossary(lang: str) -> dict:
+    """Reviewed wording for one language: the 'all' entries plus that language's (ai/prompts/translate_glossary.json)."""
+    data = load_json(PROMPTS_DIR / "translate_glossary.json")
+    shared, own = data.get("all", {}), data.get(lang, {})
+    return {
+        "rules": [*shared.get("rules", []), *own.get("rules", [])],
+        "forbidden": [*shared.get("forbidden", []), *own.get("forbidden", [])],
+        "fixed": dict(own.get("fixed", {})),
+    }
+
+
+def forbidden_found(translated: dict[str, str], words: list[str]) -> set[str]:
+    texts = " ".join(translated.values()).casefold()
+    return {w for w in words if w.casefold() in texts}
 
 
 def _check(english: dict[str, str], translated: dict[str, str], numbers: dict, allowed: set[str]) -> ValidationResult:
@@ -63,9 +79,10 @@ def translate(
     refresh: bool = False,
 ) -> tuple[dict[str, str] | None, bool]:
     """Returns (translated strings, cached) or (None, False) when English must be served instead."""
+    terms = glossary(lang)
     key = cache_key({
         "endpoint": "translate", "english": english, "lang": lang, "prompt": prompt_file("translate.md"),
-        "rules": RULES_VERSION,
+        "rules": RULES_VERSION, "glossary": terms,
     })
     hit = None if refresh else cache.get(key)
     if hit is not None:
@@ -73,17 +90,26 @@ def translate(
 
     allowed = allowed | month_forms()
     schema = create_model("Translation", **{k: (str, ...) for k in english})
-    prompt = prompt_file("translate.md").replace("{language_name}", language_name(lang))
+    rules = "".join(f"- {rule}\n" for rule in terms["rules"])
+    prompt = (prompt_file("translate.md").replace("{language_name}", language_name(lang))
+              .replace("{language_rules}", rules))
     prompt += json.dumps(english, ensure_ascii=False, indent=1)
     try:
         for attempt in (1, 2):
             draft = generate(prompt, schema, model=settings.gemini_model).model_dump()
+            draft.update({k: v for k, v in terms["fixed"].items() if k in english})  # reviewed wording wins
             result = _check(english, draft, numbers, allowed)
-            if result.ok:
+            banned = forbidden_found(draft, terms["forbidden"])
+            if result.ok and not banned:
                 cache.put(key, {"strings": draft, "model": settings.gemini_model})
                 return draft, False
-            log_rejection(settings, f"{endpoint}:translate:{lang}", prompt, attempt, result)
-            prompt = f"{prompt}\n\n{result.complaint()}"
+            log_rejection(settings, f"{endpoint}:translate:{lang}", prompt, attempt, result,
+                          extra={"forbidden": sorted(banned)})
+            complaint = result.complaint() if not result.ok else ""
+            if banned:
+                complaint += (f" Your draft used {', '.join(sorted(banned))}, which this language must not use;"
+                              " follow the rules above.")
+            prompt = f"{prompt}\n\n{complaint.strip()}"
         cache.put(key, {"strings": None, "model": settings.gemini_model})  # rejected twice: same inputs, same result
     except GeminiError:
         pass  # quota or network: try again next time

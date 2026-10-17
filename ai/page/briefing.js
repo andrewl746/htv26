@@ -156,8 +156,20 @@
     setTimeout(() => { copyButton.textContent = UI.copy; }, 2000);
   } });
 
+  // Whether a speaker has reviewed the language actually shown (English when the translation is unavailable).
+  const shown = labels.languages[textLang];
+  const reviewBadge = el("span", {
+    class: shown && shown.reviewed ? "badge review reviewed" : "badge review",
+    id: "review-status",
+    text: shown && shown.reviewed ? P.review_reviewed : P.review_machine,
+  });
+  select.setAttribute("aria-describedby", "review-status");
+
   const toolbar = el("div", { class: "toolbar" },
-    el("label", { for: "lang", text: P.language }), select,
+    el("div", { class: "lang-picker" },
+      el("div", { class: "lang-row" }, el("label", { for: "lang", text: P.language }), select),
+      reviewBadge,
+    ),
     copyButton,
     el("button", { type: "button", text: P.print, onclick: () => window.print() }),
     el("a", { href: briefing.links.ward_map, text: P.ward_map_link }),

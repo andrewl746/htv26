@@ -79,7 +79,7 @@ def test_french_briefing_keeps_every_placeholder_and_formats_numbers_for_french(
     assert what["template_text"].startswith("FR ") and "{{could_lots}}" in what["template_text"]
     assert "3 900" in what["text"] and "32,5" in what["text"]  # Intl-style French separators
     assert body["title"] == "FR Ward 04, Parkdale–High Park: multiplexes, before you vote"
-    assert all(h["heading"].startswith("FR ") for h in body["sections"])
+    assert all(h["heading"].startswith("FR ") for h in body["sections"] if h["id"] != "blocking_rule")  # glossary-fixed
     assert all(q.startswith("FR ") for q in body["questions"]) and len(body["questions"]) == 3
     assert body["disclaimer"].startswith("FR ")
     assert set(body["numbers"]) == set(contract("fixtures/briefing.04.en.json")["numbers"])
@@ -135,6 +135,51 @@ def test_english_never_gets_the_month_allowance(client):
     invented = {**GOOD, "permits": "Since May 2023, about 5 multiplex permits were issued here."}
     app.dependency_overrides[get_generate] = lambda: lambda prompt, schema, *, model=None: schema(**invented)
     assert briefing(client, "en")["source"] == "template"
+
+
+def test_french_glossary_fixes_the_reviewed_heading(client):
+    use(FakeGemini(lambda english: {k: f"FR {v}" for k, v in english.items()}))
+    body = briefing(client, "fr")
+    heading = next(s for s in body["sections"] if s["id"] == "blocking_rule")["heading"]
+    assert heading == "Pourquoi les lots ne conviennent pas"  # Andrew's review, not the model's wording
+
+
+def test_a_forbidden_word_is_rejected_and_retried(client, settings):
+    replies = iter(["circonscription", "quartier"])
+
+    def ward_word(english):
+        word = next(replies)
+        return {k: f"FR {v}".replace("Ward", word.capitalize()) for k, v in english.items()}
+
+    fake = use(FakeGemini(ward_word))
+    body = briefing(client, "fr")
+    assert body["translation_unavailable"] is False and body["title"].startswith("FR Quartier 04")
+    assert fake.calls == ["BriefingDraft", "Translation", "Translation"]
+    log = [json.loads(line) for line in (settings.log_dir / "rejections.jsonl").read_text().splitlines()]
+    assert log[0]["forbidden"] == ["circonscription"]
+
+
+def test_the_glossary_rules_reach_the_prompt(client):
+    prompts = []
+
+    def capture(prompt, schema, *, model=None):
+        prompts.append(prompt)
+        return FakeGemini()(prompt, schema, model=model)
+
+    use(capture)
+    briefing(client, "fr")
+    assert "quartier" in prompts[-1] and "duplex" in prompts[-1]
+
+
+def test_duplex_is_forbidden_in_every_language(client):
+    use(FakeGemini(lambda english: {k: f"PT {v}".replace("multiplexes", "duplexes") for k, v in english.items()}))
+    assert briefing(client, "pt")["translation_unavailable"] is True
+
+
+def test_every_language_has_a_review_status():
+    languages = contract("copy/labels.json")["languages"]
+    assert all(isinstance(info["reviewed"], bool) for info in languages.values())
+    assert languages["en"]["reviewed"] and languages["fr"]["reviewed"]
 
 
 def test_gemini_error_during_translation_is_not_cached(client):

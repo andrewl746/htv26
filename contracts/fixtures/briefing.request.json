@@ -37,7 +37,7 @@
       "any_on_fitting_lots": 310
     },
     "permits": {
-      "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+      "rule": "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind",
       "since_may_2023": 41,
       "by_kind_since_may_2023": {"multiplex": 41, "secondary_suite": 120, "laneway_garden": 35, "other": 10},
       "by_year": {"2022": 6, "2023": 9, "2024": 14, "2025": 12, "2026": 8},

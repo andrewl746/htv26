@@ -1,4 +1,4 @@
-# Suplex masterspec, version 3 (status board updated 2026-10-17 18:22, see section 0)
+# Suplex masterspec, version 3 (status board updated 2026-10-17 18:25, see section 0)
 
 **Hack the Valley 11 · Hack the Valley × School of Cities challenge · 4 people · about 36 hours**
 
@@ -12,7 +12,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-17, 18:22, about Hour 20 of 36)](#0-status-board-updated-2026-10-17-1822-about-hour-20-of-36)
+- [0. Status board (updated 2026-10-17, 18:25, about Hour 20.5 of 36)](#0-status-board-updated-2026-10-17-1825-about-hour-205-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
   - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
@@ -109,7 +109,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ---
 
-## 0. Status board (updated 2026-10-17, 18:22, about Hour 20 of 36)
+## 0. Status board (updated 2026-10-17, 18:25, about Hour 20.5 of 36)
 
 Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 
@@ -119,13 +119,13 @@ Measured against the planned hours in section 8, after the approved re-plan move
 
 | Person | Planned hours | Done hours | Done | Biggest piece left |
 |---|---|---|---|---|
-| Andrew | 35.0 | 19.8 | 57% | A9 and A10 in his main session; the 3D scene (J8, A16, A15) in a separate session since 18:00; then the Hour-24 lock and demo cache (A11), A14, the palette into `contracts/design-tokens.css` |
+| Andrew | 35.0 | 20.8 | 59% | push A10 and share the batch outputs, then the Hour-24 lock and demo cache (A11), A14, the palette into `contracts/design-tokens.css`; the 3D scene (J8, A16, A15) in its own session |
 | Yuvi | 33.0 | 26.2 | 79% | next steps Y11 to Y14 (5.5 h), the Hour-24 refresh; J5 the ward map and his 2D plan view are both merged |
 | Jayden | 18.5 | 10.4 | 56% | J4 result panel, J6 transition, J9 demo mode (the 2D view now comes from Yuvi's plan view), the landing search card and the non-3D UI polish (about 8 hours; away for a few hours first) |
 | Simone | 29.0 | 21.7 | 75% | real ward numbers in the briefing and the backup addresses (after A10), the [LOCKED] numbers after Hour 24, S14, ten rehearsals |
-| **Team** | **115.5** | **78.1** | **68%** | the batch (finishing now), the result panel and transition (Jayden), next steps and the 3D scene |
+| **Team** | **115.5** | **79.1** | **68%** | the result panel and transition (Jayden), next steps, the 3D scene, and sharing the batch outputs |
 
-Andrew's session has also written the A10 batch (code and tests, committed locally, not yet pushed); it counts as two of A10's three hours until it runs citywide. Andrew's list is now the longest (about 15 hours left) because he took over the 3D scene; the 3D work runs in a separate Claude session on its own branch, so his own time goes to the batch, the merges and the Hour-24 lock. Yuvi has about 10.8 hours left against about 8 before rehearsals, so next steps is the first thing cut if the ward map runs late.
+Andrew's main session has written the A10 batch and run it citywide (clean at 18:19, 78 of 78 sanity checks); the code is committed locally but not yet pushed, and the outputs are only on his machine. Andrew's list is still the longest (about 14 hours left) because he took over the 3D scene; that work runs in a separate Claude session on its own branch, so his own time goes to pushing and sharing the batch, the merges and the Hour-24 lock. Yuvi has about 6.8 hours left, so next steps is the first thing cut if anything runs late.
 
 **By feature:**
 
@@ -140,16 +140,16 @@ Andrew's session has also written the A10 batch (code and tests, committed local
 
 | Person | Done and merged | Waiting for Andrew to merge | Now and next |
 |---|---|---|---|
-| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8, T19 and T22 closed; approved next steps and the re-plan; merged PRs #8 and #9; T21 settled (six units, By-law 845-2025); merged PRs #12, #13 and #15 | the A10 batch with tests (dfecfb2) and a three times faster engine (c3ddfe1), committed by his A9-A10 session but not yet pushed | merge #16; the citywide batch is nearly done in his main session (24 of 25 ward files by 18:18); then push A10, which Simone's S8 and S9 wait on, A11 at Hour 24, A14, the palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13; the 3D scene (J8, A16, A15) in a separate session on its own branch, which has been asked to merge `main` |
+| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8, T19 and T22 closed; approved next steps and the re-plan; merged PRs #8 and #9; T21 settled (six units, By-law 845-2025); merged PRs #12, #13, #15 and #16; A10 ran citywide at 18:19: all 25 wards, 495,456 lots in 1,290 s, 78 of 78 sanity checks pass (including the 19 hand-checked lots keeping their results), permit counts from Tiger Data | the A10 batch code with tests (dfecfb2) and a three times faster engine (c3ddfe1), committed by his main session but not yet pushed; the batch outputs (`ward_summary.json`, `wards/*.geojson`, `batch_report.md`) are in `data/out/` on his machine only | push A10 (pull with `--no-rebase` first) and share the batch outputs through the data release or the demo laptop's API: the ward map on real data, S8 and S9 all wait on it; then A11 at Hour 24, A14, the palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13; the 3D scene (J8, A16, A15) in a separate session on its own branch, which has been asked to merge `main` |
 | Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9); merged at 18:08 (PR #12: a 2D plan view tab (the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and permit diamonds on a street map; zoom and pan; no addresses, no lists), which also carries Jayden's four unmerged commits with their palette conflict resolved; merged together with #13 onto `main` in a test checkout it builds and lints clean); J5, the ward map, merged at 18:17 (PR #15: J5, the ward map, entirely inside `WardMap/`; merged onto `main` in a test checkout it builds and lints clean. Hover shows only the result and the design, the gold dots are multiplex permits since May 2023 only, the base map has its green removed so only "may fit" is green, the sixplex options say "not allowed in this ward" where they should, the legend carries the screening line, the panel counts up and links to the briefing, there is no list or export, and it has a slot for Simone's chart; a dev page at `/src/components/WardMap/dev/index.html` shows it on the fixtures) | nothing open | next steps Y11 to Y14 (prompt in 8.5), pinging Simone for S14 when `next_steps.json` lands; after #16 merges, switch the ward map's local strings to `labels.ward_map` and mount Simone's `TrendChart` in the ward panel's slot inside `WardMap/`; the Hour-24 refresh (Y9) |
 | Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | nothing open: his four commits reached `main` through #12 at 18:08, so GitHub shows #14 as merged too | away for a few hours, then J4 the result panel (with the 3D Massing disclaimer, which is still not shown anywhere), J6 the transition, J9 the demo mode, the landing search card and the non-3D UI; switch `pending.<key>` in `copy.ts` to `labels.ui.<key>` and `labels.units.m2` (the strings are in `labels.json` since #13), and after #16 drop the pending block in `Plan/copy.ts`, which is his UI since the merge |
-| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary, PR #8; S8 part one: the explanations on the 19 hand-checked lots with the real API and Gemini, 19 of 19 passing the number check and matching Andrew's table after she caught and fixed a margin read as a depth ("the lot depth is -0.37 m"); the plan-view strings; the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A and the README draft, with [LOCKED] markers for numbers that only exist after Hour 24; merged at 18:08 (PR #13: J7 `TrendChart.tsx` (the briefing chart for the ward panel, checked against the fixture) and the web's five pending strings in `labels.json`; 118 tests pass); the pitch facts, Devpost and Q&A now say "up to six units, By-law 845-2025" (d64baa4) | PR #16: the last eight hard-coded strings (a new `ward_map` group, four more plan-view strings, the map attribution kept word for word); merged onto `main` in a test checkout it validates (37 fixtures), passes her 118 AI tests, and the web builds and lints clean | after A10: S8's briefing page on real data (`/ward` answers 503 until the batch runs) and S9, the backup addresses (the landing chips, 326 Quebec Ave and 281 Armadale Ave, check out on real data); after Hour 24: the [LOCKED] numbers, screenshots, the one `gemini-3.8-flash` pass and a re-read of the French; S14; translation sheets (Tamil drops "if anything" in question 1) |
+| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary, PR #8; S8 part one: the explanations on the 19 hand-checked lots with the real API and Gemini, 19 of 19 passing the number check and matching Andrew's table after she caught and fixed a margin read as a depth ("the lot depth is -0.37 m"); the plan-view strings; the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A and the README draft, with [LOCKED] markers for numbers that only exist after Hour 24; merged at 18:08 (PR #13: J7 `TrendChart.tsx` (the briefing chart for the ward panel, checked against the fixture) and the web's five pending strings in `labels.json`; 118 tests pass); the pitch facts, Devpost and Q&A now say "up to six units, By-law 845-2025" (d64baa4); merged at 18:20 (PR #16: the last eight hard-coded strings (a new `ward_map` group, four more plan-view strings, the map attribution kept word for word); merged onto `main` in a test checkout it validates (37 fixtures), passes her 118 AI tests, and the web builds and lints clean) | nothing open | after A10: S8's briefing page on real data (`/ward` answers 503 until the batch runs) and S9, the backup addresses (the landing chips, 326 Quebec Ave and 281 Armadale Ave, check out on real data); after Hour 24: the [LOCKED] numbers, screenshots, the one `gemini-3.8-flash` pass and a re-read of the French; S14; translation sheets (Tamil drops "if anything" in question 1) |
 
 ### 0.3 Critical path and the approved re-plan
 
 **The critical path:**
 
-1. **A10, the citywide batch (Andrew, now).** Nothing else produces the headline numbers, the per-ward map files or the backup addresses. T20 (the skewed-lot placement) goes in first, or the batch is re-run after it. If Andrew's usage runs out, Yuvi is the backup: he knows the data, and the batch is specified in 3.4.
+1. **A10, the citywide batch, ran clean at 18:19** (all 25 wards, 495,456 lots, 78 of 78 sanity checks). It still has to be pushed and its outputs shared (the data release, or the API on the demo laptop): the ward map on real data, the briefing on real numbers (S8) and the backup addresses (S9) all wait on that. A re-run takes about 21 minutes, so if T20 (the skewed-lot placement) lands later, the batch is re-run before the Hour-24 lock.
 2. **Then, in parallel:** the ward map (J5, merged at 18:17) switches from fixtures to the real ward files; the briefing switches to real ward numbers (S8); Simone and Andrew confirm the two backup addresses from real results (S9). The ward map only appears in the app once Jayden wires it in (J4's "See your ward" button, then J6), so J4 and J6 are now the web's critical path.
 3. **Hour 24, the headline lock (A11):** Yuvi's refresh (`python pipeline/refresh.py --tiger`), then the batch, then the demo cache for the backup addresses and Ward 04, then Simone's one `gemini-3.8-flash` pre-generation pass.
 4. **Hour 28 onward:** the offline rehearsal (Wi-Fi off, API and AI stopped), ten timed rehearsals (S11), the Devpost submitted by Hour 34.
@@ -2294,6 +2294,11 @@ You asked for every decision to be made rather than asked. Here is each one, why
 ## Appendix J. Status log (every report, word for word)
 
 Section 0 is rewritten on each update; this appendix keeps what it said before, so nothing is lost. Newest first. The entries below were section 0 from 2026-10-17 03:40 to 17:00.
+
+### 2026-10-17, 18:25: PR 16 merged, the batch ran clean
+
+- Andrew had Simone's PR #16 (the last eight hard-coded strings) merged at 18:20, after checking it still matched the reviewed commit. No PRs are open.
+- The citywide batch finished at 18:19 in Andrew's main session: 25 wards, 495,456 lots, 1,290 s, 78 of 78 sanity checks pass, permit counts from Tiger Data. The code and outputs are not on GitHub yet.
 
 ### 2026-10-17, 18:22: Simone's night report
 

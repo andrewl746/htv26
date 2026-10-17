@@ -27,7 +27,9 @@ def validate_texts(texts: dict[str, str], numbers: dict, allowed: set[str]) -> V
     return ValidationResult(ok=all(r.ok for r in results), unknown=unknown, missing=missing, invented=invented)
 
 
-def log_rejection(settings: Settings, endpoint: str, prompt: str, attempt: int, result: ValidationResult) -> None:
+def log_rejection(
+    settings: Settings, endpoint: str, prompt: str, attempt: int, result: ValidationResult, extra: dict | None = None
+) -> None:
     settings.log_dir.mkdir(parents=True, exist_ok=True)
     entry = {
         "at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -38,6 +40,7 @@ def log_rejection(settings: Settings, endpoint: str, prompt: str, attempt: int, 
         "invented": sorted(result.invented),
         "unknown": sorted(result.unknown),
         "missing": sorted(result.missing),
+        **(extra or {}),
     }
     with (settings.log_dir / "rejections.jsonl").open("a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")

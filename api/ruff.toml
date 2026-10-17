@@ -1,0 +1,2 @@
+# Same line length as the engine (engine/pyproject.toml); everything else is ruff's defaults.
+line-length = 120

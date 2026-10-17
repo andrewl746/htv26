@@ -12,6 +12,7 @@ from shapely.geometry import MultiPolygon, Point, Polygon, box
 
 from suplex_engine.attached import is_attached
 from suplex_engine.check import run_check
+from suplex_engine.classify import review_flags
 from suplex_engine.config import contracts_dir, load_config
 from suplex_engine.models import BuildingInput, LotInput, NeighbourLot
 
@@ -170,8 +171,11 @@ def test_no_zone_or_status_5_is_older_bylaw():
 
 
 def test_larger_building_by_height_footprint_or_address_count():
-    tall = rect_lot(12.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 11, OY + 18), 12.5, parcelid="t-1")])
+    over = CFG.larger_building.avg_height_m + 0.5
+    tall = rect_lot(12.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 11, OY + 18), over, parcelid="t-1")])
     assert run_check(tall, CFG).lot.class_ == "larger_building"
+    house = rect_lot(12.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 11, OY + 18), 13.4, parcelid="t-1")])
+    assert run_check(house, CFG).lot.class_ == "checked"             # a 3-storey house (602 Indian Rd is 13.4 m) is not a larger building
     wide = rect_lot(30.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 29, OY + 21), 8.0, parcelid="t-1")])
     assert run_check(wide, CFG).lot.class_ == "larger_building"       # 28 x 13 = 364 m2
     many = rect_lot(12.0, 40.0, address_count=4)
@@ -193,8 +197,8 @@ def test_classification_order_condo_before_zone_before_building():
 
 
 def test_attached_lot_is_no_fit_on_detached_building_but_still_measured():
-    # A semi: the house footprint crosses the west lot line into the neighbour's COMMON lot by 6 m2.
-    house = BuildingInput(1, box(OX - 1.0, OY + 8, OX + 6.0, OY + 18), 7.0, parcelid="t-1")
+    # A semi: the house footprint crosses the west lot line into the neighbour's COMMON lot by 30 m2 (over cross_lot_m2).
+    house = BuildingInput(1, box(OX - 3.0, OY + 8, OX + 6.0, OY + 18), 7.0, parcelid="t-1")
     neighbour = NeighbourLot("t-0", box(OX - 7.62, OY, OX, OY + 40), "COMMON")
     res = run_check(rect_lot(7.62, 40.0, buildings=[house], neighbour_lots=[neighbour]), CFG)
     assert res.lot.class_ == "attached" and res.lot.attached is True
@@ -215,6 +219,49 @@ def test_vacant_lot_is_checked_normally_and_flagged():
     assert res.lot.existing_building is None
 
 
+# ---------- footprints clipped to the lot (MASTERSPEC section 0 item 6) ----------
+
+ROW_LOT_W = 6.1
+
+
+def _row_house_lot() -> LotInput:
+    """The middle of 8 row lots of 6.1 m, under one 3D Massing polygon that covers the whole row (about 470 m2)."""
+    row = BuildingInput(7, box(OX - 3 * ROW_LOT_W + 1, OY + 8, OX + 5 * ROW_LOT_W - 1, OY + 18), 8.0, parcelid="t-0")
+    west = NeighbourLot("t-0", box(OX - ROW_LOT_W, OY, OX, OY + 40), "COMMON")
+    east = NeighbourLot("t-2", box(OX + ROW_LOT_W, OY, OX + 2 * ROW_LOT_W, OY + 40), "COMMON")
+    return rect_lot(ROW_LOT_W, 40.0, buildings=[row], neighbour_lots=[west, east])
+
+
+def test_a_row_polygon_is_clipped_to_the_lot_and_reads_as_attached_not_larger():
+    lot = _row_house_lot()
+    assert lot.buildings[0].area_m2 > CFG.larger_building.footprint_m2        # the merged row polygon
+    clipped_m2 = ROW_LOT_W * 10.0
+    res = run_check(lot, CFG)
+    assert res.lot.class_ == "attached" and res.lot.attached is True
+    ex = res.lot.existing_building
+    assert ex.building_id == 7 and ex.footprint_m2 == pytest.approx(clipped_m2, abs=0.5)
+    lot_ring = Polygon(res.lot.polygon_local).buffer(0.01)
+    assert all(lot_ring.covers(Point(p)) for p in ex.footprint_local)
+    on = [b for b in res.context.buildings if b.on_lot]
+    off = [b for b in res.context.buildings if not b.on_lot]
+    assert len(on) == 1 and on[0].building_id == 7
+    assert Polygon(on[0].footprint_local).area == pytest.approx(clipped_m2, abs=0.5)
+    assert len(off) == 2 and {b.building_id for b in off} == {7}
+    assert {(b.avg_height_m, b.kind) for b in res.context.buildings} == {(8.0, "house")}
+
+
+def test_a_footprint_grazing_the_lot_under_the_vacant_threshold_leaves_it_vacant():
+    graze = box(OX - 5.0, OY + 8, OX + 1.0, OY + 14)                         # 1 m x 6 m = 6 m2 on the lot
+    lot = rect_lot(12.0, 40.0, buildings=[BuildingInput(9, graze, 7.0, parcelid="t-1")])
+    assert graze.intersection(lot.geometry).area < CFG.vacant_min_footprint_m2
+    res = run_check(lot, CFG)
+    assert res.lot.vacant is True and res.lot.existing_building is None
+    assert "vacant" in [f.id for f in res.lot.flags]
+    [b] = res.context.buildings
+    assert b.building_id == 9 and b.on_lot is False
+    assert Polygon(b.footprint_local).area == pytest.approx(graze.area, abs=0.05)
+
+
 def test_flags_come_from_the_lot_row_and_never_change_the_result():
     plain = run_check(rect_lot(12.0, 40.0), CFG)
     flagged = run_check(rect_lot(12.0, 40.0, flag_heritage_register=True, flag_ravine=True, flag_trca=True,
@@ -224,6 +271,25 @@ def test_flags_come_from_the_lot_row_and_never_change_the_result():
     assert "123" in ex.detail
     assert results(flagged) == results(plain)
     assert all(f.label and f.text for f in flagged.lot.flags)
+
+
+def test_site_exception_flag_names_the_exception_and_is_informational():
+    plain = run_check(rect_lot(12.0, 40.0), CFG)
+    res = run_check(rect_lot(12.0, 40.0, zn_exception="Y", exception_no=1234, flag_heritage_register=True), CFG)
+    ex = next(f for f in res.lot.flags if f.id == "site_exception")
+    assert ex.text == "This zone has a site-specific exception (x1234), which Suplex does not read."
+    assert ex.detail == "x1234"
+    assert [f.id for f in res.lot.flags] == ["heritage_register", "site_exception"]
+    assert [f.id for f in review_flags(res.lot.flags)] == ["heritage_register"]
+    assert results(res) == results(plain)
+
+
+def test_site_exception_without_a_number_uses_the_plain_sentence():
+    res = run_check(rect_lot(12.0, 40.0, zn_exception="Y", exception_no=None), CFG)
+    [ex] = [f for f in res.lot.flags if f.id == "site_exception"]
+    assert ex.text == "This zone has a site-specific exception, which Suplex does not read."
+    assert ex.detail is None
+    assert review_flags(res.lot.flags) == []
 
 
 # ---------- placement ----------
@@ -298,7 +364,7 @@ def _lot_and_neighbour(gap_m: float):
 def test_semi_footprint_crossing_the_lot_line_is_attached():
     lot = box(OX, OY, OX + 7.62, OY + 40)
     neighbour = NeighbourLot("n", box(OX - 7.62, OY, OX, OY + 40), "COMMON")
-    footprint = box(OX - 1.0, OY + 8, OX + 6.5, OY + 19)        # 11 m2 over the line
+    footprint = box(OX - 3.0, OY + 8, OX + 6.5, OY + 19)        # 33 m2 over the line, over cross_lot_m2 (20)
     assert is_attached(lot, [neighbour], [footprint], CFG) is True
 
 
@@ -309,21 +375,24 @@ def test_row_house_touching_along_a_shared_wall_is_attached():
 
 
 def test_detached_house_with_a_close_neighbour_is_not_attached():
-    lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1 m gap, wider than the 0.3 m tolerance
+    lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1.2 m gap, far wider than the tolerance
+    assert is_attached(lot, neighbours, [house, other], CFG) is False
+    # Two roof outlines 0.2 m apart (eaves of detached houses 1.2 m apart) are not a shared wall either.
+    lot, neighbours, house, other = _lot_and_neighbour(0.0)       # the helper adds 0.2 m: a real 0.2 m gap
     assert is_attached(lot, neighbours, [house, other], CFG) is False
 
 
 def test_small_crossing_under_the_threshold_is_not_attached():
     lot = box(OX, OY, OX + 7.62, OY + 40)
     neighbour = NeighbourLot("n", box(OX - 7.62, OY, OX, OY + 40), "COMMON")
-    footprint = box(OX - 0.3, OY + 8, OX + 6.5, OY + 19)         # 3.3 m2 over the line, under 4
+    footprint = box(OX - 0.5, OY + 8, OX + 6.5, OY + 19)         # 5.5 m2 over the line: eaves, under cross_lot_m2
     assert is_attached(lot, [neighbour], [footprint], CFG) is False
 
 
 def test_crossing_into_a_condo_parcel_does_not_count_as_attached():
     lot = box(OX, OY, OX + 7.62, OY + 40)
     neighbour = NeighbourLot("n", box(OX - 7.62, OY, OX, OY + 40), "CONDO")
-    footprint = box(OX - 1.0, OY + 8, OX + 6.5, OY + 19)
+    footprint = box(OX - 3.0, OY + 8, OX + 6.5, OY + 19)         # 33 m2 over the line, over cross_lot_m2
     assert is_attached(lot, [neighbour], [footprint], CFG) is False
 
 
@@ -427,3 +496,29 @@ def test_fixture_lots_reproduce_their_fixture(name):
     assert res["meta"]["disclaimer"] == fx["meta"]["disclaimer"]
     assert res["meta"]["designs_version"] == fx["meta"]["designs_version"]
     assert res["meta"]["config_version"] == fx["meta"]["config_version"]
+
+
+# ---------- depth across the building's width when the design is wider than the lot (A8 finding) ----------
+
+def test_depth_is_measured_inside_the_lot_when_the_design_is_wider_than_the_lot():
+    # 34 Rexford Rd: a 6.40 x 33.5 m lot whose side lot lines lean 0.1 m over their length, as surveyed lines do.
+    # Every design plus its yards is wider than the lot's band width; the depth row must report the lot's depth, not a sample
+    # taken just past a leaning side line, which exits the lot halfway back.
+    skewed = Polygon([(OX, OY), (OX + 6.4, OY), (OX + 6.3, OY + 33.5), (OX - 0.1, OY + 33.5)])
+    lot = rect_lot(6.4, 33.5, geometry=skewed,
+                   buildings=[BuildingInput(building_id=1, geometry=box(OX + 0.5, OY + 8, OX + 5.9, OY + 18), avg_height_m=7.0)])
+    res = run_check(lot, CFG)
+    assert rule(res, "fourplex_narrow", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
+    assert rule(res, "fourplex_wide", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
+    assert rule(res, "sixplex_wide", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
+
+
+def test_depth_is_measured_under_the_placed_building_when_the_width_fits():
+    # A rear corner notched out by 5 m on a lot wide enough for every design: the notch sits under the building's
+    # right side, so the depth row reports the notched depth, not the centre-line depth (5.5 step 4).
+    notched = Polygon([(OX, OY), (OX + 12, OY), (OX + 12, OY + 25.5), (OX + 7, OY + 25.5), (OX + 7, OY + 40), (OX, OY + 40)])
+    lot = rect_lot(12.0, 40.0, geometry=notched,
+                   buildings=[BuildingInput(building_id=1, geometry=box(OX + 1, OY + 8, OX + 6, OY + 18), avg_height_m=7.0)])
+    res = run_check(lot, CFG)
+    assert res.lot.depth_m == pytest.approx(40.0, abs=0.05)                      # centre line misses the notch
+    assert rule(res, "fourplex_wide", "lot_depth").actual == pytest.approx(25.5, abs=0.05)

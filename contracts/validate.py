@@ -1,8 +1,9 @@
 """Validate the Suplex contracts (MASTERSPEC 3.8 and Appendix A).
 
 Checks every schema in contracts/schemas against the JSON Schema 2020-12 metaschema, then every
-contract file and fixture against its schema (format checking off). Prints one line per file and
-exits 1 if anything fails, 0 otherwise. Runs from any working directory.
+contract file and fixture against its schema (format checking off), then the consistency checks
+across fixtures (one `permit_rule` string everywhere; "pct", never "%", as a unit). Prints one line
+per file or check and exits 1 if anything fails, 0 otherwise. Runs from any working directory.
 
     python contracts/validate.py                    # schemas, designs.json, engine_config.json, copy, fixtures
     python contracts/validate.py -v                 # also list every error, not just the first
@@ -235,6 +236,68 @@ def check_copy(report: Report) -> None:
         report.ok(label, "parses; no schema")
 
 
+# ---------- consistency across fixtures ----------
+
+PERMIT_RULE_SOURCE = "ward_summary.sample.json"
+PERCENT_UNIT = "pct"           # the one percentage unit; "%" is never a unit value
+
+
+def iter_dicts(obj: Any, path: str = "$") -> Iterable[tuple[str, dict[str, Any]]]:
+    """Every dict inside a JSON document, with its JSON path."""
+    if isinstance(obj, dict):
+        yield path, obj
+        for k, v in obj.items():
+            yield from iter_dicts(v, f"{path}.{k}")
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            yield from iter_dicts(v, f"{path}[{i}]")
+
+
+def load_fixture_docs() -> dict[str, Any]:
+    """Every JSON fixture that parses, by file name (parse errors are reported by the schema checks)."""
+    docs: dict[str, Any] = {}
+    for path in sorted(FIXTURE_DIR.glob("*")):
+        if path.suffix in (".json", ".geojson"):
+            try:
+                docs[path.name] = load_json(path)
+            except (OSError, json.JSONDecodeError):
+                continue
+    return docs
+
+
+def check_permit_rule(report: Report, docs: dict[str, Any]) -> None:
+    """The ward summary's `permit_rule` equals every `permits.rule` in every fixture."""
+    label = "fixtures: permit_rule consistent"
+    source = docs.get(PERMIT_RULE_SOURCE)
+    if not isinstance(source, dict) or "permit_rule" not in source:
+        report.fail(label, f"{PERMIT_RULE_SOURCE} has no permit_rule")
+        return
+    expected = source["permit_rule"]
+    found, wrong = 0, []
+    for name, doc in docs.items():
+        for path, d in iter_dicts(doc):
+            permits = d.get("permits")
+            if isinstance(permits, dict) and "rule" in permits:
+                found += 1
+                if permits["rule"] != expected:
+                    wrong.append(f"{name} {path}.permits.rule: {permits['rule']!r}")
+    if wrong:
+        report.fail(label, f"{len(wrong)} of {found} permits.rule differ from {PERMIT_RULE_SOURCE} permit_rule {expected!r}",
+                    wrong)
+    else:
+        report.ok(label, f"{found} permits.rule equal {PERMIT_RULE_SOURCE} permit_rule")
+
+
+def check_percent_unit(report: Report, docs: dict[str, Any]) -> None:
+    """No `unit` anywhere in a fixture is "%": percentages are `PERCENT_UNIT` everywhere."""
+    label = f'fixtures: percentages use unit "{PERCENT_UNIT}"'
+    wrong = [f"{name} {path}.unit" for name, doc in docs.items() for path, d in iter_dicts(doc) if d.get("unit") == "%"]
+    if wrong:
+        report.fail(label, f'{len(wrong)} unit values are "%"', wrong)
+    else:
+        report.ok(label, f'no "%" unit in {len(docs)} fixtures')
+
+
 def run_all(verbose: bool) -> int:
     report = Report(verbose)
     validators = load_schemas(report)
@@ -260,6 +323,9 @@ def run_all(verbose: bool) -> int:
             check_features(report, validators, path, schema)
         else:
             check_document(report, validators, path, schema)
+    docs = load_fixture_docs()
+    check_permit_rule(report, docs)
+    check_percent_unit(report, docs)
     print(f"\n{report.passed} ok, {report.failed} failed")
     return 1 if report.failed else 0
 

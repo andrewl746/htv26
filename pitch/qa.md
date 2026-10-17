@@ -33,7 +33,7 @@ It shows the same facts to everyone, in neutral words: what's allowed, and how m
 No. Each ward shows only its own numbers.
 
 **"Doesn't the Toronto Multiplex Tracker already map permits?"**
-Yes, and we credit it; we use its permit rule and our count matches the City's within about 1% (446 vs 452) [4]. It shows what got permitted. We add what could be built with the City's free designs, side by side.
+Yes, and we credit it; we use its permit rule. Our count, permits creating 2 to 6 homes, one per project, tracks the City's own: Ward 04 is 42 in both, and 446 citywide against the City's 452 [15]. It shows what got permitted. We add what could be built with the City's free designs, side by side.
 
 **"Why does the Sixplex Narrow fail on so many lots?"**
 It's 19 m long. The by-law allows 19 m for a detached houseplex only on lots at least 36 m deep (frontage under 10 m) or 40 m deep (frontage 10 m or more); elsewhere the limit is 17 m. That's a finding, not a bug, and the checklist shows the section. *(Holds unless Andrew's T3 re-read changes decision 17.)*

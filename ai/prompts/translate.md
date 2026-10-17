@@ -8,5 +8,5 @@ Rules:
 - Keep "Suplex", "Fourplex Narrow", "Fourplex Wide", "Sixplex Narrow" and "Sixplex Wide" in English.
 - Keep the sentences short, plain and neutral. Do not add anything that is not in the English.
 - Keep line breaks (`\n`) where they are.
-
+{language_rules}
 JSON:

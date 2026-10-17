@@ -68,6 +68,19 @@ def coords_rounded(geom: BaseGeometry, ndigits: int = 2) -> list[Coord]:
     return [(round(float(x), ndigits), round(float(y), ndigits)) for x, y in pts]
 
 
+def polygon_parts(geom: BaseGeometry | None) -> list[Polygon]:
+    """The polygons in an overlay result (Polygon, MultiPolygon or GeometryCollection), largest first.
+
+    Lines and points left over where shapes only touch are dropped.
+    """
+    if geom is None or geom.is_empty:
+        return []
+    if isinstance(geom, Polygon):
+        return [geom]
+    parts = [p for g in getattr(geom, "geoms", ()) for p in polygon_parts(g)]
+    return sorted(parts, key=lambda p: -p.area)
+
+
 # ---------------------------------------------------------------------------
 # Street-facing edge
 # ---------------------------------------------------------------------------
@@ -151,15 +164,49 @@ def boundary_edges(lot: Polygon, cfg: EngineConfig) -> list[LineString]:
     return _merge_segments(segs, [True] * len(segs), cfg.street_edge.merge_angle_deg)
 
 
+def _opposite(a: LineString, b: LineString, cfg: EngineConfig) -> bool:
+    """Two street edges on opposite sides of the lot: parallel (directions within the merge angle, either way
+    round) and apart by more than a dropped chamfer's length. A street and a rear lane, or a through lot."""
+    d = _angle_between_deg(_direction((a.coords[0], a.coords[-1])), _direction((b.coords[0], b.coords[-1])))
+    parallel = min(d, 180.0 - d) < cfg.street_edge.merge_angle_deg
+    return parallel and a.distance(b) > cfg.street_edge.min_length_m
+
+
+def _drop_opposite_edges(edges: list[LineString], address_point: Point, cfg: EngineConfig) -> list[LineString]:
+    """Opposite street edges are not a corner. Walk the edges from the one nearest the lot's address point
+    outward and drop every edge that lies opposite an edge already kept; the corner rule then applies to what
+    is left. Of an opposite pair, the edge nearer the address point wins (an exact tie keeps boundary order),
+    so a rear lane loses whenever the address point sits on the street half of the lot; on a corner lot
+    addressed from its long side the lane is opposite the *other* street, which is why the test is pairwise.
+
+    A8 finding on Ward 04 (2026-10-17): 78% of lots with two street edges have a public lane behind them, not a
+    second street, and the shorter-edge rule alone faced the lane in half of those. Without an address point
+    nothing says which side is the street and the by-law rule stands.
+    """
+    kept: list[LineString] = []
+    for e in sorted(edges, key=lambda e: e.distance(address_point)):
+        if not any(_opposite(e, k, cfg) for k in kept):
+            kept.append(e)
+    return kept
+
+
 def choose_frontage(lot: Polygon, corridors: Iterable[BaseGeometry], address_point: Point | None,
                     cfg: EngineConfig) -> tuple[LineString | None, str | None]:
-    """Section 5.2 step 1. Returns (edge, None) or (None, reason)."""
+    """Section 5.2 step 1. Returns (edge, None) or (None, reason).
+
+    Street edges are lot boundary runs within `corridor_distance_m` of street space. With several, edges on the
+    far side of the lot from the address point (a rear lane) are dropped first; among the rest the shorter edge
+    is the front lot line (the by-law's corner-lot convention). With no street space at all, the boundary edge
+    nearest the address point is used.
+    """
     min_len = cfg.street_edge.min_length_m
     edges = street_edges(lot, corridors, cfg)
     if edges:
         usable = [e for e in edges if e.length >= min_len]
         if not usable:
             return None, SHORT_STREET_EDGE
+        if len(usable) > 1 and address_point is not None and not address_point.is_empty:
+            usable = _drop_opposite_edges(usable, address_point, cfg)
         # Corner lot: the front lot line is the shorter street edge (the by-law's corner-lot convention).
         return min(usable, key=lambda e: e.length), None
     if address_point is None or address_point.is_empty:

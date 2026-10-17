@@ -1,4 +1,9 @@
-"""`run_check`: the one entry point the API's /check and the batch run both call (MASTERSPEC 3.1, 5)."""
+"""`run_check`: the one entry point the API's /check and the batch run both call (MASTERSPEC 3.1, 5).
+
+Footprints are clipped to the lot (5.3; section 0 item 6): `lot.existing_building` is the on-lot part
+of the largest footprint, and a footprint that crosses the lot line goes into `context.buildings` as
+its on-lot part plus its off-lot parts, so the neighbours' halves of a semi or row stay standing.
+"""
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -10,16 +15,17 @@ from shapely.geometry.base import BaseGeometry
 
 from . import ENGINE_VERSION
 from . import copy as copy_
-from .classify import NOT_CHECKED_CLASSES, classify, flags_for
+from .classify import NOT_CHECKED_CLASSES, Classification, classify, flags_for
 from .config import EngineConfig, load_config
 from .designs import DesignsFile, load_designs
 from .fit import check_design
-from .geometry import LotGeometry, centroid_local, coords_rounded, cross_section_width, measure_lot
+from .geometry import LotGeometry, centroid_local, coords_rounded, cross_section_width, measure_lot, polygon_parts
 from .models import (
     Address,
     CheckResult,
     Context,
     ContextBuilding,
+    Coord,
     DesignResult,
     ExistingBuilding,
     Lot,
@@ -57,6 +63,31 @@ def _polygon_local(geom: BaseGeometry, centroid: Point) -> list[tuple[float, flo
     return pts + [pts[0]]
 
 
+def _footprint_local(geom: BaseGeometry, centroid: Point) -> list[Coord]:
+    """Exterior ring of the largest polygon part, in the centroid frame (no closing repeat)."""
+    return coords_rounded(centroid_local(polygon_parts(geom)[0], centroid))
+
+
+def _context_buildings(lot: LotInput, cls: Classification, centroid: Point, cfg: EngineConfig) -> list[ContextBuilding]:
+    """Buildings within the context radius; an on-lot footprint splits into its on-lot and off-lot parts."""
+    on_lot = {f.building.building_id: f for f in cls.footprints_on_lot}
+    out = []
+    for b in lot.buildings:
+        if b.geometry is None or b.geometry.is_empty or b.geometry.distance(centroid) > cfg.context_radius_m:
+            continue
+        kind = "large" if b.avg_height_m is not None and b.avg_height_m >= cfg.larger_building.avg_height_m else "house"
+        height = round(float(b.avg_height_m), 2)
+        fp = on_lot.get(b.building_id)
+        if fp is None:
+            out.append(ContextBuilding(b.building_id, height, kind, False, _footprint_local(b.geometry, centroid)))
+            continue
+        out.append(ContextBuilding(b.building_id, height, kind, True, _footprint_local(fp.clip, centroid)))
+        for part in polygon_parts(b.geometry.difference(lot.geometry)):
+            if part.area > cfg.vacant_min_footprint_m2:
+                out.append(ContextBuilding(b.building_id, height, kind, False, _footprint_local(part, centroid)))
+    return out
+
+
 def run_check(lot: LotInput, cfg: EngineConfig | None = None, designs: DesignsFile | None = None,
               data_dates: dict[str, str] | None = None) -> CheckResult:
     cfg = cfg or load_config()
@@ -91,9 +122,9 @@ def run_check(lot: LotInput, cfg: EngineConfig | None = None, designs: DesignsFi
 
     existing = None
     if cls.existing is not None:
-        b = cls.existing
-        existing = ExistingBuilding(b.building_id, round(float(b.avg_height_m), 2), round(b.area_m2, 1),
-                                    coords_rounded(centroid_local(b.geometry, centroid)))
+        b = cls.existing.building
+        existing = ExistingBuilding(b.building_id, round(float(b.avg_height_m), 2), round(cls.existing.area_m2, 1),
+                                    _footprint_local(cls.existing.clip, centroid))
 
     frontage_local = None
     if measured and geo.frontage is not None:
@@ -117,14 +148,7 @@ def run_check(lot: LotInput, cfg: EngineConfig | None = None, designs: DesignsFi
 
     # Context: buildings and trees within the context radius, in the centroid frame.
     radius = cfg.context_radius_m
-    on_lot_ids = {b.building_id for b in cls.footprints_on_lot}
-    buildings = []
-    for b in lot.buildings:
-        if b.geometry.distance(centroid) > radius:
-            continue
-        kind = "large" if b.avg_height_m is not None and b.avg_height_m >= cfg.larger_building.avg_height_m else "house"
-        buildings.append(ContextBuilding(b.building_id, round(float(b.avg_height_m), 2), kind,
-                                         b.building_id in on_lot_ids, coords_rounded(centroid_local(b.geometry, centroid))))
+    buildings = _context_buildings(lot, cls, centroid, cfg)
     trees = [(round(t.x - centroid.x, 2), round(t.y - centroid.y, 2)) for t in lot.trees if t.distance(centroid) <= radius]
     lon, lat = lonlat(centroid.x, centroid.y)
     context = Context(Origin(lon, lat, round(centroid.x, 2), round(centroid.y, 2)), radius, buildings, trees)

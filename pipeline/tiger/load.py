@@ -2,7 +2,7 @@
 
     python pipeline/tiger/load.py            # schema, truncate, COPY, refresh the aggregate, compress, record sizes
 
-Records hypertable_size and hypertable_compression_stats before and after compression in
+Records hypertable_size and hypertable_compression_stats (true before and after totals) in
 pipeline/tiger/tiger_stats.json (the numbers behind tiger.md).
 """
 from __future__ import annotations
@@ -67,9 +67,11 @@ def main() -> None:
         else:
             raise SystemExit("could not refresh permits_ward_month after 10 tries")
         stats["chunks"] = c.execute("SELECT count(*) FROM show_chunks('permits')").fetchone()[0]
-        stats["before"] = sizes(c, "before compression")
+        # The compression policy job can run the moment the table is created, so hypertable_size() "before" may
+        # already be compressed; the stats view below always holds the true before and after totals.
+        stats["size_at_load_end"] = sizes(c, "after load, before the explicit compress_chunk call")
         c.execute("SELECT compress_chunk(c, if_not_compressed => TRUE) FROM show_chunks('permits') c")
-        stats["after"] = sizes(c, "after compression")
+        stats["size_after_compression"] = sizes(c, "after compression")
         cols = [d.name for d in c.execute("SELECT * FROM hypertable_compression_stats('permits')").description]
         row = c.execute("SELECT * FROM hypertable_compression_stats('permits')").fetchone()
         stats["compression_stats"] = {k: (v if isinstance(v, (int, float, str, type(None))) else str(v)) for k, v in zip(cols, row)}

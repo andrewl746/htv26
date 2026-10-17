@@ -55,6 +55,8 @@ export interface SearchResponse { query: string; results: SearchResult[]; }
 
 // ---------- GET /check ----------
 export interface Reason { id: LotClass | "outside_toronto"; label: string; text: string; }
+// Informational flags (site_exception) are still returned in CheckResponse.lot.flags, but never appear in
+// LotFeatureProps.f or in flags.any_on_fitting_lots ("need extra review").
 export interface Flag { id: FlagId; label: string; text: string; source_url: string | null; detail: string | null; }
 export interface ZoneInfo {
   zn_zone: string | null; zn_string: string | null; gen_zone: number | null; zbl_sectn: string | null;
@@ -62,6 +64,7 @@ export interface ZoneInfo {
   ht_overlay_m: number | null; coverage_overlay_pct: number | null; exception_no: number | null;
   sixplex_overlay: boolean;
 }
+// footprint_m2 and footprint_local are the footprint clipped to the lot (one massing polygon can cover a whole row).
 export interface ExistingBuilding { building_id: number; avg_height_m: number; footprint_m2: number;
   footprint_local: LocalPoint[]; }
 export interface Lot {
@@ -88,6 +91,8 @@ export interface DesignResult {
   fail_slices_local: LocalPoint[][];                       // parts of the footprint outside buildable_local
 }
 export interface PermitsNearby { radius_m: number; since: string; count: number; points: LonLat[]; points_local: LocalPoint[]; }
+// A footprint crossing the lot line comes as its on-lot part (on_lot true) plus each off-lot part (on_lot false)
+// under the same building_id, so building_id can repeat in Context.buildings: never use it alone as a key.
 export interface ContextBuilding { building_id: number; avg_height_m: number; kind: "house" | "large";
   on_lot: boolean; footprint_local: LocalPoint[]; }
 export interface Context { origin: { lon: number; lat: number; x_2952: number; y_2952: number };
@@ -133,7 +138,8 @@ export interface TrendResponse { ward_id: WardId; source: "tigerdata" | "cache" 
 // ---------- wards/{id}.geojson and permits.geojson feature properties ----------
 export interface LotFeatureProps { id: number; c: LotClass; b: Result; r: Record<DesignKey, Result>;
   k: RuleId | null;                 // the rule that limits the best design (blocking or borderline); null when it fits
-  f: FlagKey[]; a: 0 | 1; v: 0 | 1; }
+  f: FlagKey[];                     // review flags only: informational flags (site_exception, "ex") never appear here
+  a: 0 | 1; v: 0 | 1; }
 export interface PermitFeatureProps { id: number; d: string; w: WardId; u: number; k: PermitKind; }
 
 // ---------- AI service ----------

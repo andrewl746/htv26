@@ -25,8 +25,8 @@ class BuildingInput:
     building_id: int
     geometry: Polygon
     avg_height_m: float
-    footprint_m2: float | None = None       # computed from the geometry when None
-    parcelid: str | None = None             # the lot it was assigned to by largest overlap
+    footprint_m2: float | None = None       # whole-footprint area, from the geometry when None (decisions use the clip)
+    parcelid: str | None = None             # the lot it was assigned to by largest overlap; unreliable, never used
 
     @property
     def area_m2(self) -> float:

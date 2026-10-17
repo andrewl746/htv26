@@ -2,7 +2,7 @@
   "version": "0.1.0",
   "engine_version": "0.1.0",
   "designs_version": "2026-10-17",
-  "permit_rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+  "permit_rule": "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind",
   "generated_at": "2026-10-17T00:00:00Z",
   "data_dates": {
     "address_points": "2026-10-16",
@@ -52,7 +52,7 @@
         "any_on_fitting_lots": 310
       },
       "permits": {
-        "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+        "rule": "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind",
         "since_may_2023": 41,
         "by_kind_since_may_2023": {"multiplex": 41, "secondary_suite": 120, "laneway_garden": 35, "other": 10},
         "by_year": {"2022": 6, "2023": 9, "2024": 14, "2025": 12, "2026": 8},
@@ -101,7 +101,7 @@
         "any_on_fitting_lots": 270
       },
       "permits": {
-        "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+        "rule": "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind",
         "since_may_2023": 33,
         "by_kind_since_may_2023": {"multiplex": 33, "secondary_suite": 140, "laneway_garden": 48, "other": 12},
         "by_year": {"2022": 5, "2023": 8, "2024": 11, "2025": 10, "2026": 7},
@@ -152,7 +152,7 @@
       "any_on_fitting_lots": 7300
     },
     "permits": {
-      "rule": "A: permits creating 1-6 units, non-SFD structure (Toronto Multiplex Tracker rule), multiplex kind",
+      "rule": "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind",
       "since_may_2023": 820,
       "by_kind_since_may_2023": {
         "multiplex": 820,

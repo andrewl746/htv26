@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Group, Material } from 'three'
 import type { ContextBuilding } from '@contracts/types'
-import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, type BuiltBuilding } from './buildings'
+import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, streetGrid, type BuiltBuilding } from './buildings'
 import { growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
@@ -28,15 +28,14 @@ export function GrowingBuilding({ building, wall, roof }: { building: BuiltBuild
  * merged mesh per colour so a full 150 m street costs a handful of draw calls (MASTERSPEC 6.3).
  */
 export function Street({ buildings }: { buildings: ContextBuilding[] }) {
-  const built = useMemo(
-    () =>
-      buildings
-        .filter((b) => !b.on_lot)
-        .map(buildBuilding)
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, MAX_BUILDINGS),
-    [buildings],
-  )
+  const built = useMemo(() => {
+    const grid = streetGrid(buildings)
+    return buildings
+      .filter((b) => !b.on_lot)
+      .map((b) => buildBuilding(b, grid))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, MAX_BUILDINGS)
+  }, [buildings])
   useEffect(() => () => disposeBuilt(built), [built])
   const materials = useStreetMaterials({ cutaway: true })
 

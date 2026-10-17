@@ -171,8 +171,11 @@ def test_no_zone_or_status_5_is_older_bylaw():
 
 
 def test_larger_building_by_height_footprint_or_address_count():
-    tall = rect_lot(12.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 11, OY + 18), 12.5, parcelid="t-1")])
+    over = CFG.larger_building.avg_height_m + 0.5
+    tall = rect_lot(12.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 11, OY + 18), over, parcelid="t-1")])
     assert run_check(tall, CFG).lot.class_ == "larger_building"
+    house = rect_lot(12.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 11, OY + 18), 13.4, parcelid="t-1")])
+    assert run_check(house, CFG).lot.class_ == "checked"             # a 3-storey house (602 Indian Rd is 13.4 m) is not a larger building
     wide = rect_lot(30.0, 40.0, buildings=[BuildingInput(1, box(OX + 1, OY + 8, OX + 29, OY + 21), 8.0, parcelid="t-1")])
     assert run_check(wide, CFG).lot.class_ == "larger_building"       # 28 x 13 = 364 m2
     many = rect_lot(12.0, 40.0, address_count=4)
@@ -194,8 +197,8 @@ def test_classification_order_condo_before_zone_before_building():
 
 
 def test_attached_lot_is_no_fit_on_detached_building_but_still_measured():
-    # A semi: the house footprint crosses the west lot line into the neighbour's COMMON lot by 6 m2.
-    house = BuildingInput(1, box(OX - 1.0, OY + 8, OX + 6.0, OY + 18), 7.0, parcelid="t-1")
+    # A semi: the house footprint crosses the west lot line into the neighbour's COMMON lot by 30 m2 (over cross_lot_m2).
+    house = BuildingInput(1, box(OX - 3.0, OY + 8, OX + 6.0, OY + 18), 7.0, parcelid="t-1")
     neighbour = NeighbourLot("t-0", box(OX - 7.62, OY, OX, OY + 40), "COMMON")
     res = run_check(rect_lot(7.62, 40.0, buildings=[house], neighbour_lots=[neighbour]), CFG)
     assert res.lot.class_ == "attached" and res.lot.attached is True
@@ -361,7 +364,7 @@ def _lot_and_neighbour(gap_m: float):
 def test_semi_footprint_crossing_the_lot_line_is_attached():
     lot = box(OX, OY, OX + 7.62, OY + 40)
     neighbour = NeighbourLot("n", box(OX - 7.62, OY, OX, OY + 40), "COMMON")
-    footprint = box(OX - 1.0, OY + 8, OX + 6.5, OY + 19)        # 11 m2 over the line
+    footprint = box(OX - 3.0, OY + 8, OX + 6.5, OY + 19)        # 33 m2 over the line, over cross_lot_m2 (20)
     assert is_attached(lot, [neighbour], [footprint], CFG) is True
 
 
@@ -372,14 +375,17 @@ def test_row_house_touching_along_a_shared_wall_is_attached():
 
 
 def test_detached_house_with_a_close_neighbour_is_not_attached():
-    lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1 m gap, wider than the 0.3 m tolerance
+    lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1 m gap, wider than the tolerance
+    assert is_attached(lot, neighbours, [house, other], CFG) is False
+    # Two roof outlines 0.2 m apart (eaves of detached houses 1.2 m apart) are not a shared wall either.
+    lot, neighbours, house, other = _lot_and_neighbour(0.2)
     assert is_attached(lot, neighbours, [house, other], CFG) is False
 
 
 def test_small_crossing_under_the_threshold_is_not_attached():
     lot = box(OX, OY, OX + 7.62, OY + 40)
     neighbour = NeighbourLot("n", box(OX - 7.62, OY, OX, OY + 40), "COMMON")
-    footprint = box(OX - 0.3, OY + 8, OX + 6.5, OY + 19)         # 3.3 m2 over the line, under 4
+    footprint = box(OX - 0.5, OY + 8, OX + 6.5, OY + 19)         # 5.5 m2 over the line: eaves, under cross_lot_m2
     assert is_attached(lot, [neighbour], [footprint], CFG) is False
 
 

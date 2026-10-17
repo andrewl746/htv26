@@ -1,0 +1,52 @@
+{
+  "_note": "Fixed copy for the ward briefing (MASTERSPEC 2.4, 7.5, 7.7). {ward_id} and {ward_name} come from the ward entry. Template sentences are the plain fallback: English only, same placeholders and tone as the AI text; a sentence is used only when every placeholder in it is in the numbers map. The three questions are fixed copy in contracts/copy/questions.json, never generated.",
+  "title": "Ward {ward_id}, {ward_name}: multiplexes, before you vote",
+  "headings": {
+    "what_may_fit": "What may fit",
+    "blocking_rule": "Why lots don't fit",
+    "permits": "Multiplex permits issued",
+    "not_checked": "What isn't checked",
+    "questions": "Questions to ask candidates"
+  },
+  "datasets": [
+    {"label": "Building Permits – Active Permits", "url": "https://open.toronto.ca/dataset/building-permits-active-permits/"},
+    {"label": "Building Permits – Cleared Permits", "url": "https://open.toronto.ca/dataset/building-permits-cleared-permits/"},
+    {"label": "Property Boundaries", "url": "https://open.toronto.ca/dataset/property-boundaries/"},
+    {"label": "Zoning By-law", "url": "https://open.toronto.ca/dataset/zoning-by-law/"}
+  ],
+  "methodology": "#methodology",
+  "template": {
+    "what_may_fit": [
+      "In this ward, {{could_lots}} house lots may fit at least one of the City's four free multiplex designs.",
+      "That is {{could_pct}}% of house lots.",
+      "This count is an upper bound: it shows where a design may fit, not what gets built."
+    ],
+    "blocking_rule": {
+      "detached_building": [
+        "The most common reason is that the house is attached: {{top_rule_count}} lots are semis or row houses.",
+        "In all, {{attached_pct}}% of house lots are attached, and the City's free designs are for detached lots."
+      ],
+      "other": [
+        "The most common reason lots don't fit is that the {rule_plain}: {{top_rule_count}} house lots.",
+        "Separately, {{attached_pct}}% of house lots are semis or row houses, where the free designs don't apply."
+      ]
+    },
+    "rule_plain": {
+      "units_allowed": "sixplex designs are not allowed in this ward",
+      "lot_width": "lot is too narrow for the side yards",
+      "lot_depth": "lot is too shallow for the front and rear yards",
+      "building_length": "lot is not deep enough for the longer building",
+      "height": "height limit is lower than the design",
+      "lot_coverage": "building would cover too much of the lot"
+    },
+    "permits": [
+      "Since May 2023, {{did_permits}} multiplex permits have been issued in this ward, before the free designs existed.",
+      "That is about one permit for every {{lots_per_permit}} lots where a design may fit."
+    ],
+    "not_checked": [
+      "Suplex did not check {{not_checked_lots}} lots: condos, lots outside the residential house zones, lots under an older bylaw, larger buildings and lots too irregular to measure.",
+      "It also does not check heritage rules, trees, sewers or site-specific exceptions.",
+      "This is a screening, not a permit or legal advice."
+    ]
+  }
+}

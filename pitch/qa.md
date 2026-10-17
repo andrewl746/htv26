@@ -47,7 +47,7 @@ It never decides anything. It phrases numbers the engine computed, writes placeh
 All City of Toronto open data: property boundaries, zoning, address points, building permits, 3D massing. Data as of `[LOCKED: data_dates]`; the pipeline re-runs on the City's daily refresh.
 
 **"What about semis and row houses?"**
-The free designs are detached buildings that need side yards on both sides, so attached houses are marked "not checked" with that reason. In Ward 04, `[LOCKED: attached_pct]`% of house lots are semis or row houses. Owners there may still add homes in other ways, such as basement or garden suites, which we don't check.
+The free designs are detached buildings that need side yards on both sides, so attached houses are marked "not checked" with that reason. In Ward 20, `[LOCKED: attached_pct]`% of house lots are semis or row houses. Owners there may still add homes in other ways, such as basement or garden suites, which we don't check.
 
 **"Is the AI translation reliable?"**
 Every number in a translation is checked again and must match the English, and a native speaker reviewed `[languages reviewed]`. If a translation fails the check, we show English with a notice instead.

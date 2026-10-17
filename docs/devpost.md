@@ -11,7 +11,7 @@ Status: full draft (S10), 2026-10-17. Paste each section into the matching Devpo
 
 **Tagline:** *Before you build, before you vote.* (alternatives in `/pitch/hook.md`)
 
-**Links:** [github.com/andrewl746/htv26](https://github.com/andrewl746/htv26) · demo video `[link]` · example briefing `[LOCKED: public URL of /b/04]`
+**Links:** [github.com/andrewl746/htv26](https://github.com/andrewl746/htv26) · demo video `[link]` · example briefing `[LOCKED: public URL of /b/20]`
 
 ---
 
@@ -24,7 +24,7 @@ With Toronto's municipal election on October 26, 2026, and 69% of GTA residents 
 ## What it does
 
 - **Check any address.** Type a Toronto address and the street builds itself in 3D while the City's design rises on the lot. A rules engine, not an AI, tests all four free designs against the lot's shape and Zoning By-law 569-2013 and gives each one a result: **Fits**, **Too close to call**, **Doesn't fit**, or **Not checked**. Each result shows the rule, the margin and the by-law section (for example, the Fourplex Narrow needs a lot at least 7.6 m wide once its side yards are included), plus what we don't check and multiplex permits nearby.
-- **Permission vs. reality.** "See your ward" zooms out to a ward map: lots where a free design may fit ("could") next to multiplex permits issued since May 2023 ("did"). In Ward 04, `[LOCKED: could]` house lots may fit a free design, and `[LOCKED: did]` multiplex permits have been issued since May 2023. Each ward shows only its own numbers: no rankings, no addresses on the map, no list or export of lots.
+- **Permission vs. reality.** "See your ward" zooms out to a ward map: lots where a free design may fit ("could") next to multiplex permits issued since May 2023 ("did"). In Ward 20, `[LOCKED: could]` house lots may fit a free design, and `[LOCKED: did]` multiplex permits have been issued since May 2023. Each ward shows only its own numbers: no rankings, no addresses on the map, no list or export of lots.
 - **Ward briefing.** A one-page, plain-language briefing for any ward, written by Gemini from the engine's numbers only. Every number links to its source, it translates into eight languages, and it ends with three neutral questions a resident could ask candidates.
 
 Every result says **"Screening only, not a permit or legal advice."**

@@ -120,17 +120,29 @@ Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branc
 | A6 classification, attached, fit, placement | done: `classify.py`, `attached.py`, `fit.py`, `models.py`, `copy.py`, `check.py` with `run_check(LotInput, cfg, designs, data_dates) -> CheckResult` (`.to_dict()` is the `CheckResponse`); the four `check.*.json` fixtures are reproduced; 38 tests | `pytest engine` prints 105 passed |
 | Web scaffold (start of J1) | done by Andrew: Vite + React 19 + TypeScript in `/web`, `@contracts/types` alias, dev proxy to :8000 and :8001, three / fiber / drei / maplibre / zustand installed; `App.tsx` renders only a heading (TODO: disclaimer from `contracts/copy/disclaimers.json`) | `cd web && npm install && npm run build` |
 
+**Simone, reported 2026-10-17 (not yet in git; she clones and pushes to `simone` on the morning of 2026-10-18)**
+
+| Task | State | Where |
+|---|---|---|
+| S1 Gemini key and free-tier limits | done: key obtained; limits read in AI Studio and recorded (table in section 7.1); the model decision below made | her local `docs/decisions.md`, to be pushed |
+| S1 Sixplex Wide bedroom split | closed: already verified in Appendix H (3 and 4 bedrooms in the two upper homes, 12 in total); she records it, no re-check needed | Appendix H |
+| S1 Hack the Valley 11 rules (prize count; prepared spec, contracts and fixtures) | **still open**, the one item that changes what anyone may build before Hour 0 | T1 |
+| S2 story drafts | done: `pitch/hook.md` (the 30-second pitch with [X] and [Y] blank until the Hour-24 lock), `docs/devpost.md` (outline, every section 4.2 dataset linked, the Toronto Multiplex Tracker credited), `pitch/qa.md` (all eleven section 12 questions with draft answers) | her local copy, to be pushed |
+| S3 AI service, S4 validator | not started; was blocked on the repo and on A2, both of which are now on `main` | start after cloning |
+
+**Decision (Simone, 2026-10-17, accepted): `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`.** At 20 requests a day, `gemini-3.8-flash` cannot support development; one clean demo pre-generation alone takes 16 requests. `gemini-3.8-flash` is used only for the one-off pre-generation after the Hour-24 lock, and `gemini-2.5-flash` is dropped. Before committing to the split she compares the validator's rejection rate for the two models; if flash-lite is as clean, it does everything. Touches `/ai/config.py` and `.env` only; no contract changes. Sections 1 (decision 12), 7.1, 7.9, 8.4, 11, 13 and Appendix I were updated to match.
+
 **Next, in order**
 
 1. Andrew: send each teammate their kickoff prompt (section 8) and this section. Teammates clone, create `.venv`, run `pip install -r requirements.txt`, open branch `yuvi` / `jayden` / `simone` from `main`.
 2. Yuvi: Y1 to Y4 (download, permits rule, dev-ward `suplex.gpkg`). A7 is blocked on Y4.
 3. Andrew: A7 API v1 (`api/main.py`, `api/store.py`) once Y4 lands. The engine entry point is `suplex_engine.check.run_check`, fed with a `LotInput` (see `engine/suplex_engine/models.py`): the lot row fields, corridors within 5 m, neighbour lots, buildings and trees within 150 m, the address point, multiplex permit points. Then A8 hand-checked lots (tune the `larger_building` and `attached` thresholds in `engine_config.json`).
 4. Jayden: J1 onward against `/contracts/fixtures`. Read `levels[]` and `homes[]` from `designs.json` (section 6.3 used to say `floors[]`).
-5. Simone: S1 onward against `/contracts/fixtures`; `contracts/copy/*.json` v0 is hers to rewrite.
+5. Simone: clone, open `simone` from `main`, push the S2 drafts and her `docs/decisions.md` entries, then S3 and S4 against `/contracts/fixtures` (`explain.request.json` and `check.*.json` are there); `contracts/copy/*.json` v0 is hers to rewrite. Chase the HTV 11 rules (T1) first thing.
 
 **Decisions made in the first session without Andrew** (full list with reasons in `docs/decisions.md`): `attached.on_lot_m2 = 10` added to `engine_config.json`, its schema and `types.ts`; lot-level `width_m` is the cross-section at the 6.0 m setback line and `depth_m` the centroid line; the band is inclusive (|margin| of 0.5 m is still borderline); street edges under 3 m are never the frontage; the buildable area is the lot clipped by the setback lines; `ward.04.json` `by_year` changed to sum to 41; the city summary entry uses `ward_id: "city"`; `BriefingRequest.ward` also accepts the full `/ward/{id}` response; 8.375 rounds to 8.38; React 19 rather than 18; branches renamed to `main` / `yuvi` / `jayden` / `simone`.
 
-**Open items carried forward**: T3 (re-read the Sixplex Narrow zoning matrix), mockups not yet in `/docs/mockups/`, the TRCA flag links to the ArcGIS FeatureServer because there is no City dataset, the `web/src/App.tsx` disclaimer TODO.
+**Open items carried forward**: T1 (HTV 11 rules, Simone), T3 (re-read the Sixplex Narrow zoning matrix), mockups not yet in `/docs/mockups/`, the TRCA flag links to the ArcGIS FeatureServer because there is no City dataset, the `web/src/App.tsx` disclaimer TODO. Closed since the first version: T2 (Gemini limits read; model decision above).
 
 ---
 
@@ -153,7 +165,7 @@ Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branc
 | 9 | Multiplex permit rule: the Toronto Multiplex Tracker's rule (permits creating 1–6 dwelling units, non-SFD structure types, with the tracker's two exceptions), split by kind; the headline counts the `multiplex` kind only. Fallback rule B if the clean rule fails the 452 sanity check (section 4.3). |
 | 10 | Cut order if behind: Tiger Data and the trend chart (go/no-go Hour 14) → the sixplex designs → translation → citywide coverage (fall back to 2–3 wards). Never cut: the address check and 3D moment, the permission vs. reality headline, the screening labels and uncertainty band, the rehearsal. |
 | 11 ★ | **Dev ward and default demo ward: Ward 04, Parkdale–High Park.** It is in the sixplex overlay, so all four designs apply, and it mixes detached and attached house lots of many widths, so all four result types show up. If citywide is cut, ship wards 04, 19 and the ward that contains the venue. |
-| 12 ★ | Gemini model: `gemini-3.8-flash` by default, `gemini-3.5-flash-lite` if the free tier rate-limits it, `gemini-2.5-flash` as the last resort. One constant, `GEMINI_MODEL`, read from the environment in `/ai/config.py`. Structured JSON output through the SDK's response schema. |
+| 12 ★ | Gemini model: `gemini-3.5-flash-lite` by default (changed 2026-10-17 by Simone after reading the free-tier limits: 500 requests a day against 20 for `gemini-3.8-flash`). `gemini-3.8-flash` is reserved for the one-off demo pre-generation after the Hour-24 lock, if its drafts pass the validator more often; `gemini-2.5-flash` is dropped. One constant, `GEMINI_MODEL`, read from the environment in `/ai/config.py`. Structured JSON output through the SDK's response schema. |
 | 13 ★ | Translation languages (8): English, French, Simplified Chinese, Traditional Chinese, Spanish, Tagalog, Tamil, Portuguese. Codes `en fr zh-Hans zh-Hant es tl ta pt`. Simone may swap entries; the list lives in `/ai/config.py`. |
 | 14 ★ | AI output uses `{{placeholders}}` for every number from its input. The renderer fills in the values and links them to sources. The validator rejects any literal number not in the input's allowed set and any placeholder key that does not exist. |
 | 15 ★ | The three "questions to ask candidates" are fixed copy (the same three for every ward), stored in `/contracts/copy/questions.json`, translated with the briefing, never generated. |
@@ -763,7 +775,15 @@ FastAPI on port 8001, `google-genai` SDK, Pydantic models for every request and 
 | Variable | Default | Meaning |
 |---|---|---|
 | `GEMINI_API_KEY` | (required) | free key from Google AI Studio |
-| `GEMINI_MODEL` | `gemini-3.8-flash` | the model id; `gemini-3.5-flash-lite` if the free tier rate-limits it; `gemini-2.5-flash` as the last resort |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | the model id for development and for every live call; `gemini-3.8-flash` only for the one-off demo pre-generation after Hour 24 (set it in `.env` for that run, then set it back); `gemini-2.5-flash` dropped (decision 12) |
+
+Free-tier limits as read in AI Studio by Simone on 2026-10-17 (all three allow 250,000 tokens a minute, which we never approach):
+
+| Model | Requests per minute | Requests per day |
+|---|---|---|
+| `gemini-3.8-flash` | 5 | 20 |
+| `gemini-3.5-flash-lite` | 15 | 500 |
+| `gemini-2.5-flash` | 5 | 20 |
 | `SUPLEX_API_URL` | `http://localhost:8000` | where the briefing page fetches ward data |
 | `SUPLEX_WEB_URL` | `http://localhost:5173` | where number links point for "the ward map" |
 | `AI_CACHE_DIR` | `ai/cache` | cached responses |
@@ -879,7 +899,7 @@ interaction = client.interactions.create(
 draft = ExplainDraft.model_validate_json(interaction.output_text)
 ```
 
-If the installed SDK version has no `interactions`, use the older form: `client.models.generate_content(model=GEMINI_MODEL, contents=prompt_text, config={"response_mime_type": "application/json", "response_schema": ExplainDraft})` and read `response.text`. Either way, `generate_json()` retries once after 2 s on a 429 or a JSON parse error, then raises; the caller falls back to the template. Keep schemas flat; the docs warn that deeply nested schemas can be rejected. Free-tier limits are shown only in AI Studio; Simone checks them at Hour 0 and sizes the pre-generation run to fit (the demo needs about 20 generations: one ward × eight languages, two addresses × four designs × one language).
+If the installed SDK version has no `interactions`, use the older form: `client.models.generate_content(model=GEMINI_MODEL, contents=prompt_text, config={"response_mime_type": "application/json", "response_schema": ExplainDraft})` and read `response.text`. Either way, `generate_json()` retries once after 2 s on a 429 or a JSON parse error, then raises; the caller falls back to the template. Keep schemas flat; the docs warn that deeply nested schemas can be rejected. The free-tier limits are in the section 7.1 table. The demo needs about 16 generations (one ward in eight languages, two addresses × four designs in English), which is nearly the whole 20-a-day budget of `gemini-3.8-flash`, so the pre-generation order is: run everything with `gemini-3.5-flash-lite` first so the cache is complete, then, if the validator comparison favours it, overwrite the demo ward's briefings with `gemini-3.8-flash` inside that budget and keep the flash-lite files as the fallback. Never run the 3.8-flash pass before the Hour-24 lock.
 
 ### 7.10 What the Gemini judge sees
 
@@ -1011,7 +1031,7 @@ Total about 27 hours.
 ```
 You are working in the Suplex repo with me, Simone. Read CLAUDE.md first, then MASTERSPEC.md sections 1, 2, 7, 8.4, 9 and Appendices A, D and F. I own /ai, /docs, /pitch and contracts/copy/*.json; edit nothing else. We are on branch simone. The engine decides fit; the AI only phrases numbers it is given, as {{placeholders}}, and nothing reaches a user without passing the validator.
 
-Start with task S3 from section 8.4: scaffold the FastAPI service in /ai on port 8001 with config.py reading GEMINI_API_KEY, GEMINI_MODEL (default gemini-3.8-flash), SUPLEX_API_URL, SUPLEX_WEB_URL and AI_LANGS from the environment; numbers.py that builds the numbers map and allowed_numbers from a CheckResponse exactly as section 7.3 lists; gemini.py with one generate_json(prompt, schema) function using structured JSON output as in 7.9; and POST /explain that works against contracts/fixtures/explain.request.json and caches by a sha256 of its inputs. Then do S4 test-first: write ai/tests/test_validator.py with every case in section 7.4 before validator.py, and make it pass.
+Start with task S3 from section 8.4: scaffold the FastAPI service in /ai on port 8001 with config.py reading GEMINI_API_KEY, GEMINI_MODEL (default gemini-3.5-flash-lite), SUPLEX_API_URL, SUPLEX_WEB_URL and AI_LANGS from the environment; numbers.py that builds the numbers map and allowed_numbers from a CheckResponse exactly as section 7.3 lists; gemini.py with one generate_json(prompt, schema) function using structured JSON output as in 7.9; and POST /explain that works against contracts/fixtures/explain.request.json and caches by a sha256 of its inputs. Then do S4 test-first: write ai/tests/test_validator.py with every case in section 7.4 before validator.py, and make it pass.
 
 Use the neutral tone from section 2.5 in every prompt and every string: no candidate names, no threat or opportunity framing, "may fit" never "will be built", and "Screening only, not a permit or legal advice" where a result is shown. Ask Andrew before changing any contract other than contracts/copy.
 ```
@@ -1176,7 +1196,7 @@ Visual extras are not on this list because they never start before the core work
 | 3D is slow or buggy | Plain extruded boxes, no shadows, then the 2D view |
 | Citywide data is slow | One-ward subset while developing; load once at API startup with a spatial index; precompute the ward files |
 | AI writes a wrong or invented number | The validator, one regeneration, then the plain template; nothing unvalidated is shown |
-| Gemini's free tier rate-limits the demo | Everything for the demo is pre-generated and cached; the model constant can switch to `gemini-3.5-flash-lite` |
+| Gemini's free tier rate-limits the demo | Everything for the demo is pre-generated and cached with `gemini-3.5-flash-lite` (500 requests a day) before any `gemini-3.8-flash` pass (20 a day); the service never calls Gemini live during the demo |
 | Tiger Data is unreachable or slow during the demo | Cached trend JSON served after a 2 s timeout; the address check never depends on it |
 | 3D Massing is in Web Mercator, not WGS84 | Known (verified); the pipeline reprojects from EPSG:3857 |
 | A judge knows the Toronto Multiplex Tracker | Credit it; we add the "could" half and the gap |
@@ -1210,7 +1230,7 @@ Visual extras are not on this list because they never start before the core work
 | # | TODO | Owner | By | Why it matters |
 |---|---|---|---|---|
 | T1 | Confirm Hack the Valley 11's rules: how many prizes one project can enter, and whether a spec, contracts and fixtures written before the event are allowed | Simone | Hour 0 | changes the sponsor-prize plan or forces the contracts to be rewritten at the event |
-| T2 | Read the Gemini free-tier limits in AI Studio and confirm `gemini-3.8-flash` is on the free tier; otherwise set `GEMINI_MODEL` | Simone | Hour 0 | the pre-generation run must fit the quota |
+| T2 | **Done 2026-10-17 (Simone):** limits read in AI Studio; `GEMINI_MODEL` now defaults to `gemini-3.5-flash-lite` (section 7.1). Remaining: compare validator rejection rates between the two models before the Hour-24 pre-generation | Simone | Hour 20 | the pre-generation run must fit the quota |
 | T3 | Re-read the Sixplex Narrow A011 zoning matrix: does its "19 m allowable" refer to building depth (10.20.40.30(1)) rather than building length? Keep decision 17 unless the sheet shows a different provision | Andrew | Hour 0 | decides how often the Sixplex Narrow fits |
 | T4 | Confirm the height overlay column name in the GPKG (`HT_HEIGHT` per the readme, `HT_LABEL` per the prompt) and the coverage column `PRCNT_CVER` | Yuvi | Hour 1 | the pipeline's overlay join |
 | T5 | Measure the `GEO_ID` to `ADDRESS_POINT_ID` join rate; adopt the street-name fallback if under 90% | Yuvi | Hour 1 | permit dots and ward counts |
@@ -1957,7 +1977,7 @@ You asked for every decision to be made rather than asked. Here is each one, why
 **Decisions (the ★ items in section 1)**
 
 1. **Ward 04, Parkdale–High Park, as the dev and demo ward.** Reason: it is in the sixplex overlay (all four designs apply), it mixes wide Swansea and High Park lots with narrow Bloor West, Junction and Roncesvalles lots (so fits, borderline and no-fit all show up), and it has many semis (so the attached-house finding shows). Ward 19 (Beaches–East York) was the runner-up: more detached bungalows on 25-foot lots, so even more "too close to call". Switch by changing `--ward` and the demo cache; nothing else depends on it. If citywide is cut, the fallback set is 04, 19 and the ward that contains the venue so a local judge's address works.
-2. **Gemini `gemini-3.8-flash` by default.** The models page lists it as the current stable Flash model; `gemini-2.5-flash` is still listed and is the last resort because its structured output behaviour is well known. The free-tier numbers are no longer on the public page, so Simone reads them in AI Studio at Hour 0 and the whole demo is pre-generated and cached anyway.
+2. **Gemini `gemini-3.8-flash` by default.** Superseded on 2026-10-17: Simone read the free-tier limits in AI Studio (20 requests a day for `gemini-3.8-flash`, 500 for `gemini-3.5-flash-lite`) and the default became `gemini-3.5-flash-lite`, with `gemini-3.8-flash` kept for the one-off demo pre-generation and `gemini-2.5-flash` dropped. The original reasoning was that the models page lists `gemini-3.8-flash` as the current stable Flash model; the quota settled it.
 3. **Eight translation languages** (en, fr, zh-Hans, zh-Hant, es, tl, ta, pt), chosen as languages widely spoken in Toronto without quoting any statistic. Simone owns the list; changing it is one line in `/ai/config.py`.
 4. **Placeholders for every number in AI output.** The prompt asked for a validator that rejects invented numbers; making the model write `{{keys}}` instead of digits makes the validator simple and exact, makes "every number links to its source" a rendering step rather than a parsing problem, and makes translation safe (the placeholders must survive). The cost is a slightly stiffer prompt.
 5. **The three candidate questions are fixed copy, not generated.** The prompt says "the same questions for everyone"; generating them per ward would make them differ and would risk an opinion slipping in.

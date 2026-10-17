@@ -1,5 +1,5 @@
 {
-  "_note": "v0 by Andrew; Simone owns this file",
+  "_note": "v1, reviewed by Simone 2026-10-17 (S9); Simone owns this file",
   "results": {
     "fits": "Fits",
     "borderline": "Too close to call",
@@ -51,6 +51,7 @@
     "what_we_checked": "What we checked",
     "permits_near_you": "Permits near you",
     "permits_near_you_line": "{{count}} multiplex permits within {{radius_m}} m since May 2023",
+    "permits_near_you_line_one": "{{count}} multiplex permit within {{radius_m}} m since May 2023",
     "extra_review": "Needs extra review",
     "translate": "Translate",
     "copy": "Copy",
@@ -71,7 +72,7 @@
     "legend_fit": "May fit",
     "legend_borderline": "Too close to call",
     "legend_nofit": "Doesn't fit",
-    "legend_permit": "Multiplex permit since 2023",
+    "legend_permit": "Multiplex permit since May 2023",
     "legend_screening": "Screening only, not a permit.",
     "trend_caption": "Multiplex permits issued per month in this ward. Source: City of Toronto building permits, served from Tiger Data.",
     "trend_marker_citywide": "Multiplexes allowed citywide",
@@ -82,7 +83,7 @@
   "ward_panel": {
     "could": "Could: {{could_lots}} lots may fit a free City design ({{could_pct}}% of house lots).",
     "did": "Did: {{did_permits}} multiplex permits since May 2023.",
-    "per_permit": "That's about 1 permit for every {{lots_per_permit}} lots that could.",
+    "per_permit": "That's about one permit for every {{lots_per_permit}} lots that could.",
     "no_permits": "No multiplex permits have been issued here since May 2023.",
     "blocking_rule": "The most common reason lots don't fit: {{rule_plain}}.",
     "attached": "{{attached_pct}}% of house lots are semis or row houses, where the free designs don't apply.",

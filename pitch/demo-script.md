@@ -23,6 +23,7 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 4. Open the checklist on the deciding rule: read the required value, the lot's value and the margin.
 5. Type **281 Armadale Ave** (or use the judge's lot if it is borderline): "Here the Fourplex Narrow is too close to call: 7.45 m of lot width against the 7.6 m it needs. The City's lot lines aren't survey-accurate, so anything within half a metre we call too close to call instead of pretending to know."
 6. Point at "Screening only, not a permit or legal advice" and "What we don't check".
+7. Scroll to **Your next steps** (if time): "What to confirm next and who to contact, each step sourced from a City page: a survey, the zoning check, then applying with the City's design. A first screen, not legal advice."
 
 *If the address isn't found or is outside Toronto:* the app says so; switch to 326 Quebec Ave. *If a judge asks about semis or row houses:* 155 Vine Ave: "Attached, so none of the free designs apply; a basement or garden suite might, and we don't check those." *If the API is down:* the demo cache serves the backup addresses.
 

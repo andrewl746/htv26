@@ -33,3 +33,44 @@ Three claims are confirmed in report 07 but their quotes are not in the step's o
 
 - `pitch/facts.md` row 16: the parkland "up to seven with a garden or laneway suite" detail.
 - `pitch/demo-script.md`: one line for next steps in the address-check beat (step 7, "if time").
+
+## Addendum: folding in the "what happens next" draft (Andrew, 2026-10-17)
+
+Andrew asked to fold the separate draft (`next_steps_copy.txt`) into `next_steps.json` instead of adding a second section. Yuvi owns that file, so these are the exact changes for him to apply on PR #18.
+
+**1. Intro line (new key, rendered under the heading by `NextSteps.tsx`):**
+
+```json
+"intro": "Suplex checks zoning only. These are the steps that usually come next after a screening like this."
+```
+
+The draft said "what most projects do"; nothing sources "most", so "usually come next" says the same without the claim.
+
+**2. Footer (the draft's line added to the existing one):**
+
+```json
+"footer": "Every project is different, and Suplex can't tell you what your project will need. Screening only, not a permit or legal advice. Steps and contacts come from City of Toronto pages checked on {checked_on}; confirm with the City before you rely on them."
+```
+
+**3. `zoning_check`: the Property Information Report.** Add to `text`: "A Property Information Report ($214.79) lists the building permits issued for an address, the status of their inspections and any outstanding orders." Add to `links` and `sources`:
+
+```json
+{ "label": "Property Information Report", "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/property-information-reports/" }
+```
+
+```json
+{ "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/property-information-reports/",
+  "quote": "provides information for a specific municipal address regarding issued building permits on file" }
+```
+
+Read by Simone 2026-10-17: the page also covers inspection status and outstanding orders under the Building Code, Zoning By-law and Property Standards By-law; the fee is "$214.79 … (per request)", effective January 1, 2026; requests go by email.
+
+**4. Not added:**
+- The AI Pre-Check link: its pilot covers projects of two units or fewer, so not multiplexes.
+- A Toronto Water and Toronto Hydro step: it needs a City source quote first, like the other 14 steps. Open for Yuvi if a page says it.
+- The draft's other steps (survey, trees, zoning review, plans, permit) are already covered by Yuvi's sourced steps.
+- The draft's "development charges up to 4 units" caution is superseded: the fees step says six under By-law 845-2025.
+
+## The draft's "What we don't check" changes: need Andrew's fixtures
+
+The two changes to my `contracts/copy/not_checked.json` are ready: "Sewer capacity" becomes "Sewer, water and Toronto Hydro service capacity", and a new item, "Topography and slope (the lot shape comes from City data, not a survey)". But the engine copies these labels into every `/check` response, and four check fixtures plus `explain.request.json` carry the old list, so `pytest engine` fails 4 tests with the change on its own (tried and reverted). They have to land together: Andrew updates the fixtures' `not_checked` lists in the same commit, or tells me to push the copy change and he regenerates the fixtures right after.

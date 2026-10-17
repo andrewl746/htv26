@@ -7,15 +7,16 @@ import { PANEL_WIDTH_PX } from '../../layout'
 import { useApp } from '../../state/store'
 import { cameraBridge, type BridgedPose } from '../Lot3D/cameraBridge'
 import { lotFraming } from '../Lot3D/framing'
-import { FOV_DEG, HANDOFF_S, REST_TILT_DEG } from '../Lot3D/view'
+import { FOV_DEG, HANDOFF_S, MAP_FADE_S, REST_TILT_DEG } from '../Lot3D/view'
 import { distanceForZoom, zoomForDistance } from './handoff'
-import { applyPalette } from './mapStyle'
+import { applyPalette, fadeBuildings } from './mapStyle'
 
 // One map behind the whole app. On the landing page it is a slowly swaying 3D Toronto. A search
 // flies it, in one move, to the lot's rest view: the 3D camera's own pose (tilt, heading toward the
 // lot from the street, distance, field of view, the lot centred beside the panel). Over the last
-// stretch the 3D scene fades in with its camera locked to this one, so the street rises while the
-// camera is still descending, and the flight's ease-out is the end of a single move.
+// stretch the 3D scene fades in with its camera locked to this one and the map's buildings fade
+// away, so the street rises in their place while the camera is still descending, and the flight's
+// ease-out is the end of a single move.
 // The ward map (J5) and the lot-to-ward transition (J6) will reuse it.
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron'
@@ -125,10 +126,11 @@ export function BaseMap() {
     }
   }, [])
 
-  // Landing: come back out to the city if we were down at a lot, then sway.
+  // Landing: come back out to the city if we were down at a lot, its buildings filling back in, then sway.
   useEffect(() => {
     const map = mapRef.current
     if (!map || view !== 'landing') return
+    fadeBuildings(map, true, RETURN_MS / 2)
     if (map.getPitch() < HERO.pitch - 1) map.flyTo({ ...HERO, padding: NO_PADDING, duration: RETURN_MS })
     if (reduced) return
     let frame = 0
@@ -148,7 +150,8 @@ export function BaseMap() {
   }, [view, reduced])
 
   // Flying: once the check is in, one flight to the lot's rest view. For its last HANDOFF_S the 3D
-  // scene fades in, its camera reading this map's camera through the bridge; on landing it takes over.
+  // scene fades in, its camera reading this map's camera through the bridge, while the map's
+  // buildings fade out for the 3D street; on landing it takes over.
   useEffect(() => {
     const map = mapRef.current
     if (!map || view !== 'flying' || checkStatus === 'loading') return
@@ -167,7 +170,10 @@ export function BaseMap() {
     // The design is the one set with the check; read it here so a tab change never restarts the flight.
     const { designId: firstDesign, beginHandoff } = useApp.getState()
     map.flyTo({ ...restView(map, check, firstDesign), duration: FLY_MS, minZoom: FLY_MIN_ZOOM })
-    const handoff = window.setTimeout(beginHandoff, FLY_MS - HANDOFF_S * 1000)
+    const handoff = window.setTimeout(() => {
+      beginHandoff()
+      fadeBuildings(map, false, MAP_FADE_S * 1000)
+    }, FLY_MS - HANDOFF_S * 1000)
     return () => {
       window.clearTimeout(handoff)
       map.off('moveend', landed)

@@ -12,6 +12,7 @@ from ai import pregenerate
 from ai.config import contract, load_settings
 from ai.gemini import GeminiError
 from ai.main import app, get_generate, get_settings
+from ai.tests.fakes import fake_translate
 
 BRIEFING_EN = {s["id"]: s["template_text"] for s in contract("fixtures/briefing.04.en.json")["sections"]
                if s["id"] != "questions"}
@@ -32,7 +33,7 @@ class FakeGemini:
         if schema.__name__ == "ExplainDraft":
             return schema(**EXPLAIN_EN)
         english = json.loads(prompt.split("JSON:\n", 1)[1])
-        return schema(**{k: f"T {v}" for k, v in english.items()})
+        return schema(**fake_translate(english, "T "))
 
 
 @pytest.fixture

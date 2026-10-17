@@ -29,10 +29,11 @@ CRS_M = 2952
 SIXPLEX_FULL_WARDS = ["04", "09", "10", "11", "12", "13", "14", "19"]  # By-law 654-2025: Toronto and East York CC
 BUFFER_BBOX_DEG = 0.004      # ~300 m read margin around a ward, in degrees
 NEIGHBOUR_M = 150            # buildings kept this far outside the ward (3D neighbours)
-CORRIDOR_M = 50
 MIN_ZONE_OVERLAP = 0.25      # a lot takes a zone only if the zone covers at least this share of it
 MIN_OVERLAY_OVERLAP_M2 = 1.0  # sliver guard for the "intersects" flags
 LOT_TYPES = ["COMMON", "CONDO"]
+STREET_TILE_M = 250          # derived street space is cut into tiles this big so spatial lookups stay cheap
+MIN_STREET_PIECE_M2 = 25
 
 
 def log(msg: str) -> None:
@@ -115,7 +116,7 @@ def build_overlay(wards: gpd.GeoDataFrame) -> tuple[gpd.GeoDataFrame, gpd.GeoDat
             status.append("full")
         else:
             share = r.geometry.intersection(union).area / r.geometry.area
-            status.append("partial" if share > 0.001 else "none")
+            status.append("full" if share > 0.99 else "partial" if share > 0.001 else "none")
     wards = wards.assign(sixplex_overlay=status)
     return overlay, wards
 
@@ -140,6 +141,27 @@ def parse_area(s: pd.Series) -> pd.Series:
     return pd.to_numeric(s.astype("string").str.extract(r"([0-9]+(?:\.[0-9]+)?)")[0], errors="coerce")
 
 
+def street_space(parcels: gpd.GeoDataFrame, wgeom, ward_num: int) -> gpd.GeoDataFrame:
+    """The `corridors` layer.
+
+    The current Property Boundaries file has no CORRIDOR parcels (only COMMON, CONDO, RESERVE), so the
+    street space is derived: the ward polygon minus every parcel. What is left is road allowance (plus
+    rail and water not held as parcels). It is cut into STREET_TILE_M tiles so the engine's "corridor
+    within 5 m of the lot" lookup never touches one giant polygon. parcelid is a negative synthetic id.
+    """
+    inside = parcels[parcels.intersects(wgeom)]
+    gap = wgeom.difference(shapely.union_all(inside.geometry.values))
+    minx, miny, maxx, maxy = gap.bounds
+    xs = np.arange(np.floor(minx / STREET_TILE_M) * STREET_TILE_M, maxx, STREET_TILE_M)
+    ys = np.arange(np.floor(miny / STREET_TILE_M) * STREET_TILE_M, maxy, STREET_TILE_M)
+    tiles = np.array([box(x, y, x + STREET_TILE_M, y + STREET_TILE_M) for x in xs for y in ys])
+    tiles = tiles[shapely.intersects(tiles, gap)]
+    pieces = shapely.intersection(tiles, gap)
+    parts = [g for p in pieces for g in getattr(p, "geoms", [p]) if g.geom_type == "Polygon" and g.area >= MIN_STREET_PIECE_M2]
+    ids = [-(ward_num * 1_000_000 + i + 1) for i in range(len(parts))]
+    return gpd.GeoDataFrame({"parcelid": ids}, geometry=parts, crs=CRS_M)
+
+
 def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame, ctx: dict) -> dict[str, gpd.GeoDataFrame]:
     t0 = time.time()
     w = wards[wards["ward_id"] == ward_id]
@@ -162,8 +184,7 @@ def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame,
     lots = cand[cand["ward_id"] == ward_id].copy()
     lots["area_m2"] = lots.geometry.area
     lots["stated_area_m2"] = parse_area(lots["stated_area"])
-    corridors = parcels[(parcels["feature_type"] == "CORRIDOR")].copy()
-    corridors = corridors[corridors.intersects(w.buffer(CORRIDOR_M).union_all())][["parcelid", "geometry"]]
+    corridors = street_space(parcels, wgeom, int(ward_id))
 
     # ---- zoning
     zoning = read_m(RAW / "zoning-area-4326.gpkg", bbox=bbox)

@@ -1,6 +1,73 @@
-# Pipeline report (Yuvi) — paste into /docs/decisions.md via Simone
+# Pipeline report (Yuvi) — paste into /docs/decisions.md via Simone, tell Andrew
 
-## Y1: permits fields and rule check
+## Findings that change the spec (read these first)
+
+1. **Rule A works, with one classifier fix** (Y1, T6): 446 multiplex permits issued 2023-05-01 to 2024-11-30 vs the City's 452 (-1.3%). Spec 4.3 step 5 also lets a structure type naming 2-6 units make a multiplex; that adds ~830 permits that create 1 unit (a suite in a house) and gives 1,278. The rule used: **units created 2 to 6**. Rule B is not needed. `permit_rule` string: "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind" (the spec's fixture text says "1-6"; the 1-unit rows are kind `other`).
+2. **The Property Boundaries file has no CORRIDOR parcels** (only COMMON 491,687, CONDO 3,769, RESERVE 2,983). The engine's street-edge test (5.2 step 1) needs corridors. The `corridors` layer is therefore **derived**: ward polygon minus every parcel = road allowance, cut into 250 m tiles; `parcelid` is a negative synthetic id. 98.9% of dev-ward lots touch it. Water and rail not held as parcels also show up as "street" along their edges. Andrew: use it as the spec says, and the fallback (edge nearest the address point) when none touches.
+3. **Height overlay column is `HT_LABEL`** (float metres), not `HT_HEIGHT` (T4). Coverage overlay is `PRCNT_CVER`. Ward 04 has no coverage overlay polygons; 57% of lots citywide do.
+4. **No zone polygon has `ZN_STATUS` 5** in the current GPKG (values 0-3). "Older bylaw" lots are those with no zone polygon covering at least 25% of the lot (4.8% of COMMON lots citywide); they get `zn_zone` null and `zn_status` 5.
+5. **The Ward 23 sixplex area is City Ward 23, no hand-drawing needed** (T11). By-law 654-2025 **Diagram 1** (not Diagram 2) is "Scarborough North (23) Ward Area" and its outline matches the City Wards polygon for ward 23 (Diagram 2 is the Toronto and East York Community Council area = the eight wards). So `pipeline/data/sixplex_overlay_ward23.geojson` is that ward polygon, and **ward 23 is `sixplex_overlay: "full"`, not "partial"**; no ward is partial. Map: `pipeline/data/sixplex_overlay_map.png`.
+6. **GEO_ID join rate is 98.5%** (T5); with the street-name fallback the geocode rate is 99.3% (7,342 of 7,397 projects). 55 permits have no location and no ward (counted under `unlocated` in `permit_counts.json`, not on the map).
+7. **One massing polygon often covers several houses** (row houses, semis): 78% of lots have a building assigned by largest overlap, but ~98% intersect a building footprint. Use intersection, not `parcelid`, for "vacant" and for building-on-lot area; a merged row polygon can exceed the 350 m² `larger_building` footprint threshold without the lot being a larger building. Tune on the test lots.
+8. **88% of ward 04 lots (75% of zone polygons) have `zn_exception` = Y**; most zones carry an exception number, so `site_exception` will flag most lots unless the engine ignores exceptions it cannot read.
+9. **permit_counts.json** `since_may_2023` and `by_year` count kind `multiplex` only (the "did" number); `by_kind_since_may_2023` and `by_year_by_kind` have every kind. Public `permits.geojson` includes all four kinds (`k`), so the web should filter to `multiplex` for the dots.
+10. **Tiger Data (Y2) is not signed up yet**: needs a human with a browser (free service at the Tiger Data site, then `TIGER_DSN` in `.env`). Everything was tested against a local TimescaleDB 2.30.2 in Docker; the compression numbers in `pipeline/tiger/tiger.md` are from that and must be re-measured on the real service.
+
+## Deliverables on this branch and where the data is
+
+- Scripts: `pipeline/download.py`, `permits.py`, `build_lots.py`, `checks.py`, `lots_checks.py`, `overlay_map.py`, `tiger/*`.
+- Not in git (shared on the drive): `data/out/suplex.gpkg` (all 25 wards, 507 MB, 193 s build), `permits.parquet`, `permits.geojson` (1.1 MB), `permit_counts.json`, `data_dates.json`, `trend_cache/01..25.json`.
+- Re-run order: `python pipeline/download.py --all`, `python pipeline/permits.py`, `python pipeline/build_lots.py --all`, `python pipeline/checks.py --all`, then (with `TIGER_DSN`) `python pipeline/tiger/load.py` and `python pipeline/tiger/cache_trends.py`.
+
+## Checkpoint output (checks.py --all, 2026-10-17)
+
+```
+== permits ==
+  rows 7,397; with coordinates 7,342; with a ward 7,342
+  geocode method: geo_id 7,283, street_match 59, none 55
+  [PASS] geocode rate 90% or better: 99.3%
+  GEO_ID -> ADDRESS_POINT_ID join rate (T5): 98.5%
+  issued 2023-05-01 to 2024-11-30 by kind: {'other': 897, 'secondary_suite': 530, 'laneway_garden': 528, 'multiplex': 446}
+  [PASS] multiplex count within 15% of the City's 452: 446 (-1.3%)
+  multiplex permits since 2023-05-01 by ward (compare with the Toronto Multiplex Tracker map):
+   01:38  02:33  03:104  04:81  05:92  06:63  07:27  08:79  09:177  10:34  11:99  12:71  13:5  14:81  15:26  16:20  17:27  18:83  19:68  20:93  21:46  22:16  23:7  24:28  25:29
+   wards with at least one: 25 of 25; no ward: 17
+  [PASS] permit_counts.json: ward totals plus unlocated equal the city total: 1427 + 17 = 1444
+  [PASS] permits.geojson carries only id, d, w, u, k (no permit numbers or addresses): 7,342 points
+== lots (suplex.gpkg) ==
+  layers: lots (MultiPolygon), corridors (Polygon), addresses (Point), buildings (MultiPolygon), wards (MultiPolygon), sixplex_overlay (MultiPolygon)
+  [PASS] layer lots present
+  [PASS] layer corridors present
+  [PASS] layer addresses present
+  [PASS] layer buildings present
+  [PASS] layer wards present
+  [PASS] layer sixplex_overlay present
+  [PASS] lots are in EPSG:2952: 2952
+  [PASS] 25 wards present in lots: 25
+  lots by feature_type: COMMON 491,687, CONDO 3,769
+  [PASS] 95% or more of COMMON lots have a zone or zn_status 5: 100.0%
+  COMMON lots with a zone 95.2%; zn_status 5 (no zone / older bylaw) 4.8%
+  zones: RD 233,604, R 103,487, RM 54,248, RS 29,529, CR 18,583, RT 14,739, E 4,581, ON 2,577, RA 2,300, OR 1,507
+  with height overlay 89.8%; coverage overlay 57.0%; sixplex_overlay 35.6%
+  flags: heritage_register 11,435 (2.3%), heritage_district 11,598 (2.3%), ravine 32,759 (6.6%), trca 35,805 (7.2%)
+  zone exceptions (zn_exception = Y): 359,326
+  [PASS] median area_m2 / STATEDAREA between 0.97 and 1.03: 1.0000 over 493,822 lots
+  [PASS] 95% or more of lots touch street space (the derived corridors layer): 98.0% of 495,456; 19,243 street tiles
+  [PASS] address join (addresses with a lot) 95% or more: 99.9% of 525,372
+  address classes: L 478,853, S 33,753, SE 12,033, LE 733
+  land+regular addresses with a lot: 99.9%
+  lots with at least one address: 96.1%; address_count >= 4: 3,370
+  [PASS] buildings are in EPSG:2952: 2952
+  [PASS] avg_height_m populated on 99%+ of buildings: 100.0%
+  buildings 428,184; with a parcel 100.0%; median footprint 148 m²; median height 5.5 m
+  lots with a building footprint over 20 m² assigned to them: 78.0% (the rest are 'vacant' or share a footprint)
+  [PASS] lot parcelid unique: 0 duplicates
+  slivers under 30 m²: 5,826; lots over 5,000 m²: 11,216
+
+ALL CHECKS PASSED
+```
+
+## Y1:  permits fields and rule check
 
 **Rule A works** (after one classifier fix, below). 446 multiplex permits issued 2023-05-01 to 2024-11-30 vs the City's 452 (-1.3%).
 

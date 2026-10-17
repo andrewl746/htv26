@@ -1,4 +1,10 @@
-"""Lot classification (MASTERSPEC 5.3), first match wins, and the flags (5.8)."""
+"""Lot classification (MASTERSPEC 5.3), first match wins, and the flags (5.8).
+
+Footprints are clipped to the lot before `vacant`, the existing building and the larger-building
+footprint test are decided: one 3D Massing polygon often covers a whole row of houses, so neither
+its whole area nor the pipeline's `parcelid` says what stands on this lot (5.3; section 0 item 6).
+The attached test (5.7) still uses the unclipped footprint, which is what crosses the lot line.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -17,36 +23,53 @@ NOT_CHECKED_CLASSES = ("condo", "non_residential", "older_bylaw", "larger_buildi
 FLAG_ORDER = ("heritage_register", "heritage_district", "ravine", "trca", "site_exception", "vacant")
 
 
+@dataclass(frozen=True)
+class LotFootprint:
+    """A building and its footprint clipped to the lot: the part that stands on this lot."""
+
+    building: BuildingInput
+    clip: BaseGeometry
+
+    @property
+    def area_m2(self) -> float:
+        return float(self.clip.area)
+
+
 @dataclass
 class Classification:
     class_: str
     attached: bool
     vacant: bool
-    existing: BuildingInput | None          # the largest footprint on the lot (over the vacant threshold)
-    footprints_on_lot: list[BuildingInput]
+    existing: LotFootprint | None           # the largest clipped footprint on the lot (over the vacant threshold)
+    footprints_on_lot: list[LotFootprint]
 
 
-def buildings_on_lot(lot: LotInput, min_area_m2: float) -> list[BuildingInput]:
-    """Footprints that sit on the lot by more than the vacant threshold, largest overlap first."""
+def clip_to_lot(footprint: BaseGeometry, lot: BaseGeometry) -> BaseGeometry:
+    """`footprint` intersected with `lot`; a footprint wholly on the lot comes back unchanged (same ring)."""
+    return footprint if lot.covers(footprint) else footprint.intersection(lot)
+
+
+def buildings_on_lot(lot: LotInput, min_area_m2: float) -> list[LotFootprint]:
+    """Footprints whose clip to the lot is over the vacant threshold, largest clip first."""
     out = []
     for b in lot.buildings:
         if b.geometry is None or b.geometry.is_empty:
             continue
-        overlap = b.geometry.intersection(lot.geometry).area
-        if overlap > min_area_m2:
-            out.append((overlap, b))
-    out.sort(key=lambda t: -t[0])
-    return [b for _, b in out]
+        clip = clip_to_lot(b.geometry, lot.geometry)
+        if clip.area > min_area_m2:
+            out.append(LotFootprint(b, clip))
+    out.sort(key=lambda f: -f.area_m2)
+    return out
 
 
-def _is_larger_building(lot: LotInput, on_lot: list[BuildingInput], cfg: EngineConfig) -> bool:
+def _is_larger_building(lot: LotInput, on_lot: list[LotFootprint], cfg: EngineConfig) -> bool:
     lb = cfg.larger_building
     if lot.address_count >= lb.address_points:
         return True
-    for b in on_lot:
-        if b.avg_height_m is not None and b.avg_height_m > lb.avg_height_m:
+    for f in on_lot:
+        if f.building.avg_height_m is not None and f.building.avg_height_m > lb.avg_height_m:
             return True
-        if b.area_m2 > lb.footprint_m2:
+        if f.area_m2 > lb.footprint_m2:       # the clipped area, not the whole massing polygon
             return True
     return False
 

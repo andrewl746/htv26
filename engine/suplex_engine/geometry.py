@@ -68,6 +68,19 @@ def coords_rounded(geom: BaseGeometry, ndigits: int = 2) -> list[Coord]:
     return [(round(float(x), ndigits), round(float(y), ndigits)) for x, y in pts]
 
 
+def polygon_parts(geom: BaseGeometry | None) -> list[Polygon]:
+    """The polygons in an overlay result (Polygon, MultiPolygon or GeometryCollection), largest first.
+
+    Lines and points left over where shapes only touch are dropped.
+    """
+    if geom is None or geom.is_empty:
+        return []
+    if isinstance(geom, Polygon):
+        return [geom]
+    parts = [p for g in getattr(geom, "geoms", ()) for p in polygon_parts(g)]
+    return sorted(parts, key=lambda p: -p.area)
+
+
 # ---------------------------------------------------------------------------
 # Street-facing edge
 # ---------------------------------------------------------------------------

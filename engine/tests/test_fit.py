@@ -215,6 +215,49 @@ def test_vacant_lot_is_checked_normally_and_flagged():
     assert res.lot.existing_building is None
 
 
+# ---------- footprints clipped to the lot (MASTERSPEC section 0 item 6) ----------
+
+ROW_LOT_W = 6.1
+
+
+def _row_house_lot() -> LotInput:
+    """The middle of 8 row lots of 6.1 m, under one 3D Massing polygon that covers the whole row (about 470 m2)."""
+    row = BuildingInput(7, box(OX - 3 * ROW_LOT_W + 1, OY + 8, OX + 5 * ROW_LOT_W - 1, OY + 18), 8.0, parcelid="t-0")
+    west = NeighbourLot("t-0", box(OX - ROW_LOT_W, OY, OX, OY + 40), "COMMON")
+    east = NeighbourLot("t-2", box(OX + ROW_LOT_W, OY, OX + 2 * ROW_LOT_W, OY + 40), "COMMON")
+    return rect_lot(ROW_LOT_W, 40.0, buildings=[row], neighbour_lots=[west, east])
+
+
+def test_a_row_polygon_is_clipped_to_the_lot_and_reads_as_attached_not_larger():
+    lot = _row_house_lot()
+    assert lot.buildings[0].area_m2 > CFG.larger_building.footprint_m2        # the merged row polygon
+    clipped_m2 = ROW_LOT_W * 10.0
+    res = run_check(lot, CFG)
+    assert res.lot.class_ == "attached" and res.lot.attached is True
+    ex = res.lot.existing_building
+    assert ex.building_id == 7 and ex.footprint_m2 == pytest.approx(clipped_m2, abs=0.5)
+    lot_ring = Polygon(res.lot.polygon_local).buffer(0.01)
+    assert all(lot_ring.covers(Point(p)) for p in ex.footprint_local)
+    on = [b for b in res.context.buildings if b.on_lot]
+    off = [b for b in res.context.buildings if not b.on_lot]
+    assert len(on) == 1 and on[0].building_id == 7
+    assert Polygon(on[0].footprint_local).area == pytest.approx(clipped_m2, abs=0.5)
+    assert len(off) == 2 and {b.building_id for b in off} == {7}
+    assert {(b.avg_height_m, b.kind) for b in res.context.buildings} == {(8.0, "house")}
+
+
+def test_a_footprint_grazing_the_lot_under_the_vacant_threshold_leaves_it_vacant():
+    graze = box(OX - 5.0, OY + 8, OX + 1.0, OY + 14)                         # 1 m x 6 m = 6 m2 on the lot
+    lot = rect_lot(12.0, 40.0, buildings=[BuildingInput(9, graze, 7.0, parcelid="t-1")])
+    assert graze.intersection(lot.geometry).area < CFG.vacant_min_footprint_m2
+    res = run_check(lot, CFG)
+    assert res.lot.vacant is True and res.lot.existing_building is None
+    assert "vacant" in [f.id for f in res.lot.flags]
+    [b] = res.context.buildings
+    assert b.building_id == 9 and b.on_lot is False
+    assert Polygon(b.footprint_local).area == pytest.approx(graze.area, abs=0.05)
+
+
 def test_flags_come_from_the_lot_row_and_never_change_the_result():
     plain = run_check(rect_lot(12.0, 40.0), CFG)
     flagged = run_check(rect_lot(12.0, 40.0, flag_heritage_register=True, flag_ravine=True, flag_trca=True,

@@ -62,6 +62,7 @@ export interface ZoneInfo {
   ht_overlay_m: number | null; coverage_overlay_pct: number | null; exception_no: number | null;
   sixplex_overlay: boolean;
 }
+// footprint_m2 and footprint_local are the footprint clipped to the lot (one massing polygon can cover a whole row).
 export interface ExistingBuilding { building_id: number; avg_height_m: number; footprint_m2: number;
   footprint_local: LocalPoint[]; }
 export interface Lot {
@@ -88,6 +89,8 @@ export interface DesignResult {
   fail_slices_local: LocalPoint[][];                       // parts of the footprint outside buildable_local
 }
 export interface PermitsNearby { radius_m: number; since: string; count: number; points: LonLat[]; points_local: LocalPoint[]; }
+// A footprint crossing the lot line comes as its on-lot part (on_lot true) plus each off-lot part (on_lot false)
+// under the same building_id, so building_id can repeat in Context.buildings: never use it alone as a key.
 export interface ContextBuilding { building_id: number; avg_height_m: number; kind: "house" | "large";
   on_lot: boolean; footprint_local: LocalPoint[]; }
 export interface Context { origin: { lon: number; lat: number; x_2952: number; y_2952: number };

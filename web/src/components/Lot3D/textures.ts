@@ -189,3 +189,46 @@ export function shingleTexture(colour: string, seed = 7): TexturePair {
   }
   return finish(map, bump, tile)
 }
+
+/** Asphalt: dark grey with a fine speckle of aggregate. One tile is `tileM` metres square. */
+export function asphaltTexture(colour: string, tileM: number, seed = 5): TexturePair {
+  const px = 256
+  const [map, m] = canvas(px, px)
+  const [bump, b] = canvas(px, px)
+  const random = seeded(seed)
+  const base = new Color(colour)
+  if (m && b) {
+    m.fillStyle = colour
+    m.fillRect(0, 0, px, px)
+    b.fillStyle = '#808080'
+    b.fillRect(0, 0, px, px)
+    for (let i = 0; i < 2600; i++) {
+      const x = random() * px
+      const y = random() * px
+      const tint = base.clone().offsetHSL(0, 0, (random() - 0.5) * 0.12)
+      m.fillStyle = `#${tint.getHexString()}`
+      m.fillRect(x, y, 1.5, 1.5)
+      b.fillStyle = random() < 0.5 ? '#9a9a9a' : '#666'
+      b.fillRect(x, y, 1.5, 1.5)
+    }
+  }
+  return finish(map, bump, [tileM, tileM])
+}
+
+/** Concrete sidewalk slabs: a control joint across the walk every `slabM` metres. */
+export function sidewalkTexture(colour: string, joint: string, slabM: number): TexturePair {
+  const px = 128
+  const [map, m] = canvas(px, px)
+  const [bump, b] = canvas(px, px)
+  if (m && b) {
+    m.fillStyle = colour
+    m.fillRect(0, 0, px, px)
+    m.fillStyle = joint
+    m.fillRect(0, 0, 2, px)
+    b.fillStyle = '#fff'
+    b.fillRect(0, 0, px, px)
+    b.fillStyle = '#000'
+    b.fillRect(0, 0, 2, px)
+  }
+  return finish(map, bump, [slabM, slabM])
+}

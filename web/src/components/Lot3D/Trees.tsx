@@ -13,6 +13,7 @@ import type { LocalPoint } from '@contracts/types'
 import { tokenHex } from '../../styles/tokens'
 import { withCutaway } from './cutaway'
 import { seededRandom } from './geometry'
+import { LOOK } from './look'
 import { ease, growSpan, progress, type Timeline } from './timeline'
 import { useSequenceFrame } from './useSequence'
 
@@ -22,6 +23,12 @@ const MAX_TREES = 300
 const TRUNK = { height: [1.6, 2.6], radiusTop: 0.18, radiusBottom: 0.26 }
 const PUFF = { radius: [1.3, 2.3], spread: 0.9, rise: 0.45 }
 const PUFF_LIGHTNESS_JITTER = 0.08
+/**
+ * A15, the drawn look: faceted, stylized crowns that sway in a light breeze once grown, the top
+ * puffs more than the low ones. Not with prefers-reduced-motion.
+ */
+const STYLIZED = LOOK === 'drawn'
+const WIND = { amplitudeM: 0.14, periodS: 3.8, gust: 0.35, gustPeriodS: 11, across: 0.45 }
 
 interface Part {
   position: Vector3
@@ -29,10 +36,17 @@ interface Part {
   distance: number
 }
 
-function plan(trees: LocalPoint[]): { trunks: Part[]; puffs: (Part & { lightness: number })[] } {
+interface Puff extends Part {
+  lightness: number
+  /** Where in the sway cycle this puff starts, and how far it sways (higher puffs sway more). */
+  phase: number
+  reach: number
+}
+
+function plan(trees: LocalPoint[]): { trunks: Part[]; puffs: Puff[] } {
   const nearest = [...trees].sort((a, b) => Math.hypot(...a) - Math.hypot(...b)).slice(0, MAX_TREES)
   const trunks: Part[] = []
-  const puffs: (Part & { lightness: number })[] = []
+  const puffs: Puff[] = []
   for (const point of nearest) {
     const random = seededRandom(point)
     const between = (range: number[]) => range[0] + (range[1] - range[0]) * random()
@@ -41,6 +55,7 @@ function plan(trees: LocalPoint[]): { trunks: Part[]; puffs: (Part & { lightness
     const trunkHeight = between(TRUNK.height)
     trunks.push({ position: new Vector3(x, 0, z), scale: new Vector3(1, trunkHeight, 1), distance })
     const count = random() < 0.5 ? 2 : 3
+    const treePhase = random() * Math.PI * 2
     for (let i = 0; i < count; i++) {
       const r = between(PUFF.radius)
       const angle = random() * Math.PI * 2
@@ -50,13 +65,15 @@ function plan(trees: LocalPoint[]): { trunks: Part[]; puffs: (Part & { lightness
         scale: new Vector3(r, r * 0.9, r),
         distance,
         lightness: (random() - 0.5) * PUFF_LIGHTNESS_JITTER,
+        phase: treePhase + i * 0.6,
+        reach: 0.7 + 0.3 * i,
       })
     }
   }
   return { trunks, puffs }
 }
 
-const scratch = { matrix: new Matrix4(), scale: new Vector3(), still: new Quaternion() }
+const scratch = { matrix: new Matrix4(), scale: new Vector3(), position: new Vector3(), still: new Quaternion() }
 
 /** Writes each part's matrix at its point in the ripple. */
 function writeGrowth(mesh: InstancedMesh, parts: Part[], t: number, timeline: Timeline): void {
@@ -64,6 +81,20 @@ function writeGrowth(mesh: InstancedMesh, parts: Part[], t: number, timeline: Ti
     const p = ease.outBack(progress(t, growSpan(timeline, part.distance)))
     scratch.scale.copy(part.scale).multiplyScalar(Math.max(p, 0.0001))
     mesh.setMatrixAt(i, scratch.matrix.compose(part.position, scratch.still, scratch.scale))
+  })
+  mesh.instanceMatrix.needsUpdate = true
+}
+
+/** The crowns in the breeze: each puff leans downwind and back on its own phase. */
+function writeSway(mesh: InstancedMesh, puffs: Puff[], seconds: number): void {
+  const w = (2 * Math.PI) / WIND.periodS
+  const gust = 1 + WIND.gust * Math.sin((2 * Math.PI * seconds) / WIND.gustPeriodS)
+  puffs.forEach((puff, i) => {
+    const lean = WIND.amplitudeM * puff.reach * gust * Math.sin(w * seconds + puff.phase)
+    scratch.position.copy(puff.position)
+    scratch.position.x += lean
+    scratch.position.z += lean * WIND.across
+    mesh.setMatrixAt(i, scratch.matrix.compose(scratch.position, scratch.still, puff.scale))
   })
   mesh.instanceMatrix.needsUpdate = true
 }
@@ -77,7 +108,7 @@ export function Trees({ trees }: { trees: LocalPoint[] }) {
       puff: new IcosahedronGeometry(1, 1),
       // Cut away like the neighbours where a tree stands between the camera and the design.
       bark: withCutaway(new MeshStandardMaterial({ color: tokenHex('--suplex-trunk'), roughness: 1 })),
-      leaves: withCutaway(new MeshStandardMaterial({ color: 'white', roughness: 0.9 })),
+      leaves: withCutaway(new MeshStandardMaterial({ color: 'white', roughness: 0.9, flatShading: STYLIZED })),
     }),
     [],
   )
@@ -102,11 +133,14 @@ export function Trees({ trees }: { trees: LocalPoint[] }) {
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
   }, [puffs])
 
-  // Once every tree is full size the matrices stay put.
+  // Once every tree is full size the trunks stay put; in the drawn look the crowns sway.
   const grown = useRef(false)
-  useSequenceFrame((t, { timeline }) => {
+  useSequenceFrame((t, { timeline, reduced }, frame) => {
     const growing = t < timeline.ripple.end
-    if (!growing && grown.current) return
+    if (!growing && grown.current) {
+      if (STYLIZED && !reduced && puffMesh.current) writeSway(puffMesh.current, puffs, frame.clock.elapsedTime)
+      return
+    }
     grown.current = !growing
     if (trunkMesh.current) writeGrowth(trunkMesh.current, trunks, t, timeline)
     if (puffMesh.current) writeGrowth(puffMesh.current, puffs, t, timeline)

@@ -21,6 +21,8 @@ import { useSequenceFrame } from './useSequence'
 // for doesn't fit, the borderline stripes for too close to call; its label (labels.ts) names the
 // rule, so the colour is never the only signal. It rises out of the ground once the floors land.
 const RED_OPACITY = 0.42
+/** A little light of its own, so the slab still reads red over dark cladding. */
+const RED_GLOW = 0.3
 const EDGE_OPACITY = 0.9
 /** A little above the parapet, so the slab's top reads as a lid. */
 const TOP_CLEARANCE_M = 0.08
@@ -86,6 +88,8 @@ export function FailSlices({ slab }: { slab: FailSlab }) {
     const made = {
       body: new MeshStandardMaterial({
         color: borderline ? 'white' : edgeColour,
+        emissive: borderline ? 'black' : edgeColour,
+        emissiveIntensity: borderline ? 0 : RED_GLOW,
         map,
         transparent: true,
         opacity: borderline ? 1 : RED_OPACITY,

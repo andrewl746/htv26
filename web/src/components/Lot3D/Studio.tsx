@@ -1,6 +1,7 @@
 import { Environment, Lightformer } from '@react-three/drei'
 import { Color } from 'three'
 import { tokenHex } from '../../styles/tokens'
+import { OFF } from './debug'
 import { sunPosition } from './sun'
 
 // A15: the drawn look's light. The image-based light comes from an environment built in the scene
@@ -9,11 +10,11 @@ import { sunPosition } from './sun'
 // light), a soft sky above, a warm bounce from the ground and two cool fills that give the glass
 // something to reflect.
 const ENV_RESOLUTION = 256
-const ENV_INTENSITY = 0.85
-/** The sun's direct light, a little softer than the classic look's: the environment adds the rest. */
-const SUN_INTENSITY = 2.6
+const ENV_INTENSITY = 0.6
+/** The sun carries the shadows; the environment fills them without washing them out. */
+const SUN_INTENSITY = 3.4
 const SHADOW = { mapSize: 2048, radius: 5, halfExtentM: 70, bias: -0.0004, normalBias: 0.04 }
-const HEMI_INTENSITY = 0.35
+const HEMI_INTENSITY = 0.25
 const SUN_WHITE_MIX = 0.45
 
 export function Studio({ shadows }: { shadows: boolean }) {
@@ -21,7 +22,7 @@ export function Studio({ shadows }: { shadows: boolean }) {
   const [x, y, z] = sunPosition()
   return (
     <>
-      <Environment frames={1} resolution={ENV_RESOLUTION} environmentIntensity={ENV_INTENSITY}>
+      {!OFF.has('env') && <Environment frames={1} resolution={ENV_RESOLUTION} environmentIntensity={ENV_INTENSITY}>
         {/* The sun disc, low in the south-west. */}
         <Lightformer form="circle" intensity={6} color="#ffd29a" position={[x / 4, y / 4, z / 4]} scale={14} target={[0, 0, 0]} />
         {/* The sky: a wide soft panel overhead and a pale ring round the horizon. */}
@@ -32,7 +33,7 @@ export function Studio({ shadows }: { shadows: boolean }) {
         {/* Cool fills to the north and east, for reflections in the windows. */}
         <Lightformer form="rect" intensity={0.9} color="#cfe0ff" position={[0, 10, -40]} scale={[50, 14, 1]} target={[0, 4, 0]} />
         <Lightformer form="rect" intensity={0.6} color="#dfe9ff" position={[40, 8, 0]} scale={[40, 12, 1]} target={[0, 4, 0]} />
-      </Environment>
+      </Environment>}
       <hemisphereLight args={[tokenHex('--suplex-sky-bottom'), tokenHex('--suplex-ground'), HEMI_INTENSITY]} />
       <directionalLight
         position={[x, y, z]}

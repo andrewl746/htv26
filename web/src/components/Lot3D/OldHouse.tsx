@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import type { ContextBuilding } from '@contracts/types'
 import { applyGrowth, buildBuilding, disposeBuilt } from './buildings'
+import { LOOK } from './look'
 import { ease, growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
-import { useStreetMaterials } from './useStreetMaterials'
+import { slotMaterial, useStreetMaterials } from './useStreetMaterials'
 
 /** How much wider the old house spreads as it squashes flat. */
 const SQUASH_WIDEN = 0.15
@@ -15,7 +16,7 @@ const SQUASH_WIDEN = 0.15
  * checked, the house simply stays.
  */
 export function OldHouse({ buildings, squash }: { buildings: ContextBuilding[]; squash: boolean }) {
-  const built = useMemo(() => buildings.filter((b) => b.on_lot).map(buildBuilding), [buildings])
+  const built = useMemo(() => buildings.filter((b) => b.on_lot).map((b) => buildBuilding(b, LOOK)), [buildings])
   useEffect(() => () => disposeBuilt(built), [built])
   const materials = useStreetMaterials({ cutaway: false })
   const groups = useRef<(Group | null)[]>([])
@@ -45,8 +46,16 @@ export function OldHouse({ buildings, squash }: { buildings: ContextBuilding[]; 
           position={[b.x, 0, b.z]}
           visible={false}
         >
-          <mesh geometry={b.body} material={materials.walls[b.colorIndex]} castShadow receiveShadow dispose={null} />
-          {b.roof && <mesh geometry={b.roof} material={materials.roof} castShadow receiveShadow dispose={null} />}
+          {b.parts.map((part) => (
+            <mesh
+              key={part.slot}
+              geometry={part.geometry}
+              material={slotMaterial(materials, part.slot, b.colorIndex)}
+              castShadow
+              receiveShadow
+              dispose={null}
+            />
+          ))}
         </group>
       ))}
     </group>

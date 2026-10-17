@@ -175,6 +175,10 @@ button {
   box-shadow: var(--shadow);
 }
 
+.search-dropdown[data-message-only] {
+  pointer-events: none;
+}
+
 .search-list {
   margin: 0;
   padding: 0;

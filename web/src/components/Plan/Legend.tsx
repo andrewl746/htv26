@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { disclaimers, labels } from '../../copy'
+import { labels } from '../../copy'
 import { planCopy } from './copy'
 
 // Every entry is a shape and a word; the colour only repeats them. The patterns are the legend's
@@ -51,10 +51,7 @@ export function Legend() {
           <Swatch>
             <rect className="plan-home" x={5} y={3} width={14} height={10} strokeWidth={1.5} />
           </Swatch>
-          <span>
-            {planCopy.legend_footprint}
-            <span className="plan-note"> · {disclaimers.illustrative}</span>
-          </span>
+          {planCopy.legend_footprint}
         </li>
         <li>
           <Swatch>
@@ -73,7 +70,7 @@ export function Legend() {
         </li>
         <li>
           <Swatch>
-            <rect className="plan-building" x={4} y={3} width={16} height={10} strokeWidth={1.25} style={{ fill: 'var(--suplex-neighbour-1)' }} />
+            <rect className="plan-building plan-building-house" x={4} y={3} width={16} height={10} strokeWidth={1.25} />
           </Swatch>
           {planCopy.legend_neighbours}
         </li>

@@ -22,5 +22,6 @@ export const planCopy = {
   legend_you: 'Your lot, at this zoom',
   permits_unlabelled: 'Each diamond is one permit. Addresses are never shown.',
   north: 'N',
+  attribution: '© OpenStreetMap contributors · OpenFreeMap · OpenMapTiles',
   aria_plan: 'Plan view from above of the lot and the area around it',
 }

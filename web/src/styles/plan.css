@@ -23,6 +23,29 @@
 .plan-stage {
   position: absolute;
   inset: 0 var(--panel-width) 0 0;
+  overflow: hidden;
+}
+
+/* The street map under the drawing, and its attribution. */
+.plan-backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.plan-attribution {
+  position: absolute;
+  right: 68px;
+  bottom: var(--space-2);
+  margin: 0;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: rgba(244, 248, 229, 0.85);
+  color: var(--suplex-ink-muted);
+  font-size: 11px;
+}
+
+.plan-svg {
+  position: relative;
 }
 
 .plan-svg {
@@ -45,26 +68,48 @@
 /* Marks: shape and pattern carry the meaning, colour only repeats it. */
 .plan-ring {
   fill: none;
-  stroke: var(--suplex-line-strong);
+  stroke: var(--palette-charcoal);
+  opacity: 0.45;
 }
 
 .plan-ring-label {
-  fill: var(--suplex-ink-muted);
+  fill: var(--palette-charcoal);
   font-family: var(--font-ui);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--suplex-surface);
+  stroke-width: 0.35em;
 }
 
+/* Neighbours: one quiet tone, a little darker for big buildings, so the lot is what stands out. */
 .plan-building {
-  stroke: var(--suplex-line-strong);
+  stroke: #7d8a5c;
+}
+
+.plan-building-house {
+  fill: #dfe4cb;
+}
+
+.plan-building-large {
+  fill: #c3cba7;
 }
 
 .plan-tree {
   fill: var(--suplex-tree);
-  opacity: 0.8;
+  opacity: 0.55;
+}
+
+.plan-lot-halo {
+  fill: none;
+  stroke: var(--suplex-accent);
+  stroke-linejoin: round;
+  opacity: 0.22;
 }
 
 .plan-lot {
-  fill: var(--suplex-lot);
+  fill: #fff;
   stroke: var(--suplex-ink);
+  stroke-linejoin: round;
 }
 
 .plan-existing {
@@ -233,7 +278,8 @@
 
 .plan-legend {
   display: grid;
-  gap: var(--space-2);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3) var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -242,8 +288,9 @@
 .plan-legend li {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   font-size: var(--text-sm);
+  line-height: 1.2;
 }
 
 .plan-swatch {

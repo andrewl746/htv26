@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, type KeyboardEvent, type Point
 import type { CheckResponse, DesignResult } from '@contracts/types'
 import { fill, labels } from '../../copy'
 import { planCopy } from './copy'
+import { PlanBackdrop } from './PlanBackdrop'
 import { centre, niceLength, permitRadius, ringPath, viewBoxFor, type Preset, type ViewBox } from './geometry'
 import { useSize, useViewBox } from './useBox'
 
 // Sizes are in screen pixels and turned into metres with `px`, so marks keep their size as the
 // view zooms from a 30 m lot to a 1 km neighbourhood.
-const PERMIT_HALF_PX = 7
+const PERMIT_HALF_PX = 9
 const LOT_STROKE_PX = 2.5
 const LINE_PX = 1.25
 const PIN_PX = 10
@@ -17,7 +18,8 @@ const HATCH_PX = 6
 const FAIL_MARK_PX = 22
 const RING_LABEL_PX = 12
 const SCALE_BAR_TARGET_PX = 110
-const NEIGHBOUR_COLOURS = 5
+const SHADOW_PX = 3
+const HALO_PX = 12
 
 // Zoom limits, in metres per screen pixel: about 30 m across a 1000 px stage at the closest, and
 // about 1.8 km at the furthest.
@@ -156,7 +158,8 @@ export function PlanMap({ check, design, preset, onManual }: Props) {
   const half = PERMIT_HALF_PX * px
   const barM = niceLength(SCALE_BAR_TARGET_PX * px)
   const hatch = HATCH_PX * px
-  const rings = [...new Set([context.radius_m, radius / 2, radius])].sort((a, b) => a - b)
+  // Where the building data ends, and where the permits end.
+  const rings = [...new Set([context.radius_m, radius])].sort((a, b) => a - b)
   const line = fill(permits.count === 1 ? labels.ui.permits_near_you_line_one : labels.ui.permits_near_you_line, {
     count: permits.count,
     radius_m: permits.radius_m,
@@ -164,6 +167,7 @@ export function PlanMap({ check, design, preset, onManual }: Props) {
 
   return (
     <div className="plan-stage" ref={stage} tabIndex={0} role="group" aria-label={planCopy.aria_plan} onKeyDown={onKeyDown}>
+      <PlanBackdrop origin={context.origin} box={box} mPerPx={px} />
       <svg
         className="plan-svg"
         viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}
@@ -175,6 +179,9 @@ export function PlanMap({ check, design, preset, onManual }: Props) {
         onPointerCancel={endDrag}
       >
         <defs>
+          <filter id="plan-lot-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx={0} dy={SHADOW_PX * px * 0.6} stdDeviation={SHADOW_PX * px} floodColor="#14240a" floodOpacity={0.35} />
+          </filter>
           <pattern id="plan-hatch-yard" width={hatch} height={hatch} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <line className="plan-hatch-yard" x1={0} y1={0} x2={0} y2={hatch} strokeWidth={LINE_PX * px} />
           </pattern>
@@ -195,9 +202,8 @@ export function PlanMap({ check, design, preset, onManual }: Props) {
         {offLot.map((b, i) => (
           <path
             key={`${b.building_id}-${i}`}
-            className="plan-building"
+            className={`plan-building plan-building-${b.kind}`}
             d={ringPath(b.footprint_local)}
-            style={{ fill: `var(--suplex-neighbour-${(b.building_id % NEIGHBOUR_COLOURS) + 1})` }}
             strokeWidth={LINE_PX * px}
           />
         ))}
@@ -207,7 +213,8 @@ export function PlanMap({ check, design, preset, onManual }: Props) {
             <circle key={i} className="plan-tree" cx={x} cy={-y} r={Math.max(TREE_RADIUS_M, TREE_MIN_RADIUS_PX * px)} />
           ))}
 
-        <path className="plan-lot" d={ringPath(lot.polygon_local)} strokeWidth={LOT_STROKE_PX * px} />
+        <path className="plan-lot-halo" d={ringPath(lot.polygon_local)} strokeWidth={HALO_PX * px} />
+        <path className="plan-lot" d={ringPath(lot.polygon_local)} strokeWidth={LOT_STROKE_PX * px} filter="url(#plan-lot-shadow)" />
 
         {onLot.map((b, i) => (
           <path

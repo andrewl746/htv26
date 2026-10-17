@@ -82,7 +82,9 @@ export function PlanTab() {
                 <p className="disclaimer">{planCopy.permits_unlabelled}</p>
               </section>
               <Legend />
-              <p className="disclaimer">{disclaimers.massing}</p>
+              <p className="disclaimer">
+                {disclaimers.illustrative}. {disclaimers.massing}
+              </p>
             </div>
           </aside>
         </>

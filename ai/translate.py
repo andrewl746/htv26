@@ -7,6 +7,7 @@ its English had. If the translation fails, the caller serves English with transl
 from __future__ import annotations
 
 import json
+import re
 
 from pydantic import create_model
 
@@ -46,8 +47,10 @@ def glossary(lang: str) -> dict:
 
 
 def forbidden_found(translated: dict[str, str], words: list[str]) -> set[str]:
-    texts = " ".join(translated.values()).casefold()
-    return {w for w in words if w.casefold() in texts}
+    """Whole words only, plurals included: "lot" catches "lots" but not "lotissement" or {{could_lots}}."""
+    texts = " ".join(translated.values())
+    return {w for w in words
+            if re.search(rf"(?<![\w{{]){re.escape(w)}(?:s|es)?(?![\w}}])", texts, re.IGNORECASE)}
 
 
 def _check(english: dict[str, str], translated: dict[str, str], numbers: dict, allowed: set[str]) -> ValidationResult:

@@ -55,8 +55,17 @@ def test_allowed_numbers_cover_values_rounding_and_magnitudes():
     _, numbers = build_check_numbers(contract("fixtures/check.no_fit.json"), "fourplex_wide", **URLS)
     allowed = allowed_numbers(numbers)
     margin = numbers["lot_width_margin"]["value"]
-    assert margin < 0
-    assert {str(margin), str(abs(margin)), "2013", "569", "26", "500", "0.5"} <= allowed
+    assert {str(margin), "2013", "569", "26", "500", "0.5"} <= allowed
+
+
+def test_margins_are_positive_differences():
+    """A failing rule's margin is negative in the engine; the model gets the difference, so it can't present
+    "-0.37 m" as the lot's depth (seen on a real lot before this change)."""
+    check = contract("fixtures/check.no_fit.json")
+    row = next(r for r in pick_design(check, "fourplex_wide")["rules"] if r["rule_id"] == "lot_width")
+    _, numbers = build_check_numbers(check, "fourplex_wide", **URLS)
+    assert row["margin"] < 0 and numbers["lot_width_margin"]["value"] == abs(row["margin"])
+    assert numbers["lot_width_margin"]["label"].startswith("Difference between")
 
 
 @pytest.mark.parametrize(

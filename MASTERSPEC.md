@@ -1,4 +1,4 @@
-# Suplex masterspec, version 3 (status board updated 2026-10-17 17:30, see section 0)
+# Suplex masterspec, version 3 (status board updated 2026-10-17 18:00, see section 0)
 
 **Hack the Valley 11 · Hack the Valley × School of Cities challenge · 4 people · about 36 hours**
 
@@ -12,10 +12,10 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-17, 17:40, about Hour 19.5 of 36)](#0-status-board-updated-2026-10-17-1740-about-hour-195-of-36)
+- [0. Status board (updated 2026-10-17, 18:00, about Hour 20 of 36)](#0-status-board-updated-2026-10-17-1800-about-hour-20-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
-  - [0.3 Critical path and the recommended re-plan](#03-critical-path-and-the-recommended-re-plan)
+  - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
   - [0.4 Web app review (Jayden's branch, all 16 commits, 2026-10-17)](#04-web-app-review-jaydens-branch-all-16-commits-2026-10-17)
   - [0.5 Decisions since version 3 (each one changed the section in brackets)](#05-decisions-since-version-3-each-one-changed-the-section-in-brackets)
   - [0.6 Known data limits (say "about", never "exactly")](#06-known-data-limits-say-about-never-exactly)
@@ -59,7 +59,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
   - [5.7 Attached houses (`attached.py`)](#57-attached-houses-attachedpy)
   - [5.8 Flags](#58-flags)
   - [5.9 Hand-checked test lots (`engine/tests/test_lots.py`)](#59-hand-checked-test-lots-engineteststest_lotspy)
-  - [5.10 Next steps (PROPOSED 2026-10-17, awaiting Andrew's approval)](#510-next-steps-proposed-2026-10-17-awaiting-andrews-approval)
+  - [5.10 Next steps (approved 2026-10-17)](#510-next-steps-approved-2026-10-17)
 - [6. Web app and visual direction (Jayden, `/web`)](#6-web-app-and-visual-direction-jayden-web)
   - [6.1 Stack and structure](#61-stack-and-structure)
   - [6.2 Screens and flow](#62-screens-and-flow)
@@ -87,7 +87,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
   - [8.2 Yuvi: data pipeline and Tiger Data](#82-yuvi-data-pipeline-and-tiger-data)
   - [8.3 Jayden: the web app](#83-jayden-the-web-app)
   - [8.4 Simone: the AI service, the briefing page, the story and all user-facing copy](#84-simone-the-ai-service-the-briefing-page-the-story-and-all-user-facing-copy)
-  - [8.5 Next-steps tasks (PROPOSED 2026-10-17, awaiting Andrew's approval)](#85-next-steps-tasks-proposed-2026-10-17-awaiting-andrews-approval)
+  - [8.5 Next-steps and re-plan tasks (approved 2026-10-17)](#85-next-steps-and-re-plan-tasks-approved-2026-10-17)
 - [9. Git workflow and the root `CLAUDE.md`](#9-git-workflow-and-the-root-claudemd)
   - [9.1 Workflow](#91-workflow)
   - [9.2 Root `CLAUDE.md` (full text; Andrew commits it in A1)](#92-root-claudemd-full-text-andrew-commits-it-in-a1)
@@ -109,23 +109,23 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ---
 
-## 0. Status board (updated 2026-10-17, 17:40, about Hour 19.5 of 36)
+## 0. Status board (updated 2026-10-17, 18:00, about Hour 20 of 36)
 
 Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 
 ### 0.1 How far along we are
 
-Measured against the planned hours in section 8: a task counts as done when its acceptance check passes on `main` or on a clean PR waiting for Andrew, and a partly done task counts the share actually finished. Time used: about 19.5 of 36 hours (54%); about 8.5 hours remain before rehearsals start at Hour 28.
+Measured against the planned hours in section 8, after the approved re-plan moved J5 to Yuvi, J7 to Simone and the 3D scene to Andrew (J8, J10 and two new 3D tasks), and added next steps (6.5 hours): a task counts as done when its acceptance check passes on `main` or on a clean PR, and a partly done task counts the share actually finished. Time used: about 20 of 36 hours (55%); about 8 hours remain before rehearsals start at Hour 28.
 
 | Person | Planned hours | Done hours | Done | Biggest piece left |
 |---|---|---|---|---|
-| Andrew | 26.5 | 17.8 | 67% | A10 citywide batch, then the Hour-24 lock and demo cache (A11) |
-| Yuvi | 22.5 | 21.2 | 94% | the Hour-24 refresh run |
-| Jayden | 27.0 | 10.4 | 39% | J4 result panel, J5 ward map, J6 transition, J7 chart, J8 fail visuals, J9 demo mode: about 14.6 hours |
-| Simone | 27.0 | 21.0 | 78% | real ward numbers in the briefing and the backup addresses (both wait on A10), the final Devpost, ten rehearsals |
-| **Team** | **103.0** | **70.4** | **68%** | the web app and the A10 batch |
+| Andrew | 35.0 | 19.8 | 57% | push and run the A10 batch citywide, the Hour-24 lock and demo cache (A11), A14, the palette into `contracts/design-tokens.css`, and the 3D scene (J8, A16, A15: about 8 hours, in its own session) |
+| Yuvi | 32.0 | 21.2 | 66% | J5 the ward map (4 h), then next steps Y11 to Y14 (5.5 h), the Hour-24 refresh |
+| Jayden | 19.5 | 10.4 | 53% | J4 result panel, J6 transition, J9 demo mode, the landing search card and the non-3D UI polish (about 9 hours; he is away for a few hours first) |
+| Simone | 29.0 | 21.0 | 72% | J7 the ward-panel chart, S14, real ward numbers in the briefing and the backup addresses (after A10), the final Devpost, ten rehearsals |
+| **Team** | **115.5** | **72.4** | **63%** | the web app, the 3D scene and running the batch |
 
-If next steps is approved, the plan grows by 6.5 hours to 109.5 and the team figure becomes 64%.
+Andrew's session has also written the A10 batch (code and tests, committed locally, not yet pushed); it counts as two of A10's three hours until it runs citywide. Andrew's list is now the longest (about 15 hours left) because he took over the 3D scene; the 3D work runs in a separate Claude session on its own branch, so his own time goes to the batch, the merges and the Hour-24 lock. Yuvi has about 10.8 hours left against about 8 before rehearsals, so next steps is the first thing cut if the ward map runs late.
 
 **By feature:**
 
@@ -140,12 +140,12 @@ If next steps is approved, the plan grows by 6.5 hours to 109.5 and the team fig
 
 | Person | Done and merged | Waiting for Andrew to merge | Now and next |
 |---|---|---|---|
-| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8 and T19 closed | nothing open | A9 citywide check, A10 batch (critical path), T20, A11 at Hour 24, A13; A14 if next steps is approved; move the final palette into `contracts/design-tokens.css` |
-| Yuvi | Y1 to Y6 and Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release | PR #9: Y7 closed (the 19 test lots pass on the citywide file, 39 real-lot tests ran); the Hour-24 refresh dry run reports READY | the Hour-24 refresh (Y9); recommended: the ward map (J5) first, then next steps (Y11 to Y14) |
-| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | 4 commits on `jayden` (the palette merge, the map fade, roofs on the street grid, the neighbour sink) | J4 the result panel, J8 the fail visuals, J6 the transition, J9 the demo mode (0.4 lists the fixes) |
-| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary | PR #8: French "terrains", `pct` units, the site-exception copy, `/explain` on the 19 real lots (`pytest ai/tests` 118 passed) | S8 real ward numbers and S9 backup addresses after A10; translation review sheets; ten rehearsals (S11); recommended: port her SVG chart for J7 |
+| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8 and T19 closed; approved next steps and the re-plan; merged PRs #8 and #9 | the A10 batch with tests (dfecfb2) and a three times faster engine (c3ddfe1), committed by his session but not yet pushed | push A10 and run it citywide, A11 at Hour 24, A14, the final palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13; the 3D scene (J8, A16, A15) in a separate session on branch `andrew-3d`; T20 only if time allows |
+| Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9) | nothing open | J5 the ward map now, then next steps Y11 to Y14; the Hour-24 refresh (Y9) |
+| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | 4 commits on `jayden` with no PR yet (the palette merge, the map fade, roofs on the street grid, the neighbour sink) | away for a few hours, then J4 the result panel, J6 the transition, J9 the demo mode, the landing search card and the non-3D UI, then wiring in WardMap and NextSteps (0.4 lists the fixes) |
+| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary; PR #8 (French "terrains", `pct` units, the site-exception copy, the plan-view strings, `/explain` on the 19 real lots, the four-unit fee fix; 118 tests pass) | nothing open | J7 the ward-panel chart, S14, S8 and S9 after A10, translation review sheets, ten rehearsals (S11) |
 
-### 0.3 Critical path and the recommended re-plan
+### 0.3 Critical path and the approved re-plan
 
 **The critical path:**
 
@@ -154,9 +154,10 @@ If next steps is approved, the plan grows by 6.5 hours to 109.5 and the team fig
 3. **Hour 24, the headline lock (A11):** Yuvi's refresh (`python pipeline/refresh.py --tiger`), then the batch, then the demo cache for the backup addresses and Ward 04, then Simone's one `gemini-3.8-flash` pre-generation pass.
 4. **Hour 28 onward:** the offline rehearsal (Wi-Fi off, API and AI stopped), ten timed rehearsals (S11), the Devpost submitted by Hour 34.
 
-**Recommended re-plan (needs Andrew's OK).** Jayden has about 14.6 hours of core web work left (0.4) and about 8.5 hours before rehearsals. He cannot finish alone, and the ward map is on the never-cut list. So:
+**Re-plan (approved by Andrew, 2026-10-17).** Jayden had about 14.6 hours of core web work left (0.4) and about 8.5 hours before rehearsals, and the ward map is on the never-cut list. So:
 
-- **Jayden** stops 3D polish and does, in order: J4 (the result panel), J8 (the red fail slice and the borderline stripes), J6 (the lot-to-ward transition), J9 (the demo-cache mode, a WebGL check and a "sample data" banner).
+- **Jayden** (away for a few hours first) does, in order: J4 (the result panel), J6 (the lot-to-ward transition), J9 (the demo-cache mode, a WebGL check and a "sample data" banner), then polishes the landing search card and the rest of the UI that is not 3D.
+- **Andrew** took over the 3D scene (`web/src/components/Lot3D/`): J8 (the red fail slice and the borderline stripes), the four designs modelled from the City's elevation sheets (A16) and a realism pass (A15). It runs in its own Claude session on branch `andrew-3d` and merges by Hour 27; the current look stays as the fallback. The A10 batch and the Hour-24 lock come first.
 - **Yuvi** builds the ward map (J5) in a new folder, `web/src/components/WardMap/`, from the ward files he designed; Jayden wires it into `App.tsx`. Next steps follows J5 (Y11, the sourcing, can start at once because it only touches Yuvi's report folder).
 - **Simone** ports her briefing-page SVG chart to `web/src/components/WardMap/TrendChart.tsx` (J7), so both charts are the same chart.
 - **Cut order for what is left:** visual extras (J10), then next steps, then the 2D plan view (keep the WebGL check), then the trend chart in the ward panel (it stays on the briefing page), then the animated lot-to-ward transition (fall back to a plain switch). Never cut: the address check with its 3D moment and the result panel's checklist, the ward map's could-versus-did headline, the screening labels and the uncertainty band, the rehearsal.
@@ -190,11 +191,12 @@ Built but not in the task list: the landing hero map and the fly-in (a good open
 8. The site-specific exception is an informational flag: shown in the address check, never on the map, never counted as "needs extra review" (T19).
 9. The first candidate question is now "What, if anything, should the City do about its free multiplex designs on lots where they fit?" (`contracts/copy/questions.json`).
 10. All eight languages stay, with a "Reviewed by a speaker" badge on English and French and a "Machine translation, not yet reviewed" badge on the rest; French uses "quartier" and "terrains"; a glossary rejects forbidden words the way the validator rejects invented numbers (7.6).
-11. The briefing page draws its chart as inline SVG and uses `--suplex-permit-bar` (`#B47F00`), because the permit gold is 1.5:1 on white (7.7, Appendix D).
+11. The briefing page draws its chart as inline SVG and uses `--suplex-permit-bar` (`#A27100`), because the permit gold is 1.5:1 on white (7.7, Appendix D).
 12. Branches are `main` (Andrew), `yuvi`, `jayden`, `simone`; React 19; Python 3.14 (section 9).
 13. The web app's look is now Yuvi's Lime and Teal palette with the Newsreader serif (PR #10), replacing Appendix D's Inter and Space Grotesk; `contracts/design-tokens.css` still holds the old values, so the briefing page will not match until Andrew moves the final palette there.
 14. **Development charges and parkland cash-in-lieu are exempt for multiplexes with no more than four units** (the City's "Considerations when building multiplexes" page). The "up to six" figure came from a May 2026 recommendation, not the by-law: never say six on a slide (T21).
-15. **Proposed, awaiting Andrew's approval:** "Your next steps" at the end of the address check (2.4, 5.10, 8.5), and the re-plan in 0.3.
+15. **Approved by Andrew on 2026-10-17:** "Your next steps" at the end of the address check (2.4, 5.10, 8.5), and the re-plan in 0.3 (J5 to Yuvi, J7 to Simone); `CLAUDE.md` lists the ownership exceptions.
+16. **Andrew took over the 3D scene** (`web/src/components/Lot3D/`) from Jayden on 2026-10-17: J8 and J10 move to him, plus the four designs modelled from the City's elevation sheets (A16) and a realism pass (A15); Jayden keeps all UI that is not 3D. The 3D work lands on branch `andrew-3d` by Hour 27, with the current look kept as the fallback (T23).
 
 ### 0.6 Known data limits (say "about", never "exactly")
 
@@ -244,7 +246,7 @@ Nothing broke: `main` builds, type-checks and lints clean, and the engine, API a
 | 16 ★ | Identifiers: address = Address Points `ADDRESS_POINT_ID` · lot = Property Boundaries `PARCELID` · building = 3D Massing shapefile feature index (the file has no id column) · ward = City Wards `AREA_SHORT_CODE` ("04"). |
 | 17 ★ | Sixplex Narrow (19.0 m long) is tested against the general detached-houseplex rule 10.20.40.20(3): 19.0 m is allowed only on lots at least 36 m deep with frontage under 10 m, or at least 40 m deep with frontage of 10 m or more; everywhere else the 17.0 m limit applies and the design reads "doesn't fit: building length". By-law 654-2025 contains no depth or length provision (Appendix H). |
 | 18 ★ | Ports: API 8000, AI service 8001, web 5173. Python 3.12 or 3.13 in one root virtualenv. Node 20 or newer. |
-| 19 (proposed) | "Your next steps": a rule-driven, sourced checklist at the end of the address check, picked by the engine from the lot's own result and flags, never by AI (2.4, 5.10, 8.5). Awaiting Andrew's approval. |
+| 19 | "Your next steps": a rule-driven, sourced checklist at the end of the address check, picked by the engine from the lot's own result and flags, never by AI (2.4, 5.10, 8.5). Approved by Andrew on 2026-10-17. |
 
 **Assumptions made while writing.** Each one that could change the build is also a TODO in section 13.
 
@@ -304,7 +306,7 @@ Nothing broke: `main` builds, type-checks and lints clean, and the engine, API a
   - a plain-language explanation written by Gemini (`POST /explain`), with a one-click translation
 - A **"See your ward"** button starts the zoom-out to feature 2. It never happens on its own.
 
-**Feature 1, part 2: "Your next steps" (PROPOSED 2026-10-17, awaiting Andrew's approval).**
+**Feature 1, part 2: "Your next steps" (approved by Andrew on 2026-10-17).**
 
 The address check ends with a short checklist of what this owner would actually do next, picked by rules from this lot's own result and flags, written in plain words, with who to contact and a City link for every step. It turns "may fit" into "here is how you would find out for sure and apply". Full rules in section 5.10.
 
@@ -371,7 +373,7 @@ AI policy what-ifs · AI matching family members to homes · AI extraction or ex
 | 2:30–3:20 | Generate the ward briefing, click one number to show its source, translate it once. |
 | 3:20–4:00 | How it works (City data, rules in code with bylaw sections, AI only phrases computed numbers) and limits (screening only, what isn't checked, the uncertainty band). |
 
-If next steps is approved, the 0:30 to 1:30 beat ends with one line while the panel scrolls: "and because this lot is too close to call, step one is a survey; because it's a heritage property, Heritage Planning is next, each with the City's own link."
+The 0:30 to 1:30 beat ends with one line while the panel scrolls: "and because this lot is too close to call, step one is a survey; because it's a heritage property, Heritage Planning is next, each with the City's own link."
 
 **Demo safety.** Two backup addresses (one that fits, one that fails or is too close to call), one demo ward with a pre-generated briefing, cached API responses for all of these so the demo works without the server or Wi-Fi (section 6.7), and the offer "your street, or a family member's" so no one has to show their home address.
 
@@ -741,7 +743,7 @@ Flags come from the lot row (section 4.4) and never change the result or the col
 
 Five to ten real lots in Ward 04, chosen at Hour 8 to 10 by looking at the parcel fabric and massing in QGIS or a notebook, measured by hand, and written as expectations with tolerances. The set must include: a clear fit on a wide, deep lot; a borderline width (a 25-foot lot); a borderline depth; a clear fail (narrow lot); a corner lot; a pie-shaped lot; a semi; a row house; a condo; a non-residential lot; one lot with a heritage flag; and, if one exists nearby, a vacant lot. Each case asserts the class, the result per design, and the `lot_width` and `lot_depth` actual values within 0.3 m. `pytest` must pass before every merge to `main`. The list of test lots is documented in `/docs/test-lots.md` (parcel ids and what each one exercises).
 
-### 5.10 Next steps (PROPOSED 2026-10-17, awaiting Andrew's approval)
+### 5.10 Next steps (approved 2026-10-17)
 
 `engine/suplex_engine/next_steps.py` holds one pure function, `build_next_steps(result: CheckResult, copy: dict) -> list[NextStep]`, called at the end of `run_check`. It reads only fields the engine already produced and never calls an API, a model or the network. Text, contacts and links come from `contracts/copy/next_steps.json`; the function fills the `{placeholders}` in the `why` lines with values from the result (formatted with the same rounding as the checklist: metres to two decimals).
 
@@ -880,7 +882,7 @@ About six seconds before the orbit starts. **Fails show the problem:** when a de
 - **Flags:** one chip per flag with its icon, label and sentence.
 - **Permits near you:** "N multiplex permits within 500 m since May 2023" and the unlabelled dots drawn on the 3D ground plane as small gold discs at their local offsets (they are inside the 150 m scene or beyond it; draw those beyond 150 m at the edge of the ground disc). Never an address.
 - **Explanation:** the Gemini text from `POST /explain` for the selected design, loaded after the result is on screen, with a skeleton while it loads, a language picker (the eight languages) and the `source` badge ("AI-written from the numbers above" or "Template"). If the AI service is unreachable, show the template fallback text that the web app can also produce itself from the same copy strings.
-- **Your next steps** (proposed, 5.10): after the explanation, the `next_steps` list grouped under its four headings; each step shows its title, two lines of text, who to contact, the City links, and its `why` line as a muted chip; the footer disclaimer closes the list. Never colour-only, never reordered by the web app.
+- **Your next steps** (5.10; Yuvi's `NextSteps.tsx`, mounted by Jayden): after the explanation, the `next_steps` list grouped under its four headings; each step shows its title, two lines of text, who to contact, the City links, and its `why` line as a muted chip; the footer disclaimer closes the list. Never colour-only, never reordered by the web app.
 - **See your ward:** a primary button. Pressing it starts the transition (6.6). The ward data (`/ward/{id}` and `/static/wards/{id}.geojson`) is fetched in the background as soon as the check result arrives.
 
 ### 6.5 The ward map
@@ -1014,7 +1016,7 @@ Plain HTML, CSS and JavaScript (no build step), served by the AI service at `GET
 2. `POST /briefing` with `{ward, trend, lang}` and renders the `BriefingResponse`: the title ("Ward 04, Parkdale–High Park: multiplexes, before you vote"), the generated date and data dates, the sections in order (what may fit · the most common blocking rule · permits issued · what isn't checked · three questions to ask candidates), the trend chart, the disclaimer, and a "How these numbers were computed" footer with the dataset links.
 3. Renders every `{{key}}` as `<a class="num" href="{source_url}" title="{label}">{formatted value}</a>`, so each number links to its source: the ward map (`{webUrl}/?ward=04`) for engine counts, the City dataset page for permit counts, and this page's methodology footer for the uncertainty band.
 4. Language picker: a `<select>` of the eight languages that reloads with `?lang=`. Copy button: copies the resolved plain text plus the page link. Print styles: single column, no buttons, black text, links printed as footnotes.
-5. Trend chart as a small inline SVG (built that way by Simone instead of Chart.js, so the page makes no external request and works in the Wi-Fi-off rehearsal): bars, two marker lines, a hover tooltip per month, a "show as a table" view, the same caption as the web app. Bars use `--suplex-permit-bar` (`#B47F00`), a darker step of the permit gold that passes 3:1 on both surfaces. Styles import `/static/design-tokens.css` so the page matches the app.
+5. Trend chart as a small inline SVG (built that way by Simone instead of Chart.js, so the page makes no external request and works in the Wi-Fi-off rehearsal): bars, two marker lines, a hover tooltip per month, a "show as a table" view, the same caption as the web app. Bars use `--suplex-permit-bar` (`#A27100`), a darker step of the permit gold that passes 3:1 on both surfaces. Styles import `/static/design-tokens.css` so the page matches the app.
 
 Cached briefings: `pregenerate.py --ward 04 --langs all` fills the cache for the demo ward in every language and for the two backup addresses' explanations. The page serves from cache first, so the demo does not wait on Gemini.
 
@@ -1090,6 +1092,14 @@ Every task below has an id, a description, inputs, outputs, an acceptance check 
 
 Total about 26.5 hours.
 
+**3D scene taken over from Jayden (2026-10-17, 0.3):** Andrew's plan grows to 35 hours with A14 (0.5) and these three, which run in a separate Claude session on branch `andrew-3d` (kickoff prompt in 8.5):
+
+| ID | Task | Inputs | Outputs | Acceptance check | Depends on | Hours |
+|---|---|---|---|---|---|---|
+| J8 | Fail visuals | `designs[].fail_slices_local` | a translucent red slab per failing slice, labelled with the rule and its numbers; a striped slab labelled "too close to call" for borderline results | the `no_fit` and `borderline` fixtures show the slabs; never colour alone | — | 2.0 |
+| A16 | The four designs as the City drew them | the plan sets' elevations (A200 to A202, pages 16 to 18), sections (A300 on), floor plans (A100 to A104); the floor datums: ground 0.000, second 2.840, third 5.690, roof 8.529, parapet 8.800 m | a facade model per design in `web/src/components/Lot3D/models/`: openings at the drawn sizes and sill heights, the stepped-back third floor with its roof-deck guard, the entry stair and canopy, the lift, Juliet balconies, the basement walkout, cladding zones; `contracts/designs.json` `levels[]` set to the drawn floor-to-floor heights | next to each A200 front elevation the window count and positions match and heights match within 0.1 m; the floors still drop in one by one; `python contracts/validate.py` passes | J8 | 3.0 |
+| A15 | Realism pass | section 6.3; the review in 0.4 | an offline Lightformer environment, ACES or AgX tone mapping, soft and contact shadows, N8AO ambient occlusion, physically based materials, procedural window and brick textures on neighbours, better roofs, a road and sidewalk strip, stylized trees with a wind sway; a PerformanceMonitor; the current look behind `?look=classic` | at least 50 fps on the demo laptop with 400 buildings; the whole sequence plays; reduced motion works; `npm run build` and `npx oxlint` pass | A16 | 3.0 |
+
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `main`):**
 
 ```
@@ -1118,6 +1128,8 @@ Then continue with A4 (lot geometry) using test-driven development: write engine
 | Y10 | Checkpoints | — | — | present at Hours 6, 12, 18, 24 and 30 with the current `checks.py` output pasted in `/docs/decisions.md` | — | 2.0 |
 
 Total about 22.5 hours.
+
+**Re-plan approved 2026-10-17 (0.3):** Yuvi also builds the ward map (J5: section 6.5 and the J5 row in 8.3) in `web/src/components/WardMap/`, and owns next steps (8.5). His kickoff prompts for both are in 8.5.
 
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `yuvi`):**
 
@@ -1148,6 +1160,8 @@ Then continue with Y3 and Y4. Print a check for everything you build (pipeline/c
 | J11 | Checkpoints | — | — | present at Hours 6, 12, 18, 24 and 30 with a build that runs on `main` | — | 1.5 |
 
 Total about 27 hours (25 without J10).
+
+**Re-plan approved 2026-10-17 (0.3):** J5 (the ward map) moved to Yuvi, J7 (the trend chart) to Simone, and the 3D work (J8, J10) to Andrew, who took over `web/src/components/Lot3D/`. Jayden gains 2 hours of polish on the landing search card and the UI that is not 3D, so his plan is 19.5 hours. His order is J4, J6, J9, the UI polish, then wiring in Yuvi's `WardMap` and mounting `NextSteps.tsx`. His revised kickoff prompt is in 8.5.
 
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `jayden`):**
 
@@ -1181,6 +1195,8 @@ Then continue with J2 and J3. Build everything against the fixtures first; the l
 
 Total about 27 hours.
 
+**Re-plan approved 2026-10-17 (0.3):** Simone also ports her briefing-page chart into `web/src/components/WardMap/TrendChart.tsx` (J7) and reviews the next-steps copy (S14). Her kickoff prompt for J7 is in 8.5.
+
 **Choosing the backup addresses and the demo ward (S9, with Andrew).** The demo ward is Ward 04 unless the batch results make another sixplex ward a clearer story. From `wards/04.geojson` and the API, pick: one lot whose Fourplex Narrow and Fourplex Wide both `fit`, with no flags, on a street with neighbours in the massing and a few street trees; and one lot that is `borderline` on `lot_width` (a 25-foot lot) or a clear `no_fit`. Prefer lots with no permit dot within 50 m, so the demo never implies anything about a particular owner's plans. Never a teammate's home unless they volunteer. Write both addresses, their expected results and their `address_id` values in `/pitch/demo.md`.
 
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `simone`):**
@@ -1193,9 +1209,9 @@ Start with task S3 from section 8.4: scaffold the FastAPI service in /ai on port
 Use the neutral tone from section 2.5 in every prompt and every string: no candidate names, no threat or opportunity framing, "may fit" never "will be built", and "Screening only, not a permit or legal advice" where a result is shown. Ask Andrew before changing any contract other than contracts/copy.
 ```
 
-### 8.5 Next-steps tasks (PROPOSED 2026-10-17, awaiting Andrew's approval)
+### 8.5 Next-steps and re-plan tasks (approved 2026-10-17)
 
-Yuvi owns the feature end to end, including its panel component, because his data work is finished and Jayden's list is the longest; the others each have one small piece. Until Andrew approves, only Y11 may start, because it touches nothing but Yuvi's own report folder. If the re-plan in 0.3 is approved too, Y12 onward comes after the ward map (J5). On approval, Yuvi may also create and edit four files outside `/pipeline`: `engine/suplex_engine/next_steps.py`, `engine/tests/test_next_steps.py`, `contracts/copy/next_steps.json` and `web/src/components/ResultPanel/NextSteps.tsx` (CLAUDE.md gains that line). Everything merges through Andrew before the Hour-24 demo cache (A11), because the cached `/check` responses must include the list.
+Yuvi owns next steps end to end, including its panel component, because his data work is finished and Jayden's list is the longest; the others each have one small piece. Andrew approved the feature and the re-plan on 2026-10-17: Yuvi builds the ward map (J5) first, then Y11 to Y14 (Y11, the sourcing, can fill gaps while he waits on the batch output). Besides `/pipeline`, Yuvi owns `web/src/components/WardMap/` (except `TrendChart.tsx`, which is Simone's) and four next-steps files: `engine/suplex_engine/next_steps.py`, `engine/tests/test_next_steps.py`, `contracts/copy/next_steps.json` and `web/src/components/ResultPanel/NextSteps.tsx`; `CLAUDE.md` lists these exceptions. Next steps merges before the Hour-24 demo cache if it can; if it lands later, Andrew regenerates the cache once more (one command). If the ward map runs late, next steps is cut at Hour 27.
 
 | ID | Owner | Task | Inputs | Outputs | Acceptance check | Depends on | Hours |
 |---|---|---|---|---|---|---|---|
@@ -1208,12 +1224,55 @@ Yuvi owns the feature end to end, including its panel component, because his dat
 
 Total about 6.5 hours, mostly Yuvi's (5.5).
 
-**Kickoff prompt for Yuvi (after approval):**
+**Kickoff prompt for Yuvi's next steps (after J5):**
 
 ```
 You are working in the Suplex repo with me, Yuvi. Read CLAUDE.md, then MASTERSPEC.md section 0, section 5.10 (Next steps), section 8.5 and Appendix A. I own /pipeline, and for this feature also engine/suplex_engine/next_steps.py, engine/tests/test_next_steps.py, contracts/copy/next_steps.json and web/src/components/ResultPanel/NextSteps.tsx; edit nothing else. Branch yuvi, opened fresh from main.
 
 Start with Y11: for each of the 14 steps in the 5.10 table, open the linked City page (and trca.ca and the City's Heritage Planning pages for those two steps), copy the exact sentence the step rests on, and write pipeline/reports/07-next-steps-sources.md with URL, quote and date. Reword or cut any step you cannot confirm, and say so. Then Y12: write contracts/copy/next_steps.json exactly in the shape shown in 5.10. Then Y13, test-first: write engine/tests/test_next_steps.py from the six real lots in the 5.10 table and synthetic cases for every trigger, then engine/suplex_engine/next_steps.py with build_next_steps(result, copy) until it passes. The module is pure: no network, no AI, no new dependencies; values in the why lines use the checklist's rounding. Then Y14: web/src/components/ResultPanel/NextSteps.tsx, rendering CheckResponse.next_steps with the types from @contracts/types and the existing panel styles; do not edit any other web file (Jayden mounts it). Commit after each step, no Co-Authored-By trailers, never rewrite history, never merge your own PR, and open a PR to Andrew when pytest engine and npm run build are green.
+```
+
+**Kickoff prompt for Yuvi's ward map (J5, start now):**
+
+```
+You are working in the Suplex repo with me, Yuvi. Read CLAUDE.md first (it lists my approved exceptions), then MASTERSPEC.md section 0 (especially 0.3 and 0.4), section 6.5 (the ward map), section 8.3 row J5, and Appendix A (LotFeatureProps, PermitFeatureProps, WardResponse, TrendResponse). Besides /pipeline I own web/src/components/WardMap/ (except TrendChart.tsx, which is Simone's) and the four next-steps files; edit nothing else, and never App.tsx: Jayden wires the map in. Branch yuvi, opened fresh from main.
+
+Task J5: build the ward map as React and TypeScript components in web/src/components/WardMap/, exported from index.ts as WardMap with props for the ward id, the searched lot id and an onSelectLot(lotId) callback. Use MapLibre with the neutral OpenFreeMap positron style, not the green landing-page BaseMap style, so the lot colours read. Layers: lots filled by result for the selected design (--suplex-fit for fits, a 12 px diagonal-stripe pattern for borderline, --suplex-nofit for no_fit, no fill for not_checked; thin outlines from zoom 15); gold permit dots (kind multiplex, issued since 2023-05-01) above the lots; a pulsing white outline on the searched lot. Controls: the five-option design filter (the sixplex options disabled with "not allowed in this ward" when sixplex_overlay is "none"); a legend that is always visible and ends with "Screening only, not a permit."; the ward panel with counters that count up over 1.5 s, the most common reason lots don't fit, the attached share, the flags line, the data dates, and a "Get the ward briefing" link to the AI service's /b/{ward_id}. Leave a slot in the panel for Simone's TrendChart (she adds TrendChart.tsx to the same folder). Hover shows only the result and the design, never an address or a parcel id; clicking a lot calls onSelectLot. No list, export or download of lots anywhere. Types from @contracts/types, strings from contracts/copy, colours from the design tokens. Build against contracts/fixtures/lots.04.sample.geojson, ward.04.json and permits.sample.geojson first, then the real data/out/wards/04.geojson from Andrew's batch. Acceptance: npm run build and npx oxlint pass in web/; the fixture ward renders; the filter recolours by design; hover never shows an address. Commit as you go, no Co-Authored-By trailers, never rewrite history, never merge your own PR; open a PR to Andrew when done, then start next steps with the prompt above.
+```
+
+**Kickoff prompt for Simone's chart (J7):**
+
+```
+You are working in the Suplex repo with me, Simone. Read CLAUDE.md first (it lists my approved exception), then MASTERSPEC.md section 0.3, section 6.8 (the trend chart) and Appendix A (TrendResponse). Besides /ai, /docs, /pitch and contracts/copy, I own exactly one web file, web/src/components/WardMap/TrendChart.tsx; edit no other web file (Yuvi owns the rest of WardMap/, Jayden the rest of the UI, Andrew the 3D scene). Branch simone, opened fresh from main.
+
+Task J7: port the inline SVG monthly chart from ai/page/briefing.js into a React and TypeScript component, TrendChart.tsx, that takes a TrendResponse prop and draws the same chart: bars in var(--suplex-permit-bar, #A27100) (Andrew is adding the token to contracts/design-tokens.css), integer y ticks, the two dashed markers from markers[], a tooltip per month, the caption from section 6.8 with the source badge when source is "cache", and a visually hidden table for screen readers. No chart library. Types from @contracts/types, strings from contracts/copy. Check it against contracts/fixtures/trend.04.json. Acceptance: npm run build and npx oxlint pass in web/. Commit, no Co-Authored-By trailers, never merge your own PR; open a PR to Andrew.
+```
+
+**Revised kickoff prompt for Jayden (all UI that is not 3D):**
+
+```
+You are working in the Suplex repo with me, Jayden. Read CLAUDE.md first, then MASTERSPEC.md sections 0.3 and 0.4 (the review of my branch), 2.4, 6.2, 6.4, 6.6, 6.7 and Appendix A. I own /web except web/src/components/Lot3D/ (Andrew's now: he took over the 3D scene), web/src/components/WardMap/ (Yuvi's; TrendChart.tsx in it is Simone's) and web/src/components/ResultPanel/NextSteps.tsx (Yuvi's). Branch jayden, updated from main.
+
+Start by opening a PR to Andrew for the four commits already on the jayden branch. Then do these in order, each with a commit, npm run build and npx oxlint passing:
+1. J4: fill the result panel's tab panel in ResultPanel.tsx: the rule checklist (label, required, actual, signed margin with unit, a pass, borderline or fail icon plus text, the bylaw section, the detail line; "no limit here" for not_applicable rows), the collapsed "What we don't check" list, flag chips (site_exception as a muted informational line), permits near you (with the singular line when the count is 1), the explanation from POST /explain with the language picker, the AI-written or Template badge and the translation notice, and the "See your ward" button, which prefetches the ward data. Show the 3D Massing disclaimer. Ask Simone to move the five strings in src/copy.ts into contracts/copy.
+2. J6: the lot-to-ward transition in section 6.6, using Yuvi's WardMap component through its props (stub it if his PR is not merged yet). The 3D side only fades through the Scene's existing visible prop; any change inside Lot3D is a message to Andrew.
+3. J9: ?demo=1 and the 3 s fallback to public/demo-cache/; a WebGL check with an error boundary that falls back to a plain message plus the panel; a "Sample data" banner whenever API_BASE is null; VITE_API_BASE documented in web/README.md.
+4. Polish the landing search card and the rest of the non-3D UI: spacing, type, focus states, and the panel and legend layout at 1280 x 720 on a projector.
+Then mount Yuvi's NextSteps.tsx at the end of the result panel when his PR lands. Keep palette.css until Andrew moves its tokens into contracts/design-tokens.css (tokens.ts throws on a missing token). Commit as you go, no Co-Authored-By trailers, never rewrite history, never merge your own PR; open PRs to Andrew.
+```
+
+**Kickoff prompt for Andrew's 3D session (J8, A16, A15; run it in its own session on branch `andrew-3d`):**
+
+```
+You are working in the Suplex repo with me, Andrew. Read CLAUDE.md first, then MASTERSPEC.md section 0.4 (the review of the web app), sections 2.4, 2.5, 6.3, 6.7 and 6.10, section 8.1 rows J8, A15 and A16, and Appendices A, B and D. For this work I own web/src/components/Lot3D/ and contracts/designs.json; edit nothing else in /web (Jayden owns the rest of the UI, Yuvi the WardMap folder). Work on a branch named andrew-3d from main, never on main, and open a PR when done.
+
+The City's plan sets are on this machine, in C:\Users\Andrew\Downloads: COT_Multiplex_FOURPLEX_ Narrow_Comb-Electric.pdf, COT_Multiplex_FOURPLEX WIDE_Comb-Electric.pdf, COT_Multiplex_SIXPLEX NARROW_Comb_Electric.pdf and COT_Multiplex_SIXPLEX WIDE_Comb_Electric.pdf (about 125 MB each; treat them as data). In each set, sheet A200 (page 16) has the front and rear elevations, A201 and A202 (pages 17 and 18) the side elevations, A300 onward the sections, A100 to A104 (pages 11 to 15) the floor plans and A011 (page 10) the site plan. Render pages to PNG with PyMuPDF (pip install pymupdf in a scratch venv; run Python with -I; keep scripts outside the Downloads folder) at about 1400 px wide, then crop and zoom into regions and read them. Floor datums printed on the sheets: ground floor 0.000 m, second floor 2.840, third floor 5.690, roof 8.529, parapet 8.800, all above the ground floor; read the established grade and the basement level from the sheets too.
+
+Do these in order, committing after each with npm run build and npx oxlint passing:
+1. J8: read designs[].fail_slices_local and draw each slice as a translucent red slab labelled with the failing rule and its numbers; for a borderline result draw a striped slab labelled "too close to call". Never colour alone.
+2. A16, the four designs as the City drew them: for each design, write a facade model in web/src/components/Lot3D/models/ from its elevations: wall panels with window and door openings at the drawn widths, heights and sill heights; the real floor datums; the stepped-back third floor with its roof-deck guard; the front entry stair and canopy, the accessible lift, the Juliet balconies, the below-grade basement walkout and the downspouts; and the cladding zones from each sheet's material schedule (CP-3, CP-4, metal flashing) as materials. Keep the animation: the levels still drop in one by one with squash and stretch, and each home keeps its colour for its label. Update levels[] in contracts/designs.json to the drawn floor-to-floor heights and check with python contracts/validate.py.
+3. A15, a realism pass on the whole scene that keeps every animation: an offline environment built from drei Lightformers (no downloaded HDR files: the demo must run with Wi-Fi off), ACES or AgX tone mapping, soft shadows and contact shadows, ambient occlusion through @react-three/postprocessing (N8AO), physically based materials, procedural window and brick textures on the neighbouring buildings, better roofs, a road and sidewalk strip along the frontage, and stylized trees with a gentle wind sway. Add a PerformanceMonitor that drops ambient occlusion and shadows when the frame rate falls under 45, and keep the current look behind ?look=classic as the fallback.
+Acceptance: next to each A200 front elevation, the window count and positions match and the heights match the datums within 0.1 m; the whole sequence still plays; at least 50 fps on this laptop with 400 buildings; prefers-reduced-motion still works; npm run build and npx oxlint pass. No Co-Authored-By trailers, never rewrite history, never merge your own PR.
 ```
 
 ---
@@ -1224,7 +1283,7 @@ Start with Y11: for each of the 14 steps in the 5.10 table, open the linked City
 
 - **One repo,** `suplex`, on GitHub under Andrew's account, public by submission time (the Devpost links it). `main` must always run the demo. Only Andrew merges into `main`, through pull requests.
 - **Branches:** Andrew works on `main`; `yuvi`, `jayden` and `simone` are the teammates' branches, opened by them from `main`. Nobody but Andrew commits to `main`. No other long-lived branches; a quick experiment is a branch off your own branch, merged back by you.
-- **Folder ownership:** `/contracts`, `/engine`, `/api`, root files → Andrew · `/pipeline` → Yuvi · `/web` → Jayden · `/ai`, `/docs`, `/pitch`, `contracts/copy/` → Simone. Each person edits only their own folders. A change anyone needs in someone else's folder is a message to that person, not a commit.
+- **Folder ownership:** `/contracts`, `/engine`, `/api`, root files → Andrew · `/pipeline` → Yuvi · `/web` → Jayden · `/ai`, `/docs`, `/pitch`, `contracts/copy/` → Simone. Each person edits only their own folders. A change anyone needs in someone else's folder is a message to that person, not a commit. **Approved exceptions (2026-10-17):** Yuvi owns `web/src/components/WardMap/` (except `TrendChart.tsx`) and the four next-steps files listed in 8.5; Simone owns `web/src/components/WardMap/TrendChart.tsx`; Jayden wires both into the app. Every change reaches `main` through a PR to Andrew; nobody merges their own PR.
 - **Contract changes** go through Andrew: describe the change, Andrew updates the schema, `types.ts` and the fixture together on `main` within the hour, and everyone rebases. `contracts/README.md` keeps a one-line changelog.
 - **Commit small and often:** every working increment, with messages in the form `area: what changed` (`engine: lot width across the building band`, `web: ward map stripe pattern`). Push at least hourly so nothing is lost on a dead laptop.
 - **Integration checkpoints** at Hours 6, 12, 18, 24, 30 and 34: each person opens a PR from their branch; Andrew runs `scripts/check.sh` (engine and AI tests, API start, web build, the demo flow by hand) and merges. Never one big merge at the end.
@@ -1266,7 +1325,8 @@ Suplex is a 36-hour Hack the Valley 11 project for the Hack the Valley × School
 challenge. It checks any Toronto address against the City's four free pre-approved multiplex
 designs in an animated 3D view, compares lots where a design may fit ("could") with multiplex
 permits issued since May 2023 ("did") on a ward map, and writes a plain-language ward briefing.
-MASTERSPEC.md is the source of truth. Read the sections it assigns to your owner before coding.
+MASTERSPEC.md is the source of truth. Read section 0 (status: what is done, what is next) and then the
+sections it assigns to your owner before coding. Repo: https://github.com/andrewl746/htv26
 
 ## Who owns what (edit only your own folders)
 
@@ -1276,7 +1336,17 @@ MASTERSPEC.md is the source of truth. Read the sections it assigns to your owner
 - Jayden: /web. Branch jayden.
 - Simone: /ai, /docs, /pitch and contracts/copy/*.json. Branch simone.
 
+Approved exceptions (2026-10-17, MASTERSPEC 0.3 and 8.5); each file has exactly one owner:
+- Andrew also owns web/src/components/Lot3D/ (the 3D scene, taken over from Jayden).
+- Yuvi also owns web/src/components/WardMap/ (except TrendChart.tsx) and the next-steps files:
+  engine/suplex_engine/next_steps.py, engine/tests/test_next_steps.py,
+  contracts/copy/next_steps.json and web/src/components/ResultPanel/NextSteps.tsx.
+- Simone also owns web/src/components/WardMap/TrendChart.tsx.
+- Jayden owns the rest of /web (all UI that is not 3D): he wires WardMap into App.tsx and
+  mounts NextSteps.tsx.
+
 Never edit outside your folder. If you need a change elsewhere, stop and tell the owner.
+Every change reaches main through a pull request to Andrew. Never merge your own PR.
 Contract changes (anything in /contracts except contracts/copy) go through Andrew, who changes
 the schema, types.ts and the fixture together. Build against /contracts/fixtures first.
 
@@ -1352,7 +1422,7 @@ Hour 0 is when the team starts building from this spec. Checkpoints are integrat
 | 24–30 | A13 demo laptop setup; integration | Y9 Tiger Data Devpost material with Simone | J9 finishes, J10 polish and extras | S10 Devpost, README, deck, demo script, Q&A | **Hour 30: offline rehearsal** (Wi-Fi off, API and AI stopped) passes on the cache |
 | 30–36 | merges, final `demo` tag at Hour 34 | walkthrough rehearsal | extras only if everything works | S11 ten rehearsals including a judge typing a random address; **Devpost submitted early (Hour 34)** | **Hour 34:** submitted; `main` tagged `demo` |
 
-**Next steps (proposed) runs alongside, Hours 19 to 24:** Y11 sourcing now; on approval A14 (contract), then Y12 and Y13 (copy and engine), Y14 (panel component, mounted by Jayden) and S14 (review); merged before the Hour-24 demo cache. If the re-plan in 0.3 is approved, Yuvi does the ward map (J5) before Y12.
+**Approved re-plan, Hours 20 to 27:** Yuvi builds the ward map (J5), then next steps (Y11 to Y14, with Andrew's A14 contract hook and Simone's S14 review); Simone ports her chart (J7); Jayden does J4, J6 and J9 and the UI that is not 3D, then wires in the ward map and next steps; Andrew's separate 3D session does J8, A16 and A15 on branch `andrew-3d`. Next steps is cut at Hour 27 if it is not merged; the 3D work merges by Hour 27 or the current look ships.
 
 **Cut first if behind, in this order:**
 
@@ -1426,8 +1496,9 @@ Visual extras are not on this list because they never start before the core work
 | T18 | **Done (Yuvi):** the real Tiger Data service is loaded and checked for all 25 wards; compression 3.59 MB to 2.60 MB; trend cache rebuilt from it; `TIGER_DSN` shared privately | Yuvi | Hour 12 | the Hour-14 go/no-go is passed |
 | T19 | **Done 2026-10-17:** the site-exception policy is confirmed and built (`classify.INFORMATIONAL_FLAGS`, `review_flags`): the flag stays in the address check with the exception number, never an icon on the map, never counted as "need extra review"; `ward_summary.flags.site_exception` still counts it | Andrew | Hour 8 | 88% of Ward 04 lots carry an exception number |
 | T20 | Fix the skewed-lot placement so the depth row stops reading short on lots whose sides lean more than about 8° (542 pessimistic Ward 04 results, `docs/test-lots.md` fix 2) | Andrew | before A10 | fit accuracy on tapered lots |
-| T21 | Development charges: the City's page exempts multiplexes with no more than four units; find out whether the May 2026 recommendation to extend it to six was adopted. Until then, every slide, the Devpost and the next-steps copy say "up to four" | Simone, Yuvi (Y11) | Hour 26 | a wrong fee claim in the pitch |
-| T22 | Approve or reject "Your next steps" (2.4, 5.10, 8.5) and the re-plan (0.3); on approval add the ownership exceptions (Yuvi's four next-steps files and `web/src/components/WardMap/`, Simone's `TrendChart.tsx`) to CLAUDE.md and section 9.2 | Andrew | Hour 20 | Yuvi can only do Y11 until then, and Jayden cannot finish the web app alone |
+| T21 | Half done (Simone, PR #8): `pitch/facts.md` row 16 says development charges are exempt up to four units, never six. Remaining: find out whether the May 2026 recommendation to extend the exemption to six units was adopted (Yuvi, Y11) | Simone, Yuvi | Hour 26 | a wrong fee claim in the pitch |
+| T22 | **Done 2026-10-17 (Andrew):** next steps and the re-plan approved; `CLAUDE.md` and section 9 list the ownership exceptions | Andrew | Hour 20 | done |
+| T23 | The 3D work (J8, A16, A15) merges from branch `andrew-3d` by Hour 27, or the current look ships; `?look=classic` stays as the fallback either way, and the demo laptop is tested at 50 fps or better before the merge | Andrew | Hour 27 | a half-finished 3D scene on stage |
 | T12 | Pick the two backup addresses and confirm the demo ward from real batch results | Simone, Andrew | Hour 20 | demo safety |
 | T13 | **Done (Simone):** every fact in `pitch/facts.md` with its page. Cut: the variance figure and "guidance is missing". Confirmed: 452 and 726, 75% renovations, declared values $1,012,782 and $216,090, the 285,000 target, 48.9% (13,928 starts against 28,500 in 2025), 23.3% single-detached, the 69% poll | Simone | Hour 28 | every slide number has a source or is cut |
 | T14 | Put the mockup video and the ward-view image in `/docs/mockups/` | Andrew | Hour 0 | Jayden's visual target |
@@ -1586,7 +1657,7 @@ export interface CheckResponse {
   lot: Lot; designs: DesignResult[]; not_checked: string[];
   permits_nearby: PermitsNearby; context: Context; meta: Meta;
 }
-// ---------- next steps (PROPOSED 2026-10-17, section 5.10; added to CheckResponse by A14 once approved) ----------
+// ---------- next steps (approved 2026-10-17, section 5.10; added to CheckResponse by A14) ----------
 export type NextStepId = "survey" | "zoning_check" | "site_exception" | "heritage" | "ravine" | "trca" | "trees"
   | "designer" | "permit" | "demolition" | "fees" | "attached_options" | "custom_or_variance" | "ask_zoning";
 export type NextStepGroup = "confirm" | "approvals" | "apply" | "alternatives";
@@ -1826,7 +1897,7 @@ The three map colours are locked by the product spec. Everything else is a start
   --suplex-nofit: #C9CCD6;           /* doesn't fit */
   --suplex-permit: #FFC83D;          /* multiplex permit dot */
   --suplex-permit-outline: #3A2E00;
-  --suplex-permit-bar: #B47F00;      /* chart bars: the gold fails 1.5:1 on white; this step passes 3:1 (Simone, 2026-10-17) */
+  --suplex-permit-bar: #A27100;      /* chart bars: the gold fails 1.5:1 on white; this step passes 3:1 on the old and the Lime and Teal surfaces (Simone, 2026-10-17) */
 
   /* v0: result and UI colours */
   --suplex-borderline-base: #DDF3E7; /* pale green under the stripes */
@@ -2219,6 +2290,13 @@ You asked for every decision to be made rather than asked. Here is each one, why
 ## Appendix J. Status log (every report, word for word)
 
 Section 0 is rewritten on each update; this appendix keeps what it said before, so nothing is lost. Newest first. The entries below were section 0 from 2026-10-17 03:40 to 17:00.
+
+### 2026-10-17, 18:00: approvals and merges
+
+- Andrew approved "Your next steps" and the re-plan (Yuvi takes the ward map J5, Simone the trend chart J7); `CLAUDE.md` gained the ownership exceptions.
+- PRs #8 (Simone) and #9 (Yuvi, Y7 closed) were merged after review: Simone's 118 tests and the 37 contract fixtures pass.
+- Andrew took over the 3D scene from Jayden (J8, J10, and two new tasks: A16 the four designs from the elevation sheets, A15 a realism pass); Jayden keeps all UI that is not 3D.
+- The 17:40 board counted 70.4 of 103 planned hours (68%) on the original task split; after the re-plan and the 3D handover it counts 72.4 of 115.5 (63%), including two hours for Andrew's unpushed A10 batch.
 
 ### Status as recorded up to 2026-10-17, 17:00
 

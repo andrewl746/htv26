@@ -161,5 +161,22 @@
     ],
     "not_checked_heading": "What Suplex doesn't check",
     "datasets_heading": "Data sources"
+  },
+  "plan": {
+    "zoom_group": "How far to zoom",
+    "zoom_lot": "Lot",
+    "zoom_neighbourhood": "Neighbourhood",
+    "legend": "Legend",
+    "legend_lot": "Your lot",
+    "legend_yards": "Required yards",
+    "legend_buildable": "Area inside the required yards",
+    "legend_footprint": "Design footprint",
+    "legend_outside": "Where the design crosses into the yards",
+    "legend_existing": "Building there today",
+    "legend_neighbours": "Neighbouring buildings",
+    "legend_you": "Your lot, at this zoom",
+    "permits_unlabelled": "Each diamond is one multiplex permit issued since May 2023. Addresses are never shown.",
+    "north": "N",
+    "aria_plan": "Plan view from above of the lot and the area around it"
   }
 }

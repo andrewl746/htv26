@@ -122,14 +122,14 @@ def build_ward_numbers(ward: dict, *, web_url: str) -> dict[str, dict]:
             numbers[key] = {"value": value, "unit": unit, "label": label, "source_url": source_url}
 
     add("could_lots", headline["could"], None, labels["could_lots"])
-    add("could_pct", headline["could_pct_of_house_lots"], "%", labels["could_pct"])
+    add("could_pct", headline["could_pct_of_house_lots"], "pct", labels["could_pct"])
     add("did_permits", headline["did"], None, labels["did_permits"], permits_url)
     add("lots_per_permit", headline["lots_per_permit"], None, labels["lots_per_permit"])
     add("borderline_lots", any_design["borderline"], None, labels["borderline_lots"])
     add("nofit_lots", any_design["no_fit"], None, labels["nofit_lots"])
     add("not_checked_lots", any_design["not_checked"], None, labels["not_checked_lots"])
     add("house_lots", ward["house_lots"], None, labels["house_lots"])
-    add("attached_pct", ward["attached_share_pct"], "%", labels["attached_pct"])
+    add("attached_pct", ward["attached_share_pct"], "pct", labels["attached_pct"])
     if ward["top_blocking_rules"]:
         top = ward["top_blocking_rules"][0]
         add("top_rule_count", top["count"], None, copy["top_rule_count"][top["rule_id"]])

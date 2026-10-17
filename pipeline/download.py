@@ -128,6 +128,31 @@ def resolve_resource(slug: str) -> str:
     raise SystemExit(f"no GPKG or SHP resource in {slug}")
 
 
+TRCA_URL = "https://services1.arcgis.com/d0ZCwU7eGKVeNiEE/ArcGIS/rest/services/TRCA_Regulation_Limit2/FeatureServer/0/query"
+
+
+def fetch_trca(dest: Path) -> None:
+    """TRCA Regulated Area (ArcGIS FeatureServer layer 0, 6,307 polygons) as one GeoJSON, paged 1,000 at a time."""
+    if dest.exists():
+        print(f"  have {dest.relative_to(ROOT)} ({dest.stat().st_size:,} bytes)")
+        return
+    feats, offset = [], 0
+    while True:
+        r = session.get(TRCA_URL, params={"where": "1=1", "outFields": "OBJECTID", "outSR": 4326, "f": "geojson",
+                                          "resultOffset": offset, "resultRecordCount": 1000,
+                                          "orderByFields": "OBJECTID"}, timeout=180)
+        r.raise_for_status()
+        batch = r.json().get("features", [])
+        feats += batch
+        print(f"  trca: {len(feats):,} features")
+        if len(batch) < 1000:
+            break
+        offset += 1000
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps({"type": "FeatureCollection", "features": feats}))
+    print(f"  got  {dest.relative_to(ROOT)} ({dest.stat().st_size:,} bytes)")
+
+
 def write_dates(slugs: set[str]) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / "data_dates.json"
@@ -149,7 +174,7 @@ def main() -> None:
     ap.add_argument("--all", action="store_true", help="every dataset build_lots.py needs")
     ap.add_argument("--ward", help="accepted for symmetry with the other scripts; downloads are citywide")
     ap.add_argument("--with-trees", action="store_true", help="also the optional street trees layer")
-    ap.add_argument("--only", nargs="+", choices=sorted(FILES) + sorted(RESOLVED), help="specific files")
+    ap.add_argument("--only", nargs="+", choices=sorted(FILES) + sorted(RESOLVED) + ["trca"], help="specific files")
     args = ap.parse_args()
     if not (args.permits or args.all or args.only):
         ap.error("pass --permits, --all or --only")
@@ -158,13 +183,17 @@ def main() -> None:
     if args.permits:
         names += PERMITS
     if args.all:
-        names += CORE + ["heritage_register", "heritage_districts", "ravine"]
+        names += CORE + ["heritage_register", "heritage_districts", "ravine", "trca"]
         if args.with_trees:
             names.append("trees")
     names = list(dict.fromkeys(names))
 
     slugs = set()
     for n in names:
+        if n == "trca":
+            print(n)
+            fetch_trca(RAW / "trca-regulated-area.geojson")
+            continue
         if n in FILES:
             slug, path, rel = FILES[n]
             print(n)

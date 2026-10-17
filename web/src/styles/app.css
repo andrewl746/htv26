@@ -219,7 +219,7 @@ button {
   inset: 0;
   /* Keeps the floating 3D labels below the panel and the search. */
   isolation: isolate;
-  background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-sky-bottom));
+  /* No background of its own: until the 3D ground draws, the map shows through. */
   /* Hidden at once on the way out, so the map shows the lot it is about to fly away from. */
   visibility: hidden;
   opacity: 0;

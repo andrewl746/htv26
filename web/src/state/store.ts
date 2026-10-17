@@ -16,6 +16,8 @@ export type CheckStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 interface AppState {
   view: View
+  /** The last stretch of the flight, when the 3D scene fades in over the still-moving map. */
+  handoff: boolean
   addressId: string | null
   /** Kept while the next address loads, so the 3D scene is not torn down in between. */
   check: CheckResponse | null
@@ -24,6 +26,8 @@ interface AppState {
   designId: DesignId | null
   /** `fly` from the landing page starts the flight; anywhere else the check opens directly. */
   openAddress: (addressId: string, options?: { updateUrl?: boolean; fly?: boolean }) => void
+  /** The flight is nearly down: start fading the 3D scene in. */
+  beginHandoff: () => void
   /** The map has landed on the lot: hand over to the 3D scene. */
   land: () => void
   showLanding: (options?: { updateUrl?: boolean }) => void
@@ -34,6 +38,7 @@ let inflight: AbortController | null = null
 
 export const useApp = create<AppState>()((set, get) => ({
   view: 'landing',
+  handoff: false,
   addressId: null,
   check: null,
   checkStatus: 'idle',
@@ -51,6 +56,7 @@ export const useApp = create<AppState>()((set, get) => ({
     const request = (inflight = new AbortController())
     set({
       view: fly && view === 'landing' ? 'flying' : 'lot',
+      handoff: false,
       addressId,
       checkStatus: 'loading',
       checkError: null,
@@ -68,14 +74,26 @@ export const useApp = create<AppState>()((set, get) => ({
     )
   },
 
+  beginHandoff() {
+    if (get().view === 'flying') set({ handoff: true })
+  },
+
   land() {
-    if (get().view === 'flying') set({ view: 'lot' })
+    if (get().view === 'flying') set({ view: 'lot', handoff: false })
   },
 
   showLanding({ updateUrl = true } = {}) {
     inflight?.abort()
     if (updateUrl) setAddressInUrl(null)
-    set({ view: 'landing', addressId: null, check: null, checkStatus: 'idle', checkError: null, designId: null })
+    set({
+      view: 'landing',
+      handoff: false,
+      addressId: null,
+      check: null,
+      checkStatus: 'idle',
+      checkError: null,
+      designId: null,
+    })
   },
 
   setDesign(designId) {

@@ -17,13 +17,17 @@ export function useSequence(): RefObject<SequenceState> {
   return sequence
 }
 
-/** Runs every frame with the time on the sequence's timeline. Updates go straight to three.js objects. */
+/**
+ * Runs every frame with the time on the sequence's timeline. Updates go straight to three.js
+ * objects. A negative priority runs earlier in the frame (never positive: that takes over rendering).
+ */
 export function useSequenceFrame(
   callback: (t: number, sequence: SequenceState, frame: RootState, delta: number) => void,
+  priority = 0,
 ): void {
   const sequence = useSequence()
   useFrame((frame, delta) => {
     const s = sequence.current
     callback(frame.clock.elapsedTime - s.t0, s, frame, delta)
-  })
+  }, priority)
 }

@@ -1,19 +1,21 @@
 import { useEffect, useRef } from 'react'
-import { Map as MapLibreMap, setWorkerUrl, type PaddingOptions } from 'maplibre-gl'
+import { Map as MapLibreMap, MercatorCoordinate, setWorkerUrl, type PaddingOptions } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type { CheckResponse, DesignId } from '@contracts/types'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { PANEL_WIDTH_PX } from '../../layout'
 import { useApp } from '../../state/store'
+import { cameraBridge, type BridgedPose } from '../Lot3D/cameraBridge'
 import { lotFraming } from '../Lot3D/framing'
-import { FOV_DEG, REST_TILT_DEG } from '../Lot3D/view'
-import { zoomForDistance } from './handoff'
+import { FOV_DEG, HANDOFF_S, REST_TILT_DEG } from '../Lot3D/view'
+import { distanceForZoom, zoomForDistance } from './handoff'
 import { applyPalette } from './mapStyle'
 
 // One map behind the whole app. On the landing page it is a slowly swaying 3D Toronto. A search
 // flies it, in one move, to the lot's rest view: the 3D camera's own pose (tilt, heading toward the
-// lot from the street, distance, field of view, the lot centred beside the panel). The 3D scene
-// then fades in over it from that same camera, so the flight is the whole swoop.
+// lot from the street, distance, field of view, the lot centred beside the panel). Over the last
+// stretch the 3D scene fades in with its camera locked to this one, so the street rises while the
+// camera is still descending, and the flight's ease-out is the end of a single move.
 // The ward map (J5) and the lot-to-ward transition (J6) will reuse it.
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron'
@@ -33,12 +35,13 @@ const FLY_MS = 3400
  */
 const FLY_MIN_ZOOM = 14
 /**
- * At most this many tile zoom levels on screen at once (MapLibre's default is about 9). Distant
- * tiles at low zoom carry few or no buildings, and the edge where they stop slides about as the
- * camera moves.
+ * One tile zoom level across the whole view (MapLibre's default allows about 9). Lower-zoom tiles
+ * in the distance merge buildings into blocks, so with a single level every building on screen is
+ * a house of its own from the first frame. Measured at the landing view: 38 tiles, all zoom 14
+ * (the default mix was 16 at zoom 14 and 9 at zoom 13).
  */
-const TILE_ZOOM_LEVELS_ON_SCREEN = 3
-const TILE_COUNT_MAX_MIN_RATIO = 3
+const TILE_ZOOM_LEVELS_ON_SCREEN = 1
+const TILE_COUNT_MAX_MIN_RATIO = 4
 const RETURN_MS = 2000
 // MapLibre looks for its worker next to its own file, which Vite moves. Hand it the worker as Vite
 // builds workers (a plain ?url import gets Vite's dev client injected, which cannot run in a worker).
@@ -46,6 +49,29 @@ setWorkerUrl(workerUrl)
 
 const NO_PADDING: PaddingOptions = { top: 0, right: 0, bottom: 0, left: 0 }
 const BESIDE_PANEL: PaddingOptions = { ...NO_PADDING, right: PANEL_WIDTH_PX }
+
+/**
+ * The map camera as a pose in the 3D scene's frame (metres from the lot centroid; x east, y up,
+ * z south). MapLibre's camera stands `distanceForZoom` metres from the map centre, tilted back by
+ * the pitch, on the side opposite the bearing it looks along.
+ */
+function bridgedPose(map: MapLibreMap, origin: { lon: number; lat: number }): BridgedPose {
+  const o = MercatorCoordinate.fromLngLat([origin.lon, origin.lat])
+  const unitsPerMetre = o.meterInMercatorCoordinateUnits()
+  const centre = map.getCenter()
+  const c = MercatorCoordinate.fromLngLat(centre)
+  const east = (c.x - o.x) / unitsPerMetre
+  const north = (o.y - c.y) / unitsPerMetre
+  const distance = distanceForZoom(centre.lat, map.getContainer().clientHeight, map.getZoom())
+  const pitch = (map.getPitch() * Math.PI) / 180
+  const bearing = (map.getBearing() * Math.PI) / 180
+  const cameraEast = east - distance * Math.sin(pitch) * Math.sin(bearing)
+  const cameraNorth = north - distance * Math.sin(pitch) * Math.cos(bearing)
+  return {
+    position: [cameraEast, distance * Math.cos(pitch), -cameraNorth],
+    target: [east, 0, -north],
+  }
+}
 
 /** The lot's rest view as a map camera: exactly where the 3D camera starts. */
 function restView(map: MapLibreMap, check: CheckResponse, designId: DesignId | null) {
@@ -121,7 +147,8 @@ export function BaseMap() {
     return () => cancelAnimationFrame(frame)
   }, [view, reduced])
 
-  // Flying: once the check is in, one flight to the lot's rest view, then hand over.
+  // Flying: once the check is in, one flight to the lot's rest view. For its last HANDOFF_S the 3D
+  // scene fades in, its camera reading this map's camera through the bridge; on landing it takes over.
   useEffect(() => {
     const map = mapRef.current
     if (!map || view !== 'flying' || checkStatus === 'loading') return
@@ -129,13 +156,22 @@ export function BaseMap() {
       land()
       return
     }
+    const origin = check.context.origin
+    cameraBridge.read = () => bridgedPose(map, origin)
+    const landed = () => {
+      cameraBridge.read = null
+      land()
+    }
     // Listen first: with reduced motion MapLibre jumps and fires moveend straight away.
-    map.once('moveend', land)
+    map.once('moveend', landed)
     // The design is the one set with the check; read it here so a tab change never restarts the flight.
-    const { designId: firstDesign } = useApp.getState()
+    const { designId: firstDesign, beginHandoff } = useApp.getState()
     map.flyTo({ ...restView(map, check, firstDesign), duration: FLY_MS, minZoom: FLY_MIN_ZOOM })
+    const handoff = window.setTimeout(beginHandoff, FLY_MS - HANDOFF_S * 1000)
     return () => {
-      map.off('moveend', land)
+      window.clearTimeout(handoff)
+      map.off('moveend', landed)
+      cameraBridge.read = null
     }
   }, [view, check, checkStatus, land])
 

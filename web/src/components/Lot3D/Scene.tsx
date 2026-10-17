@@ -24,7 +24,7 @@ import { Street } from './Street'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
 import { lotFraming, type Framing } from './framing'
-import { restDistance, restViewBearingDeg } from './view'
+import { HANDOFF_S, restDistance, restViewBearingDeg } from './view'
 import { WarmUp } from './WarmUp'
 
 // The ground reaches well past the 150 m context so its edge is always lost in the fog.
@@ -43,9 +43,9 @@ const SHOW_STATS = import.meta.env.DEV && new URLSearchParams(window.location.se
  * The street builds itself around the lot and the selected design rises on it (MASTERSPEC 6.3).
  *
  * The canvas lives for the whole session: created while the landing page loads, its shaders
- * compiled by WarmUp, drawing nothing until the address check shows it. A lot's street is only
- * built once `check` is passed, after the map has landed on the rest view, so none of that work
- * lands mid-flight, and the scene fades in over the map from the very same camera.
+ * compiled by WarmUp, drawing nothing until shown. A lot's street is built as soon as `check` is
+ * passed, which is when the check comes back and just before the map's flight starts, so that work
+ * never lands mid-flight; the scene then fades in over the flight's last stretch.
  */
 export function Scene({
   check,
@@ -103,7 +103,12 @@ export function Scene({
   }, [check, placement, spec, pinHeight, lotRadius])
 
   return (
-    <div className={visible ? 'scene scene-visible' : 'scene'} aria-hidden="true">
+    <div
+      className={visible ? 'scene scene-visible' : 'scene'}
+      // The fade lasts the handoff: fully drawn as the map lands. Hiding stays instant.
+      style={visible ? { transitionDuration: `${HANDOFF_S}s` } : undefined}
+      aria-hidden="true"
+    >
       <Canvas
         frameloop={visible ? 'always' : 'never'}
         shadows="percentage"

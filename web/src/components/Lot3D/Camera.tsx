@@ -2,12 +2,14 @@ import { useLayoutEffect, useMemo, useRef, type ComponentRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import { Spherical, Vector3 } from 'three'
+import { cameraBridge } from './cameraBridge'
 import { useSequenceFrame } from './useSequence'
 import { FOV_DEG, REST_TILT_DEG, TARGET_HEIGHT_M } from './view'
 
-// Steps 1 and 7 (MASTERSPEC 6.3). The swoop is the base map's flight, which ends on the rest view;
-// this camera starts there, so the crossfade happens with nothing moving. Then a slow orbit, 24 s
-// per turn, that stops while someone drags and resumes 5 s after.
+// Steps 1 and 7 (MASTERSPEC 6.3). The swoop is the base map's flight: over its last stretch this
+// camera follows the map's (cameraBridge) while the scene fades in, then comes to rest with it on
+// the rest view. Then a slow orbit, 24 s per turn, that stops while someone drags and resumes 5 s
+// after.
 const TARGET = new Vector3(0, TARGET_HEIGHT_M, 0)
 const ORBIT_PERIOD_S = 24
 const ORBIT_IDLE_S = 5
@@ -73,15 +75,26 @@ export function Camera({
     }
   }, [clock])
 
+  // Before the labels and the cutaway read the camera this frame, and after the controls (-1).
   useSequenceFrame((t, { timeline, reduced }, frame, delta) => {
     const cam = camera.current
+    const ctl = controls.current
     if (!cam) return
+    // While the map is still flying in, be the map's camera.
+    const pose = cameraBridge.read?.()
+    if (pose) {
+      if (ctl) ctl.enabled = false
+      cam.position.set(...pose.position)
+      cam.lookAt(...pose.target)
+      return
+    }
+    if (ctl && !ctl.enabled) ctl.enabled = true
     const idle = !user.current.dragging && frame.clock.elapsedTime - user.current.releasedAt >= ORBIT_IDLE_S
     if (reduced || t < timeline.orbitStart || !idle) return
     offset.copy(cam.position).sub(TARGET).applyAxisAngle(UP, ((2 * Math.PI) / ORBIT_PERIOD_S) * delta)
     cam.position.copy(TARGET).add(offset)
     cam.lookAt(TARGET)
-  })
+  }, -0.5)
 
   return (
     <>

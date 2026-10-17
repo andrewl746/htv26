@@ -9,6 +9,11 @@ export const REST_TILT_DEG = 35
 export const TARGET_HEIGHT_M = 0
 /** A lot with no measurable frontage has no bearing; look from the south. */
 const DEFAULT_FRONT_BEARING_DEG = 180
+/**
+ * The 3D scene fades in over the last part of the map's flight, its camera following the map's,
+ * so the street rises while the camera is still coming down and the flight's ease-out ends it.
+ */
+export const HANDOFF_S = 0.9
 
 // Distance from the lot: the spec's 45 m for a small lot, further out for a deep lot or a tall
 // building (a 24 m condo filled the whole view at a fixed 60 m).

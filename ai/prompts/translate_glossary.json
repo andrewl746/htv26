@@ -1,0 +1,19 @@
+{
+  "_note": "Reviewed wording per language, applied to every translation (MASTERSPEC 7.6). 'rules' are added to the translation prompt; a translation containing a 'forbidden' word (any case) is rejected and retried like an invented number; 'fixed' strings replace the model's wording for that key. 'all' applies to every language. Add a language's entries when its review sheet comes back; mark it reviewed in contracts/copy/labels.json.",
+  "all": {
+    "rules": [
+      "\"Multiplex\" means a building with several homes. Never translate it as a word for a set number of homes, such as duplex or triplex."
+    ],
+    "forbidden": ["duplex", "dúplex", "triplex", "tríplex"]
+  },
+  "fr": {
+    "reviewed": "Andrew, 2026-10-17",
+    "rules": [
+      "A City of Toronto ward is a \"quartier\" (\"Quartier 04\", \"dans ce quartier\"). Never use \"circonscription\", which means a riding."
+    ],
+    "forbidden": ["circonscription"],
+    "fixed": {
+      "heading_blocking_rule": "Pourquoi les lots ne conviennent pas"
+    }
+  }
+}

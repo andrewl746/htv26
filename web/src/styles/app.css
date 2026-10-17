@@ -46,7 +46,7 @@ button {
   justify-content: center;
   gap: var(--space-4);
   padding: 0 var(--space-6);
-  background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-paper) 70%);
+  background: linear-gradient(to bottom, var(--suplex-paper) 55%, var(--suplex-surface));
 }
 
 .landing-title {
@@ -73,15 +73,16 @@ button {
 
 .chip {
   padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--suplex-line);
+  border: 0;
   border-radius: 999px;
-  background: var(--suplex-surface);
+  background: var(--suplex-highlight);
   color: var(--suplex-ink);
   cursor: pointer;
 }
 
 .chip:hover {
-  border-color: var(--suplex-ink-muted);
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
 }
 
 /* ---------- Search (J2) ---------- */
@@ -101,7 +102,7 @@ button {
 .search-input {
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid var(--suplex-line);
+  border: 1px solid var(--suplex-line-strong);
   border-radius: var(--radius);
   background: var(--suplex-surface);
   color: var(--suplex-ink);
@@ -255,16 +256,21 @@ button {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3);
-  border: 1px solid var(--suplex-line);
+  border: 1px solid var(--suplex-line-strong);
   border-radius: var(--radius-sm);
   background: var(--suplex-surface);
   text-align: left;
   cursor: pointer;
 }
 
+.design-tab:hover {
+  background: var(--suplex-paper);
+}
+
 .design-tab[aria-selected='true'] {
-  border-color: var(--suplex-ink);
-  box-shadow: inset 0 0 0 1px var(--suplex-ink);
+  border-color: var(--suplex-accent);
+  box-shadow: inset 0 0 0 2px var(--suplex-accent);
+  background: var(--suplex-paper);
 }
 
 .design-tab-text {
@@ -309,7 +315,7 @@ button {
 
 .result-not_checked circle {
   fill: var(--suplex-surface);
-  stroke: var(--suplex-line);
+  stroke: var(--suplex-line-strong);
   stroke-width: 1;
 }
 
@@ -319,7 +325,7 @@ button {
 
 .skeleton {
   border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, var(--suplex-line), var(--suplex-paper), var(--suplex-line));
+  background: linear-gradient(90deg, var(--suplex-paper), var(--suplex-surface), var(--suplex-paper));
   background-size: 200% 100%;
   animation: skeleton 1.2s ease-in-out infinite;
 }

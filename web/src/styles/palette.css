@@ -1,0 +1,26 @@
+/*
+ * Jayden's UI palette: Charcoal #605B56, Grey #837A75, Muted Olive #ACC18A, Tea Green #DAFEB7.
+ * It overrides the UI tokens of contracts/design-tokens.css for /web only, until Andrew puts the
+ * same values into that shared file so the briefing page matches (MASTERSPEC 6.10, Appendix D).
+ * Then delete this file. The locked map colours (fit, nofit, permit) and the 3D scene tokens are
+ * not changed here.
+ *
+ * Contrast, measured: deep charcoal on Tea Green 12.8:1 (the spec asks 12:1 for the projector),
+ * Charcoal on Tea Green 6.0:1, Tea Green on Charcoal 6.0:1, deep charcoal on Muted Olive 7.3:1,
+ * Grey on Tea Green 3.8:1 (borders only; too low for text).
+ */
+:root {
+  --suplex-ink: #2e2a27; /* Charcoal deepened for body text */
+  --suplex-ink-muted: #605b56; /* Charcoal */
+  --suplex-paper: #dafeb7; /* Tea Green */
+  --suplex-surface: #f4ffe9; /* Tea Green lifted toward white: panels, inputs, labels */
+  --suplex-line: #acc18a; /* Muted Olive: dividers and card edges */
+  --suplex-line-strong: #837a75; /* Grey: input and tab borders, which need 3:1 */
+  --suplex-accent: #605b56; /* Charcoal: primary buttons, focus rings, selection */
+  --suplex-accent-ink: #dafeb7; /* Tea Green on Charcoal */
+  --suplex-highlight: #acc18a; /* Muted Olive: hover and chips, with --suplex-ink text */
+
+  /* The 3D lot used to borrow the page colour; a lime lot would read as "fits", so it keeps the
+     old warm off-white. */
+  --suplex-lot: #fbf8f2;
+}

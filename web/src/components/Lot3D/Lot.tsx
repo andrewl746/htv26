@@ -79,7 +79,7 @@ export function Lot({ polygon, design }: { polygon: LocalPoint[]; design: Design
   const setbacks = design?.setbacks_local
   return (
     <group>
-      <GroundPatch points={polygon} y={LOT_Y} colorToken="--suplex-paper" step="outline" order={1} />
+      <GroundPatch points={polygon} y={LOT_Y} colorToken="--suplex-lot" step="outline" order={1} />
       {design && setbacks && (
         <group key={design.design_id}>
           {[setbacks.front, setbacks.rear, setbacks.left, setbacks.right].map((strip, i) => (

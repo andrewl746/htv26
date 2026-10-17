@@ -8,6 +8,7 @@
 #     scripts/hour24.sh --dry-run            # the plan and the refresh's preflight; changes nothing
 #     scripts/hour24.sh --from 2             # resume at the batch after a failure
 #     scripts/hour24.sh --from 2 --gpkg data/out/suplex_citywide.gpkg   # lock on an older citywide file
+#     scripts/hour24.sh --workers 10         # the batch's --workers (default half the cores)
 #
 #   1. python pipeline/refresh.py --tiger     Yuvi's refresh: City data, permits, the citywide build into
 #                                             data/out/suplex.gpkg, Tiger Data and its trend cache, the checks
@@ -23,11 +24,12 @@ set -euo pipefail
 
 usage() { sed -n '2,22s/^# \{0,1\}//p' "${BASH_SOURCE[0]}"; }
 
-FROM=1 GPKG="" PY="" DRY_RUN=0
+FROM=1 GPKG="" WORKERS="" PY="" DRY_RUN=0
 while (($#)); do
   case $1 in
     --from) FROM=${2:-}; shift 2 || { usage >&2; exit 2; } ;;
     --gpkg) GPKG=${2:-}; shift 2 || { usage >&2; exit 2; } ;;
+    --workers) WORKERS=${2:-}; shift 2 || { usage >&2; exit 2; } ;;
     --python) PY=${2:-}; shift 2 || { usage >&2; exit 2; } ;;
     --dry-run) DRY_RUN=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -35,6 +37,7 @@ while (($#)); do
   esac
 done
 [[ $FROM =~ ^[123]$ ]] || { echo "hour24.sh: --from must be 1, 2 or 3" >&2; exit 2; }
+[[ -z $WORKERS || $WORKERS =~ ^[1-9][0-9]*$ ]] || { echo "hour24.sh: --workers must be a whole number" >&2; exit 2; }
 
 # The repo root as Python sees it: Git Bash's pwd -W gives C:/... (a /c/... path in an environment variable
 # would not reach a Windows Python intact); elsewhere plain pwd.
@@ -83,7 +86,7 @@ echo "  TIGER_DSN   $([[ -n ${TIGER_DSN:-} ]] && echo set || echo 'NOT set: the 
 
 STEPS=(
   "pipeline/refresh.py --tiger|Yuvi's refresh (City data, permits, citywide build, Tiger Data, trend cache, checks)"
-  "-m suplex_engine.batch --all|the citywide batch (about 21 minutes)"
+  "-m suplex_engine.batch --all${WORKERS:+ --workers $WORKERS}|the citywide batch (about 21 minutes on 10 workers)"
   "-m api.cache_demo|the demo cache for Ward 04 and the three addresses"
 )
 

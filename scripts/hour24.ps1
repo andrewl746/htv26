@@ -10,6 +10,7 @@ batch about 21:
     powershell -ExecutionPolicy Bypass -File scripts\hour24.ps1 -DryRun    # the plan and the refresh's preflight
     powershell -ExecutionPolicy Bypass -File scripts\hour24.ps1 -From 2    # resume at the batch after a failure
     ... -From 2 -Gpkg data\out\suplex_citywide.gpkg                        # lock on an older citywide file
+    ... -Workers 10                                                         # the batch's --workers (default half the cores)
 
   1. python pipeline/refresh.py --tiger     Yuvi's refresh: City data, permits, the citywide build into
                                             data\out\suplex.gpkg, Tiger Data and its trend cache, the checks
@@ -26,6 +27,7 @@ no value is ever printed. -DryRun changes nothing. scripts/hour24.sh is the same
 param(
     [ValidateRange(1, 3)][int]$From = 1,
     [string]$Gpkg = "",
+    [ValidateRange(0, 256)][int]$Workers = 0,         # 0: the batch's own default
     [string]$Python = "",
     [switch]$DryRun
 )
@@ -44,7 +46,8 @@ if (-not $Python) {
 }
 $Steps = @(
     @{ N = 1; Args = @("pipeline/refresh.py", "--tiger"); Label = "Yuvi's refresh (City data, permits, citywide build, Tiger Data, trend cache, checks)" },
-    @{ N = 2; Args = @("-m", "suplex_engine.batch", "--all"); Label = "the citywide batch (about 21 minutes)" },
+    @{ N = 2; Args = @("-m", "suplex_engine.batch", "--all") + @(if ($Workers) { "--workers"; "$Workers" });
+       Label = "the citywide batch (about 21 minutes on 10 workers)" },
     @{ N = 3; Args = @("-m", "api.cache_demo"); Label = "the demo cache for Ward 04 and the three addresses" }
 )
 

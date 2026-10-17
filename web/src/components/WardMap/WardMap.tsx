@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type CSSProperties } from 'react'
 import type { Lang } from '@contracts/types'
 import { pending } from '../../copy'
 import { PANEL_WIDTH_PX } from '../../layout'
@@ -21,8 +21,6 @@ export interface WardMapProps {
   lang?: Lang
   /** Shows "Back to your lot" in the panel when given. */
   onBack?: () => void
-  /** Simone's TrendChart goes in the panel's slot. */
-  trendSlot?: ReactNode
 }
 
 /**
@@ -30,7 +28,7 @@ export interface WardMapProps {
  * permit dots, a design filter, a legend and the ward panel. It fills its parent. It never shows
  * an address or a parcel id, and nothing on it lists, exports or downloads lots.
  */
-export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en', onBack, trendSlot }: WardMapProps) {
+export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en', onBack }: WardMapProps) {
   const load = useWardData(wardId)
   const [filter, setFilter] = useState<DesignFilter>('all')
   const panelStyle = { '--ward-panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties
@@ -63,7 +61,7 @@ export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en'
       <WardMapCanvas data={data} filter={active} searchedLotId={searchedLotId} onSelectLot={onSelectLot} ariaLabel={wardCopy.map_aria} />
       <DesignFilterControl value={active} onChange={setFilter} overlay={data.ward.sixplex_overlay} />
       <Legend />
-      <WardPanel ward={data.ward} lang={lang} trendSlot={trendSlot} onBack={onBack} />
+      <WardPanel ward={data.ward} lang={lang} trend={data.trend} onBack={onBack} />
     </div>
   )
 }

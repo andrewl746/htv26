@@ -6,7 +6,9 @@ For Simone's `docs/devpost.md`. The numbers below were measured on the real Tige
 
 **How we used Tiger Data.** The "did" half of Suplex's headline is the multiplex permits the City has actually issued since May 2023. We load every building permit that passes our rule (permits creating 2 to 6 units, one row per project; 7,342 geocoded permits since January 2022) into a TimescaleDB hypertable on Tiger Data, chunked by quarter. A continuous aggregate, `permits_ward_month`, keeps permits and units per ward per month, so each ward's trend chart is one indexed read and refreshes daily with a policy. Compression is switched on with a seven-day policy and shrinks the table's total footprint by 27.6% (indexes by 77.7%). If Tiger Data is unreachable, the API serves a cached trend file within two seconds, and the page says so ("cached"). The address check never touches Tiger Data.
 
-## 30-second walkthrough (Yuvi, screen share)
+## 30-second walkthrough (Yuvi, live at the sponsor table; a screen recording is only a backup)
+
+The SQL for every step is in `pipeline/tiger/walkthrough.sql` (all five queries tested on the real service). Step 3 of the original script below is the first six rows of the aggregate; step 5 shows the number the app reads.
 
 1. (0:00) Tiger Data console: the service, and `SELECT extversion FROM pg_extension WHERE extname='timescaledb'`.
 2. (0:06) `\d+ permits` and `SELECT * FROM timescaledb_information.hypertables;` — "a hypertable, 3-month chunks".

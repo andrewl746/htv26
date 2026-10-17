@@ -29,6 +29,7 @@ export function applyGrowth(object: Object3D, p: number): void {
 }
 
 export interface BuiltBuilding {
+  /** The massing id. Not unique: the parts of a polygon cut by the lot line share it, and its colour. */
   id: number
   /** Base centre in scene x and z; the geometries sit around it so the building can grow in place. */
   x: number

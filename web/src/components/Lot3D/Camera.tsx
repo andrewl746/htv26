@@ -4,14 +4,15 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import { Spherical, Vector3 } from 'three'
 import { ease, lerp, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
+import { FOV_DEG, START_BEARING_DEG, SWOOP_START_M, TARGET_HEIGHT_M } from './view'
 
 // Step 1 (MASTERSPEC 6.3): the camera swoops from top-down at 120 m to a 35° tilt on the street side
-// of the lot. The spec's 45 m cuts off the front of a 40 m deep lot, so it settles a little further
-// out. Step 7: a slow orbit, 24 s per turn, that stops while someone drags and resumes 5 s after.
+// of the lot, turning from the map's north-up as it goes. The spec's 45 m cuts off the front of a
+// 40 m deep lot, so it settles a little further out. Step 7: a slow orbit, 24 s per turn, that
+// stops while someone drags and resumes 5 s after.
 const DISTANCE_M = 60
 const TILT_DEG = 35
-const TARGET = new Vector3(0, 2, 0)
-const SWOOP_START_M = 120
+const TARGET = new Vector3(0, TARGET_HEIGHT_M, 0)
 /** Straight down has no heading, so the swoop starts a hair off vertical. */
 const SWOOP_START_POLAR = 0.02
 const ORBIT_PERIOD_S = 24
@@ -26,8 +27,11 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
   const size = useThree((s) => s.size)
   const clock = useThree((s) => s.clock)
 
-  // Spherical azimuth runs from +z toward +x; the street side is at the front bearing.
-  const azimuth = Math.PI - ((frontBearingDeg ?? DEFAULT_BEARING_DEG) * Math.PI) / 180
+  // Spherical azimuth runs from +z toward +x. Looking down with a compass bearing at the top of the
+  // screen puts the camera on the opposite side; at rest it sits on the street side.
+  const startAzimuth = (-START_BEARING_DEG * Math.PI) / 180
+  const restAzimuth = Math.PI - ((frontBearingDeg ?? DEFAULT_BEARING_DEG) * Math.PI) / 180
+  const turn = Math.atan2(Math.sin(restAzimuth - startAzimuth), Math.cos(restAzimuth - startAzimuth))
   const restPolar = ((90 - TILT_DEG) * Math.PI) / 180
   const scratch = useMemo(() => ({ spherical: new Spherical(), offset: new Vector3() }), [])
   const user = useRef({ dragging: false, releasedAt: -Infinity })
@@ -68,7 +72,11 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
       // Hand over exactly at rest, even if the last swoop frame was skipped.
       ctl.enabled = false
       const p = ease.outCubic(progress(t, timeline.swoop))
-      scratch.spherical.set(lerp(SWOOP_START_M, DISTANCE_M, p), lerp(SWOOP_START_POLAR, restPolar, p), azimuth)
+      scratch.spherical.set(
+        lerp(SWOOP_START_M, DISTANCE_M, p),
+        lerp(SWOOP_START_POLAR, restPolar, p),
+        startAzimuth + turn * p,
+      )
       cam.position.setFromSpherical(scratch.spherical).add(TARGET)
       cam.lookAt(TARGET)
       return
@@ -83,7 +91,7 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
 
   return (
     <>
-      <PerspectiveCamera ref={camera} makeDefault manual fov={40} near={1} far={1000} />
+      <PerspectiveCamera ref={camera} makeDefault manual fov={FOV_DEG} near={1} far={1000} />
       <OrbitControls
         ref={controls}
         makeDefault

@@ -31,11 +31,12 @@ export function Pin({ restHeight, leaves }: { restHeight: number; leaves: boolea
   const color = tokenHex('--suplex-accent')
   return (
     <group ref={group} visible={false}>
-      <mesh position={[0, TIP_HEIGHT_M + HEAD_RADIUS_M * 0.6, 0]} castShadow>
+      {/* receiveShadow too, so the pin shares the shader the WarmUp compiled for everything else */}
+      <mesh position={[0, TIP_HEIGHT_M + HEAD_RADIUS_M * 0.6, 0]} castShadow receiveShadow>
         <sphereGeometry args={[HEAD_RADIUS_M, 24, 16]} />
         <meshStandardMaterial color={color} roughness={0.4} />
       </mesh>
-      <mesh position={[0, TIP_HEIGHT_M / 2, 0]} rotation={[Math.PI, 0, 0]} castShadow>
+      <mesh position={[0, TIP_HEIGHT_M / 2, 0]} rotation={[Math.PI, 0, 0]} castShadow receiveShadow>
         <coneGeometry args={[HEAD_RADIUS_M * 0.55, TIP_HEIGHT_M, 20]} />
         <meshStandardMaterial color={color} roughness={0.4} />
       </mesh>

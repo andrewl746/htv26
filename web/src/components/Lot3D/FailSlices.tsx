@@ -17,11 +17,12 @@ import { shapeFrom } from './geometry'
 import { ease, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 
-// J8: the slab where a design fails, standing over that part of the building (failSlabs.ts). Red
-// for doesn't fit, the borderline stripes for too close to call; its label (labels.ts) names the
-// rule, so the colour is never the only signal. It rises out of the ground once the floors land.
-const RED_OPACITY = 0.42
-/** A little light of its own, so the slab still reads red over dark cladding. */
+// J8: the slab where a design fails, standing over that part of the building (failSlabs.ts). It
+// wears the same marks as the 2D plan view (Plan/PlanMap.tsx): red diagonal hatching over a light
+// red wash for doesn't fit, and the map's borderline stripes for too close to call. Its label
+// (labels.ts) names the rule, so the colour is never the only signal. It rises out of the ground
+// once the floors land.
+/** A little light of its own, so the red still reads over dark cladding. */
 const RED_GLOW = 0.3
 const EDGE_OPACITY = 0.9
 /** A little above the parapet, so the slab's top reads as a lid. */
@@ -29,28 +30,46 @@ const TOP_CLEARANCE_M = 0.08
 /** Stripes repeat every this many metres on the slab's faces. */
 const STRIPE_PERIOD_M = 0.6
 const STRIPE_TEXTURE_PX = 64
-const STRIPE_SHARE = 0.4
-const STRIPE_BASE_ALPHA = 0.38
-const STRIPE_ALPHA = 0.85
 
-/** Diagonal stripes on the pale borderline base, tileable, the 3D twin of the map's pattern. */
-function stripeTexture(): CanvasTexture {
+interface Pattern {
+  base: string
+  stripe: string
+  baseAlpha: number
+  stripeAlpha: number
+  /** Stripe width as a share of the period. */
+  share: number
+  /** The plan's fail hatch runs the other diagonal from the map's borderline stripes. */
+  flip: boolean
+}
+
+const FAIL_HATCH = { baseToken: '--suplex-fail', stripeToken: '--suplex-fail', baseAlpha: 0.26, stripeAlpha: 0.9, share: 0.3, flip: true }
+const BORDERLINE_STRIPES = {
+  baseToken: '--suplex-borderline-base',
+  stripeToken: '--suplex-borderline-stripe',
+  baseAlpha: 0.38,
+  stripeAlpha: 0.85,
+  share: 0.4,
+  flip: false,
+}
+
+/** Diagonal stripes on a translucent base, tileable. */
+function stripeTexture(pattern: Pattern): CanvasTexture {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = STRIPE_TEXTURE_PX
   const ctx = canvas.getContext('2d')
   if (ctx) {
     const n = STRIPE_TEXTURE_PX
-    ctx.globalAlpha = STRIPE_BASE_ALPHA
-    ctx.fillStyle = token('--suplex-borderline-base').color
+    ctx.globalAlpha = pattern.baseAlpha
+    ctx.fillStyle = pattern.base
     ctx.fillRect(0, 0, n, n)
-    ctx.globalAlpha = STRIPE_ALPHA
-    ctx.strokeStyle = token('--suplex-borderline-stripe').color
-    ctx.lineWidth = n * STRIPE_SHARE * Math.SQRT1_2
+    ctx.globalAlpha = pattern.stripeAlpha
+    ctx.strokeStyle = pattern.stripe
+    ctx.lineWidth = n * pattern.share * Math.SQRT1_2
     // The stripe and its two wrapped copies, so the tile repeats without a seam.
     for (const offset of [-n, 0, n]) {
       ctx.beginPath()
-      ctx.moveTo(offset, n)
-      ctx.lineTo(offset + n, 0)
+      ctx.moveTo(offset, pattern.flip ? 0 : n)
+      ctx.lineTo(offset + n, pattern.flip ? n : 0)
       ctx.stroke()
     }
   }
@@ -83,16 +102,17 @@ export function FailSlices({ slab }: { slab: FailSlab }) {
 
   const materials = useMemo(() => {
     const borderline = slab.kind === 'borderline'
-    const map = borderline ? stripeTexture() : null
-    const edgeColour = tokenHex(borderline ? '--suplex-borderline-stripe' : '--suplex-fail')
+    const { baseToken, stripeToken, ...look } = borderline ? BORDERLINE_STRIPES : FAIL_HATCH
+    const map = stripeTexture({ base: token(baseToken).color, stripe: token(stripeToken).color, ...look })
+    const edgeColour = tokenHex(stripeToken)
     const made = {
       body: new MeshStandardMaterial({
-        color: borderline ? 'white' : edgeColour,
+        color: 'white',
         emissive: borderline ? 'black' : edgeColour,
         emissiveIntensity: borderline ? 0 : RED_GLOW,
         map,
         transparent: true,
-        opacity: borderline ? 1 : RED_OPACITY,
+        opacity: 1,
         roughness: 0.6,
         depthWrite: false,
         // Drawn over the building's walls where they share a plane.
@@ -112,7 +132,7 @@ export function FailSlices({ slab }: { slab: FailSlab }) {
     () => () => {
       materials.body.dispose()
       materials.edges.dispose()
-      materials.map?.dispose()
+      materials.map.dispose()
     },
     [materials],
   )

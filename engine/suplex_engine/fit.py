@@ -5,26 +5,64 @@ sections come from rules.py.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
-from shapely.geometry import Polygon, box
+from shapely import affinity
+from shapely.geometry import LineString, Point, Polygon, box
 from shapely.geometry.base import BaseGeometry
 
 from . import copy as copy_
 from . import rules
 from .config import EngineConfig
 from .designs import Design, required_side_yards
-from .geometry import LotGeometry, centroid_local, coords_rounded
+from .geometry import LotGeometry, _frange, _pieces, centroid_local, coords_rounded
 from .models import Coord, DesignResult, LotInput, RuleRow
 
 RULE_ORDER = ("detached_building", "units_allowed", "lot_width", "lot_depth", "building_length", "height", "lot_coverage")
 BANDED_RULES = ("lot_width", "lot_depth", "lot_coverage")
 DETACHED_SECTION = "600.60.20 (detached houseplex)"
+_PAD = 1.0                  # margin around the lot for the half-plane boxes below (geometry only, not a rule)
+
+
+@dataclass(frozen=True)
+class Axis:
+    """The building's long axis in the street frame, leaning `lean` radians from the frontage normal toward +x
+    (T20). The *side frame* turns the street frame so that the axis is +y: s = x cos - y sin, t = x sin + y cos.
+    With a lean of 0 the side frame is the street frame."""
+
+    lean: float = 0.0
+
+    @property
+    def cos(self) -> float:
+        return math.cos(self.lean)
+
+    @property
+    def sin(self) -> float:
+        return math.sin(self.lean)
+
+    def to_side(self, geom: BaseGeometry) -> BaseGeometry:
+        return affinity.rotate(geom, self.lean, origin=(0.0, 0.0), use_radians=True)
+
+    def to_street(self, geom: BaseGeometry) -> BaseGeometry:
+        return affinity.rotate(geom, -self.lean, origin=(0.0, 0.0), use_radians=True)
+
+    def street_xy(self, s: float, t: float) -> Coord:
+        return s * self.cos + t * self.sin, -s * self.sin + t * self.cos
+
+
+def side_lean(geo: LotGeometry, design: Design) -> Axis:
+    """T20: the skew of the lot across the design's band (front setback to front setback plus length). When both
+    side lot lines lean the same way by `placement.align_to_sides_deg` or more, the building turns to follow
+    them, as houses on a diagonal street do; otherwise it stays square to the frontage (5.5)."""
+    f = design.front_setback_m
+    return Axis(geo.side_lean_between(f, f + design.length_m))
 
 
 @dataclass
 class Placement:
-    """Everything in the street frame; converted to the centroid frame when reported."""
+    """The building in the side frame (the street frame when the axis does not lean), its corners and every
+    polygon in the street frame; converted to the centroid frame when reported."""
 
     x_left: float
     x_right: float
@@ -37,6 +75,9 @@ class Placement:
     buildable: BaseGeometry
     setbacks: dict[str, BaseGeometry]
     fail_slices: list[Polygon]
+    axis: Axis
+    corners: list[Coord]            # street frame: front-left, front-right, rear-right, rear-left
+    lot_side: BaseGeometry | None   # the lot in the side frame (None when the axis does not lean)
 
 
 def _m(x: float) -> float:
@@ -47,10 +88,34 @@ def _pct(x: float) -> float:
     return round(float(x), 1)
 
 
-def place(design: Design, geo: LotGeometry, yard_left: float, yard_right: float, rear_setback_m: float) -> Placement:
+def _piece_bounds(lot: BaseGeometry, line: LineString, ref: Point) -> tuple[float, float, float, float] | None:
+    """Bounds of the piece of `line` inside `lot` that contains `ref`, else the nearest piece."""
+    pieces = _pieces(line.intersection(lot))
+    if not pieces:
+        return None
+    containing = [p for p in pieces if p.distance(ref) <= 1e-9]
+    return (containing[0] if containing else min(pieces, key=lambda p: p.distance(ref))).bounds
+
+
+def side_lines_side_frame(lot_side: BaseGeometry, t: float, s_ref: float) -> tuple[float, float] | None:
+    """The lot's left and right s at height t in the side frame (the piece at s_ref, or the nearest)."""
+    minx, _, maxx, _ = lot_side.bounds
+    b = _piece_bounds(lot_side, LineString([(minx - _PAD, t), (maxx + _PAD, t)]), Point(s_ref, t))
+    return None if b is None else (b[0], b[2])
+
+
+def place(design: Design, geo: LotGeometry, yard_left: float, yard_right: float, rear_setback_m: float,
+          axis: Axis | None = None) -> Placement:
     """Section 5.5 'Placement': a rectangle aligned to the frontage, front wall at the front setback,
-    centred between the side lot lines after the two required yards, computed for every design."""
+    centred between the side lot lines after the two required yards, computed for every design.
+
+    T20: when `axis` leans, the rectangle turns to follow the side lot lines instead. It is centred between them
+    (measured square to the sides) and pushed back until its nearer front corner is the front setback from the
+    front lot line; the front and rear setbacks stay parallel to the frontage, the side yards follow the sides."""
     assert geo.lot_street is not None and geo.depth_m is not None
+    axis = axis or Axis()
+    if axis.lean != 0.0:
+        return _place_turned(design, geo, yard_left, yard_right, rear_setback_m, axis)
     f = design.front_setback_m
     y_front, y_rear = f, f + design.length_m
     sides = geo.side_lines_at(f + design.length_m / 2.0) or geo.side_lines_at(f) or geo.lot_street.bounds[0::2]
@@ -64,7 +129,7 @@ def place(design: Design, geo: LotGeometry, yard_left: float, yard_right: float,
     rear_line = geo.depth_m - rear_setback_m
     lot = geo.lot_street
     minx, miny, maxx, maxy = lot.bounds
-    pad = 1.0
+    pad = _PAD
     buildable = lot.intersection(box(x_min, y_front, x_max, rear_line))
     setbacks = {
         "front": lot.intersection(box(minx - pad, miny - pad, maxx + pad, y_front)),
@@ -74,8 +139,87 @@ def place(design: Design, geo: LotGeometry, yard_left: float, yard_right: float,
     }
     diff = footprint.difference(buildable)
     slices = [g for g in getattr(diff, "geoms", [diff]) if not g.is_empty and g.area > 1e-6 and g.geom_type == "Polygon"]
+    corners = [(x_left, y_front), (x_right, y_front), (x_right, y_rear), (x_left, y_rear)]
     return Placement(x_left, x_right, y_front, y_rear, yard_left, yard_right, rear_setback_m,
-                     footprint, buildable, setbacks, slices)
+                     footprint, buildable, setbacks, slices, axis, corners, None)
+
+
+def _place_turned(design: Design, geo: LotGeometry, yard_left: float, yard_right: float, rear_setback_m: float,
+                  axis: Axis) -> Placement:
+    assert geo.lot_street is not None and geo.centroid_street is not None and geo.depth_m is not None
+    f, length, width = design.front_setback_m, design.length_m, design.width_m
+    lot = geo.lot_street
+    lot_side = axis.to_side(lot)
+    s_ref = axis.to_side(geo.centroid_street).x
+    fallback = lot_side.bounds[0::2]
+
+    # The front wall's distance along the axis depends on where the building sits across the lot and vice
+    # versa; the sides are nearly upright in the side frame, so two or three rounds settle it.
+    t_front = f / axis.cos
+    x_min = x_max = x_left = x_right = 0.0
+    for _ in range(4):
+        sides = (side_lines_side_frame(lot_side, t_front + length / 2.0, s_ref)
+                 or side_lines_side_frame(lot_side, t_front, s_ref) or fallback)
+        x_min, x_max = sides[0] + yard_left, sides[1] - yard_right
+        x_left = x_min + ((x_max - x_min) - width) / 2.0
+        x_right = x_left + width
+        nxt = (f + max(x_left * axis.sin, x_right * axis.sin)) / axis.cos
+        done = abs(nxt - t_front) < 1e-9
+        t_front = nxt
+        if done:
+            break
+    t_rear = t_front + length
+    footprint = axis.to_street(box(x_left, t_front, x_right, t_rear))
+
+    rear_line = geo.depth_m - rear_setback_m
+    minx, miny, maxx, maxy = lot.bounds
+    sminx, sminy, smaxx, smaxy = lot_side.bounds
+    pad = _PAD
+    front_strip = lot.intersection(box(minx - pad, miny - pad, maxx + pad, f))
+    rear_strip = lot.intersection(box(minx - pad, rear_line, maxx + pad, maxy + pad))
+    middle = lot.intersection(box(minx - pad, f, maxx + pad, rear_line))
+    between = axis.to_street(box(x_min, sminy - pad, x_max, smaxy + pad))
+    buildable = middle.intersection(between)
+    setbacks = {
+        "front": front_strip,
+        "rear": rear_strip,
+        "left": middle.intersection(axis.to_street(box(sminx - pad, sminy - pad, x_min, smaxy + pad))),
+        "right": middle.intersection(axis.to_street(box(x_max, sminy - pad, smaxx + pad, smaxy + pad))),
+    }
+    diff = footprint.difference(buildable)
+    slices = [g for g in getattr(diff, "geoms", [diff]) if not g.is_empty and g.area > 1e-6 and g.geom_type == "Polygon"]
+    corners = [axis.street_xy(x_left, t_front), axis.street_xy(x_right, t_front),
+               axis.street_xy(x_right, t_rear), axis.street_xy(x_left, t_rear)]
+    return Placement(x_left, x_right, t_front, t_rear, yard_left, yard_right, rear_setback_m,
+                     footprint, buildable, setbacks, slices, axis, corners, lot_side)
+
+
+def turned_width(pl: Placement, geo: LotGeometry, step: float) -> float:
+    """T20: the lot's width square to the side lot lines, the minimum over the turned building's length."""
+    assert pl.lot_side is not None and geo.centroid_street is not None
+    s_ref = pl.axis.to_side(geo.centroid_street).x
+    widths = []
+    for t in _frange(pl.y_front, pl.y_rear, step):
+        sides = side_lines_side_frame(pl.lot_side, t, s_ref)
+        if sides is not None:
+            widths.append(sides[1] - sides[0])
+    return min(widths) if widths else 0.0
+
+
+def turned_rear_clearance(pl: Placement, step: float) -> float | None:
+    """T20: the smallest distance, square to the frontage, from the turned building's rear wall to the lot's
+    boundary straight behind it along the axis, sampled across the building's width. Measured this way the rear
+    setback is the same yard the setback strip draws when the rear lot line is parallel to the street. None when
+    no sample line crosses the lot."""
+    assert pl.lot_side is not None
+    _, sminy, _, smaxy = pl.lot_side.bounds
+    mid = (pl.y_front + pl.y_rear) / 2.0
+    gaps = []
+    for s in _frange(pl.x_left, pl.x_right, step):
+        b = _piece_bounds(pl.lot_side, LineString([(s, sminy - _PAD), (s, smaxy + _PAD)]), Point(s, mid))
+        if b is not None:
+            gaps.append((b[3] - pl.y_rear) * pl.axis.cos)
+    return min(gaps) if gaps else None
 
 
 def _local(geo: LotGeometry, geom_street: BaseGeometry) -> list[Coord]:
@@ -117,11 +261,19 @@ def check_design(design: Design, lot: LotInput, geo: LotGeometry, zone: str, lot
     rows.append(RuleRow("units_allowed", copy_.rule_label("units_allowed"), design.units, int(u.value), "units",
                         int(u.value) - design.units, int(u.value) >= design.units, False, False, u.bylaw_section, u.detail))
 
-    # 3. lot_width
+    # Placement before the width and depth rows: on a lot whose sides lean (T20) both are measured around the
+    # turned building, square to the side lot lines.
     side = rules.side_yard_min(zone, lot.frontage_min_m, lot_width_m)
     yard_l, yard_r = required_side_yards(design, side.value)
+    front = rules.front_setback(zone)
+    rear = rules.rear_setback(zone, geo.depth_m)
+    pl = place(design, geo, yard_l, yard_r, rear.value, side_lean(geo, design))
+    turned = pl.axis.lean != 0.0
+
+    # 3. lot_width
     req_w = design.width_m + yard_l + yard_r
-    act_w = geo.width_across_band(design.front_setback_m, design.length_m)
+    act_w = turned_width(pl, geo, cfg.sample_step_m) if turned else geo.width_across_band(design.front_setback_m,
+                                                                                         design.length_m)
     margin_w = act_w - req_w
     pass_w, bord_w = _banded(margin_w, band_m)
     detail_w = f"{_fmt(design.width_m)} m building + {_fmt(yard_l)} m + {_fmt(yard_r)} m side yards"
@@ -131,18 +283,22 @@ def check_design(design: Design, lot: LotInput, geo: LotGeometry, zone: str, lot
                         pass_w, bord_w, False, side.bylaw_section, detail_w))
 
     # 4. lot_depth (placement first, so the depth is measured across the building's width)
-    front = rules.front_setback(zone)
-    rear = rules.rear_setback(zone, geo.depth_m)
-    pl = place(design, geo, yard_l, yard_r, rear.value)
     req_d = front.value + design.length_m + rear.value
     # A design that, with its required side yards, is wider than the lot's band width (margin_w < 0, a borderline
     # miss included) cannot be placed
     # inside the side lot lines, so sampling the depth under it would run past a leaning side line and read a
     # false short depth (24.6 m on the 33.5 m lot at 34 Rexford Rd); its depth row reports the lot's own
     # centre-line depth instead (5.2 step 3). A design that fits the width is measured under the placed
-    # rectangle as 5.5 step 4 says, even on a skewed lot where the frontage-aligned rectangle leans over a side
-    # (542 Ward 04 results; aligning the placement to the lot's sides is the fix, see docs/test-lots.md).
-    act_d = geo.depth_m if margin_w < 0 else geo.depth_across_width(pl.x_left, pl.x_right)
+    # rectangle as 5.5 step 4 says. On a lot whose sides lean (T20) the rectangle follows them, and the row
+    # reports the front setback, the building and the clearance behind its rear wall: the depth the lot offers
+    # this design, which is the frontage-to-rear depth again on a lot that does not lean.
+    if margin_w < 0:
+        act_d = geo.depth_m
+    elif turned:
+        clearance = turned_rear_clearance(pl, cfg.sample_step_m)
+        act_d = 0.0 if clearance is None else design.front_setback_m + design.length_m + clearance
+    else:
+        act_d = geo.depth_across_width(pl.x_left, pl.x_right)
     margin_d = act_d - req_d
     pass_d, bord_d = _banded(margin_d, band_m)
     rear_txt = f"{_fmt(rear.value)} m rear" + (f" ({rear.detail})" if rear.detail else "")
@@ -194,10 +350,7 @@ def check_design(design: Design, lot: LotInput, geo: LotGeometry, zone: str, lot
 
 def _placement_coords(geo: LotGeometry, pl: Placement) -> list[Coord]:
     """Four corners, front wall first (front-left, front-right, rear-right, rear-left)."""
-    from shapely.geometry import LineString
-
-    pts = LineString([(pl.x_left, pl.y_front), (pl.x_right, pl.y_front), (pl.x_right, pl.y_rear), (pl.x_left, pl.y_rear)])
-    return _local(geo, pts)
+    return _local(geo, LineString(pl.corners))
 
 
 def decide(rows: list[RuleRow], cfg: EngineConfig) -> tuple[str, str | None]:

@@ -43,8 +43,6 @@ import { WarmUp } from './WarmUp'
 const GROUND_SCALE = 4
 /** Before any lot: where the hidden camera waits. */
 const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg: restViewBearingDeg(null) }
-/** The street is cut away this far beyond the design's corners, so its edges stay clear. */
-const CUT_MARGIN_M = 2
 const FOG_NEAR_M = 90
 const FOG_FAR_M = 320
 /** Dev elevation view: how far in front of the design the camera stands. */
@@ -126,20 +124,17 @@ export function Scene({
   const lotKey = check?.lot.lot_id ?? ''
   const groundRadius = check?.context.radius_m ?? engineConfig.context_radius_m
   const pinHeight = check ? Math.max(0, ...check.context.buildings.filter((b) => b.on_lot).map(buildingTop)) : 0
-  const lotRadius = check ? Math.max(...openRing(check.lot.polygon_local).map(([x, y]) => Math.hypot(x, y))) : 0
   // The same rest view the base map's flight ended on.
   const framing = check ? lotFraming(check, designId) : DEFAULT_FRAMING
 
-  // What the camera must always see through the street: the design, or the lot if none is placed.
-  const focus = useMemo(() => {
-    if (!check) return null
-    if (placement && spec) {
-      const [cx, cy] = vertexMean(placement)
-      const reach = Math.max(...openRing(placement).map(([x, y]) => Math.hypot(x - cx, y - cy)))
-      return { centre: toScene([cx, cy], spec.height_m / 2), radius: reach + CUT_MARGIN_M }
-    }
-    return { centre: toScene([0, 0], pinHeight / 2), radius: lotRadius }
-  }, [check, placement, spec, pinHeight, lotRadius])
+  // What the camera must always see past the street: the design's corners at the ground and at its
+  // top, and its middle; or the lot's, up to the tallest building on it, if no design is placed.
+  const targets = useMemo(() => {
+    if (!check) return []
+    const [ring, top] =
+      placement && spec ? [openRing(placement), spec.height_m] : [openRing(check.lot.polygon_local), pinHeight]
+    return [...ring.flatMap((p) => [toScene(p, 0), toScene(p, top)]), toScene(vertexMean(ring), top / 2)]
+  }, [check, placement, spec, pinHeight])
 
   // Dev only: square to the design's front, at half its height (debug.ts).
   const fixedPose = useMemo((): FixedPose | null => {
@@ -183,7 +178,7 @@ export function Scene({
             rightInsetPx={rightInsetPx}
             fixed={fixedPose}
           />
-          <CutawayFocus focus={focus} />
+          <CutawayFocus targets={targets} />
           {drawn && <SettleWatch onChange={setSettled} />}
           {drawn && <ShadowFreeze frozen={settled && check !== null} />}
           {drawn && check && <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={() => setQuality((q) => STEP_DOWN[q])} />}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import type { ContextBuilding } from '@contracts/types'
-import { applyGrowth, buildBuilding, disposeBuilt } from './buildings'
+import { applyGrowth, buildBuilding, disposeBuilt, streetGrid } from './buildings'
 import { LOOK } from './look'
 import { ease, growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
@@ -16,7 +16,10 @@ const SQUASH_WIDEN = 0.15
  * checked, the house simply stays.
  */
 export function OldHouse({ buildings, squash }: { buildings: ContextBuilding[]; squash: boolean }) {
-  const built = useMemo(() => buildings.filter((b) => b.on_lot).map((b) => buildBuilding(b, LOOK)), [buildings])
+  const built = useMemo(() => {
+    const grid = streetGrid(buildings)
+    return buildings.filter((b) => b.on_lot).map((b) => buildBuilding(b, grid, LOOK))
+  }, [buildings])
   useEffect(() => () => disposeBuilt(built), [built])
   const materials = useStreetMaterials({ cutaway: false })
   const groups = useRef<(Group | null)[]>([])

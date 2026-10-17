@@ -39,7 +39,8 @@
   "units": {
     "m": "m",
     "pct": "%",
-    "units": "homes"
+    "units": "homes",
+    "m2": "m²"
   },
   "ui": {
     "search_placeholder": "Type a Toronto address",
@@ -78,7 +79,11 @@
     "trend_marker_citywide": "Multiplexes allowed citywide",
     "trend_marker_designs": "Free designs released",
     "view_2d": "2D view",
-    "view_3d": "3D view"
+    "view_3d": "3D view",
+    "tagline": "Before you build, before you vote.",
+    "home_bedrooms": "{{bedrooms}} bedrooms",
+    "home_bedrooms_one": "{{bedrooms}} bedroom",
+    "load_error": "This couldn't load. Please try again in a moment."
   },
   "ward_panel": {
     "could": "Could: {{could_lots}} lots may fit a free City design ({{could_pct}}% of house lots).",
@@ -177,6 +182,16 @@
     "legend_you": "Your lot, at this zoom",
     "permits_unlabelled": "Each diamond is one multiplex permit issued since May 2023. Addresses are never shown.",
     "north": "N",
-    "aria_plan": "Plan view from above of the lot and the area around it"
+    "aria_plan": "Plan view from above of the lot and the area around it",
+    "zoom_street": "Street",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "attribution": "© OpenStreetMap contributors · OpenFreeMap · OpenMapTiles"
+  },
+  "ward_map": {
+    "filter_legend": "Design shown on the map",
+    "data_dates": "Data dates",
+    "loading": "Loading the ward…",
+    "map_aria": "Map of the ward: lots coloured by whether a free City design may fit, and multiplex permits as gold dots."
   }
 }

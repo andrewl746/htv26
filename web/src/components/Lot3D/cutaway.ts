@@ -1,58 +1,41 @@
-import { Vector3, type Material } from 'three'
+import { MeshDepthMaterial, type Material } from 'three'
+import { sinkTexture } from './occlusion'
 
 // Neighbouring houses stand about a metre from the lot, so as the camera orbits, the one next door
-// covers the design. Materials made with withCutaway() drop the fragments that sit inside a cone
-// from the camera to the design, with a dithered edge, so the design always shows. The cut is
-// opaque (no sorting trouble), works on the merged street, and leaves the shadows on the ground.
-// The design, the lot and the house being replaced use plain materials and are never cut.
+// covers the design. Rather than cutting a hole through it, which left houses half see-through, a
+// neighbour standing between the camera and the design sinks, whole and solid, to a low stub
+// until the camera has moved past (occlusion.ts decides which). Materials made with withCutaway()
+// read each building's or tree's sink from one shared texture, so the merged street still sinks
+// one building at a time in a handful of draw calls; cutawayDepthMaterial sinks the shadows too.
+// The design, the lot and the house being replaced use plain materials and never sink.
 
-/** Shared by every cutaway material: one update per frame moves the cut for the whole street. */
+/** Each vertex's slot in the sink texture: a vertex attribute on the street, per instance on trees. */
+export const SLOT_ATTRIBUTE = 'aCutSlot'
+/** A fully sunk neighbour keeps this share of its height, roof and all, like a squashed model. */
+const STUB_SCALE = 0.12
+
+/** Shared by every cutaway material: one texture update per frame moves the whole street. */
 export const cutawayUniforms = {
-  uCutEye: { value: new Vector3() },
-  uCutFocus: { value: new Vector3() },
-  /** Cone radius at the focus; 0 turns the cut off. */
-  uCutRadius: { value: 0 },
+  uCutSink: { value: sinkTexture },
 }
 
 const VERTEX_DECLARATIONS = /* glsl */ `
-varying vec3 vCutWorld;
+attribute float ${SLOT_ATTRIBUTE};
+uniform sampler2D uCutSink;
 `
 
+// Squashed toward the ground in world space. Every model here only turns about the vertical, so
+// world y = scale * y + lift, and scaling world y by k means y' = k * y + (k - 1) * lift / scale.
 const VERTEX_BODY = /* glsl */ `
-vec4 cutWorld = vec4(transformed, 1.0);
-#ifdef USE_INSTANCING
-  cutWorld = instanceMatrix * cutWorld;
-#endif
-vCutWorld = (modelMatrix * cutWorld).xyz;
-`
-
-const FRAGMENT_DECLARATIONS = /* glsl */ `
-varying vec3 vCutWorld;
-uniform vec3 uCutEye;
-uniform vec3 uCutFocus;
-uniform float uCutRadius;
-
-// A 4 x 4 ordered dither, so the edge of the cut fades instead of slicing.
-float cutThreshold(vec2 pixel) {
-  int i = int(mod(pixel.x, 4.0)) + int(mod(pixel.y, 4.0)) * 4;
-  float bayer[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
-  return (bayer[i] + 0.5) / 16.0;
-}
-`
-
-const FRAGMENT_BODY = /* glsl */ `
-if (uCutRadius > 0.0) {
-  vec3 sight = uCutFocus - uCutEye;
-  float sightLength = length(sight);
-  vec3 toFocus = sight / sightLength;
-  vec3 fromEye = vCutWorld - uCutEye;
-  float along = dot(fromEye, toFocus);
-  if (along > 0.0) {
-    float allowed = uCutRadius * along / sightLength;
-    float radial = length(fromEye - toFocus * along);
-    float inCone = 1.0 - smoothstep(allowed * 0.75, allowed, radial);
-    float beforeFocus = 1.0 - smoothstep(sightLength - 1.0, sightLength + 1.0, along);
-    if (inCone * beforeFocus > cutThreshold(gl_FragCoord.xy)) discard;
+{
+  float sink = texelFetch(uCutSink, ivec2(int(${SLOT_ATTRIBUTE} + 0.5), 0), 0).r;
+  if (sink > 0.0) {
+    mat4 cutModel = modelMatrix;
+    #ifdef USE_INSTANCING
+      cutModel = modelMatrix * instanceMatrix;
+    #endif
+    float k = mix(1.0, ${STUB_SCALE.toFixed(3)}, sink);
+    transformed.y = k * transformed.y + (k - 1.0) * cutModel[3][1] / cutModel[1][1];
   }
 }
 `
@@ -62,12 +45,12 @@ export function withCutaway<T extends Material>(material: T): T {
     Object.assign(shader.uniforms, cutawayUniforms)
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', `#include <common>\n${VERTEX_DECLARATIONS}`)
-      .replace('#include <project_vertex>', `#include <project_vertex>\n${VERTEX_BODY}`)
-    shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', `#include <common>\n${FRAGMENT_DECLARATIONS}`)
-      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${FRAGMENT_BODY}`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\n${VERTEX_BODY}`)
   }
   // One program for every cutaway material of a kind, which WarmUp compiles ahead of time.
   material.customProgramCacheKey = () => 'suplex-cutaway'
   return material
 }
+
+/** The shadow pass's material for everything drawn withCutaway(), so a sunk neighbour's shadow sinks with it. */
+export const cutawayDepthMaterial = withCutaway(new MeshDepthMaterial())

@@ -299,7 +299,8 @@ class LotGeometry:
     frame: StreetFrame | None = None
     lot_street: Polygon | None = None           # the lot in the street frame
     centroid_street: Point | None = None
-    depth_m: float | None = None                # section 5.2 step 3
+    depth_m: float | None = None                # section 5.2 step 3 (along the side lot lines when they lean, T20)
+    side_lean_rad: float = 0.0                  # T20: lean of the side lot lines used for depth_m (0 = square)
     front_bearing_deg: float | None = None      # compass bearing centroid -> frontage midpoint
     building_count: int = 0
     _extra: dict = field(default_factory=dict, repr=False)
@@ -357,6 +358,20 @@ class LotGeometry:
                 depths.append(d)
         return min(depths) if depths else 0.0
 
+    def side_lean_between(self, y1: float, y2: float) -> float:
+        """T20: how far the lot is skewed between heights y1 < y2: the mean lean (radians, toward +x) of the two
+        side lot lines from the frontage normal when *both* lean the same way by at least
+        `placement.align_to_sides_deg`, else 0. A pie lot, whose sides lean opposite ways or only one of them,
+        tapers rather than leans and stays square to the frontage (4 Olympus Ave)."""
+        a, b = self.side_lines_at(y1), self.side_lines_at(y2)
+        if a is None or b is None or y2 <= y1:
+            return 0.0
+        left, right = math.atan((b[0] - a[0]) / (y2 - y1)), math.atan((b[1] - a[1]) / (y2 - y1))
+        least = math.radians(self.cfg.placement.align_to_sides_deg)
+        if left * right <= 0.0 or min(abs(left), abs(right)) < least:
+            return 0.0
+        return (left + right) / 2.0
+
     def side_lines_at(self, y: float) -> tuple[float, float] | None:
         """The lot's left and right x at height y in the street frame (the piece under the centroid)."""
         assert self.lot_street is not None and self.centroid_street is not None
@@ -369,6 +384,24 @@ class LotGeometry:
         containing = [p for p in pieces if p.bounds[0] - 1e-9 <= xr <= p.bounds[2] + 1e-9]
         piece = containing[0] if containing else min(pieces, key=lambda p: p.distance(Point(xr, y)))
         return piece.bounds[0], piece.bounds[2]
+
+
+def depth_along(lot_street: Polygon, through: Point, lean: float) -> float | None:
+    """T20: the lot depth on a lot whose side lines lean: walk from the frontage through `through` (the
+    centroid) parallel to the side lot lines and report how far from the frontage line (square to it) the walk
+    leaves the lot. Square to the frontage, the centre line of a skewed lot leaves through a side lot line and
+    reads short (11 Harcroft Rd: 27.9 m on a 35 m parallelogram)."""
+    ux, uy = math.sin(lean), math.cos(lean)
+    if uy < 1e-6:
+        return None
+    _, miny, _, maxy = lot_street.bounds
+    k0, k1 = (min(miny, 0.0) - 1.0 - through.y) / uy, (maxy + 1.0 - through.y) / uy
+    line = LineString([(through.x + k0 * ux, through.y + k0 * uy), (through.x + k1 * ux, through.y + k1 * uy)])
+    pieces = _pieces(line.intersection(lot_street))
+    if not pieces:
+        return None
+    containing = [q for q in pieces if q.distance(through) <= 1e-9]
+    return (containing[0] if containing else min(pieces, key=lambda q: q.distance(through))).bounds[3]
 
 
 def _bearing_deg(from_pt: Point, to_pt: Point) -> float:
@@ -428,6 +461,12 @@ def measure_lot(lot: BaseGeometry, corridors: Iterable[BaseGeometry], address_po
 
     depth = depth_at_x(geo.lot_street, centroid_s.x)
     geo.depth_m = depth if depth is not None else 0.0
+    d = geo.depth_m
+    lean = geo.side_lean_between(0.25 * d, 0.75 * d) if d > 0.0 else 0.0
+    if lean != 0.0:
+        along = depth_along(geo.lot_street, centroid_s, lean)
+        if along is not None:
+            geo.depth_m, geo.side_lean_rad = along, lean
     chord_mid = Point((x1 + x2) / 2.0, (y1 + y2) / 2.0)
     geo.front_bearing_deg = _bearing_deg(lot.centroid, chord_mid)
     return geo

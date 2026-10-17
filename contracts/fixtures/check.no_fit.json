@@ -560,5 +560,57 @@
     "disclaimer": "Screening only, not a permit or legal advice.",
     "generated_at": "2026-10-17T00:00:00Z",
     "cached": false
-  }
+  },
+  "next_steps": [
+    {
+      "id": "zoning_check",
+      "group": "confirm",
+      "title": "Check the zoning with the City",
+      "text": "Toronto Building's zoning staff can confirm what the by-law allows on this lot. For a written answer before you apply, a Zoning Applicable Law Certificate reviews your drawings.",
+      "who": "Toronto Building",
+      "why": "Because none of the four City designs fits as checked.",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        },
+        {
+          "label": "Zoning Applicable Law Certificate",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/"
+        }
+      ]
+    },
+    {
+      "id": "trees",
+      "group": "approvals",
+      "title": "Check the trees",
+      "text": "Trees 30 cm or more across on your lot, and City street trees of any size, need a permit before work that could injure or remove them. A building permit does not cover trees.",
+      "who": "Urban Forestry",
+      "why": "Because none of the four City designs fits as checked.",
+      "links": [
+        {
+          "label": "When to apply for a tree or ravine permit",
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/"
+        }
+      ]
+    },
+    {
+      "id": "custom_or_variance",
+      "group": "alternatives",
+      "title": "Look at other options",
+      "text": "None of the City's four designs fits as checked. A design professional can look at a custom design; plans that go beyond the zoning rules can apply to the Committee of Adjustment for a minor variance.",
+      "who": "A design professional; the Committee of Adjustment",
+      "why": "Because none of the four City designs fits as checked.",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        },
+        {
+          "label": "Committee of Adjustment",
+          "url": "https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/"
+        }
+      ]
+    }
+  ]
 }

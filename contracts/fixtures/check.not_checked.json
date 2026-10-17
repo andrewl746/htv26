@@ -153,5 +153,21 @@
     "disclaimer": "Screening only, not a permit or legal advice.",
     "generated_at": "2026-10-17T00:00:00Z",
     "cached": false
-  }
+  },
+  "next_steps": [
+    {
+      "id": "ask_zoning",
+      "group": "alternatives",
+      "title": "Ask the City's zoning staff",
+      "text": "Suplex could not check this lot (condo building). Toronto Building's zoning staff can tell you what is allowed here.",
+      "who": "Toronto Building",
+      "why": "Because Suplex could not check this lot.",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        }
+      ]
+    }
+  ]
 }

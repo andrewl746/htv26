@@ -1,0 +1,113 @@
+/* "Your next steps" (MASTERSPEC 5.10). Tokens only; state is carried by text and structure, not colour. */
+
+.next-steps {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--suplex-line);
+}
+
+.next-steps-heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.2;
+}
+
+.next-steps-group {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.next-steps-group-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--suplex-ink);
+}
+
+.next-steps-list,
+.next-step-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.next-steps-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.next-step {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--suplex-line);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-lot, var(--suplex-surface));
+}
+
+.next-step-title {
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: 1.25;
+}
+
+.next-step-text,
+.next-step-who {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.next-step-who {
+  font-weight: 700;
+}
+
+.next-step-who-label {
+  font-weight: 400;
+  color: var(--suplex-ink-muted);
+}
+
+.next-step-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.next-step-links a {
+  color: var(--suplex-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.next-step-links a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.next-step-why {
+  justify-self: start;
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  border: 1px solid var(--suplex-line);
+  background: var(--suplex-paper);
+  color: var(--suplex-ink-muted);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.next-step-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.next-steps-footer {
+  margin: 0;
+}

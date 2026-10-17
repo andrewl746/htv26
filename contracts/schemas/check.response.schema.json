@@ -20,11 +20,43 @@
     "not_checked": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "permits_nearby": {"$ref": "#/$defs/PermitsNearby"},
     "context": {"$ref": "#/$defs/Context"},
-    "meta": {"$ref": "#/$defs/Meta"}
+    "meta": {"$ref": "#/$defs/Meta"},
+    "next_steps": {"type": "array", "items": {"$ref": "#/$defs/NextStep"}, "uniqueItems": true}
   },
-  "required": ["address", "lot", "designs", "not_checked", "permits_nearby", "context", "meta"],
+  "required": ["address", "lot", "designs", "not_checked", "permits_nearby", "context", "meta", "next_steps"],
   "additionalProperties": false,
   "$defs": {
+    "NextStepId": {
+      "type": "string",
+      "enum": [
+        "survey", "zoning_check", "site_exception", "heritage", "ravine", "trca", "trees", "designer", "permit",
+        "demolition", "fees", "attached_options", "custom_or_variance", "ask_zoning"
+      ]
+    },
+    "NextStepGroup": {"type": "string", "enum": ["confirm", "approvals", "apply", "alternatives"]},
+    "NextStep": {
+      "type": "object",
+      "description": "MASTERSPEC 5.10: one step, text from contracts/copy/next_steps.json, why filled by the engine; never written by AI",
+      "properties": {
+        "id": {"$ref": "#/$defs/NextStepId"},
+        "group": {"$ref": "#/$defs/NextStepGroup"},
+        "title": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1},
+        "who": {"type": "string", "minLength": 1},
+        "why": {"type": "string", "minLength": 1},
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {"label": {"type": "string", "minLength": 1}, "url": {"type": "string", "pattern": "^https://"}},
+            "required": ["label", "url"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["id", "group", "title", "text", "who", "why", "links"],
+      "additionalProperties": false
+    },
     "DesignId": {
       "type": "string",
       "enum": ["fourplex_narrow", "fourplex_wide", "sixplex_narrow", "sixplex_wide"]

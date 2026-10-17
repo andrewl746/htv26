@@ -41,3 +41,11 @@ def not_checked_labels() -> list[str]:
 
 def disclaimer(key: str = "screening") -> str:
     return copy("disclaimers")[key]
+
+
+def next_steps_copy() -> dict[str, Any]:
+    """contracts/copy/next_steps.json (MASTERSPEC 5.10), or {} until that file exists (Y12)."""
+    try:
+        return copy("next_steps")
+    except FileNotFoundError:
+        return {}

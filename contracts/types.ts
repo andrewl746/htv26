@@ -43,6 +43,8 @@ export interface EngineConfig {
   attached: { on_lot_m2: number; cross_lot_m2: number; shared_edge_m: number; tolerance_m: number };
   vacant_min_footprint_m2: number;
   street_edge: { corridor_distance_m: number; merge_angle_deg: number; min_length_m: number };
+  // T20: when the side lot lines lean this many degrees or more from the frontage normal, the design turns to follow them.
+  placement: { align_to_sides_deg: number };
   sample_step_m: number; nearby_permits_radius_m: number; context_radius_m: number;
   permits_since: string; permits_trend_since: string;
   sixplex_wards: WardId[]; partial_sixplex_wards: WardId[];
@@ -103,6 +105,17 @@ export interface CheckResponse {
   address: { address_id: string | null; address_full: string | null; lon: number; lat: number };
   lot: Lot; designs: DesignResult[]; not_checked: string[];
   permits_nearby: PermitsNearby; context: Context; meta: Meta;
+  next_steps: NextStep[];           // MASTERSPEC 5.10: ordered by group then catalogue order; never written by AI
+}
+// ---------- next steps (A14, MASTERSPEC 5.10; text from contracts/copy/next_steps.json) ----------
+export type NextStepId = "survey" | "zoning_check" | "site_exception" | "heritage" | "ravine" | "trca" | "trees"
+  | "designer" | "permit" | "demolition" | "fees" | "attached_options" | "custom_or_variance" | "ask_zoning";
+export type NextStepGroup = "confirm" | "approvals" | "apply" | "alternatives";
+export interface NextStep {
+  id: NextStepId; group: NextStepGroup;
+  title: string; text: string; who: string;
+  why: string;                                   // the lot-specific reason, values filled by the engine
+  links: { label: string; url: string }[];       // City pages; never a business or a person
 }
 
 // ---------- ward_summary.json and GET /ward/{id} ----------

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Line } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { CanvasTexture, Color, MeshStandardMaterial, type Group, type InstancedMesh } from 'three'
-import { withCutaway } from './cutaway'
+import { cutawayDepthMaterial, withCutaway } from './cutaway'
 import { LOOK } from './look'
 
 /** Frames drawn on the hidden canvas after compiling, so the passes that draw per frame compile too. */
@@ -15,7 +15,8 @@ const WARM_FRAMES = 3
  *
  * Variants: plain standard, opaque (ground, floors, pin, the house on the lot) and transparent
  * (the lot's flat layers); cutaway standard (neighbours), cutaway instanced (tree trunks) and
- * cutaway instanced with per-instance colour (tree tops); and the dashed lot outline. The drawn
+ * cutaway instanced with per-instance colour (tree tops), each with its sinking shadow; and the
+ * dashed lot outline. The drawn
  * look adds textured standard (the designs' cladding, the street), textured cutaway (neighbour
  * walls), textured cutaway with vertex colours (roofs), faceted instanced tops, the striped slab,
  * and the passes that draw every frame (ambient occlusion, contact shadows), which a few frames on
@@ -76,13 +77,19 @@ export function WarmUp() {
         <boxGeometry />
         <meshStandardMaterial transparent opacity={0.5} depthWrite={false} />
       </mesh>
-      <mesh material={materials.cutaway} castShadow receiveShadow>
+      <mesh material={materials.cutaway} customDepthMaterial={cutawayDepthMaterial} castShadow receiveShadow>
         <boxGeometry />
       </mesh>
-      <instancedMesh args={[undefined, materials.instanced, 1]} castShadow receiveShadow>
+      <instancedMesh args={[undefined, materials.instanced, 1]} customDepthMaterial={cutawayDepthMaterial} castShadow receiveShadow>
         <boxGeometry />
       </instancedMesh>
-      <instancedMesh ref={coloured} args={[undefined, materials.coloured, 1]} castShadow receiveShadow>
+      <instancedMesh
+        ref={coloured}
+        args={[undefined, materials.coloured, 1]}
+        customDepthMaterial={cutawayDepthMaterial}
+        castShadow
+        receiveShadow
+      >
         <boxGeometry />
       </instancedMesh>
       <Line
@@ -99,13 +106,19 @@ export function WarmUp() {
           <mesh material={materials.textured} castShadow receiveShadow>
             <boxGeometry />
           </mesh>
-          <mesh material={materials.texturedCut} castShadow receiveShadow>
+          <mesh material={materials.texturedCut} customDepthMaterial={cutawayDepthMaterial} castShadow receiveShadow>
             <boxGeometry />
           </mesh>
-          <mesh material={materials.roof} castShadow receiveShadow>
+          <mesh material={materials.roof} customDepthMaterial={cutawayDepthMaterial} castShadow receiveShadow>
             <boxGeometry />
           </mesh>
-          <instancedMesh ref={faceted} args={[undefined, materials.faceted, 1]} castShadow receiveShadow>
+          <instancedMesh
+            ref={faceted}
+            args={[undefined, materials.faceted, 1]}
+            customDepthMaterial={cutawayDepthMaterial}
+            castShadow
+            receiveShadow
+          >
             <boxGeometry />
           </instancedMesh>
           <mesh material={materials.striped}>

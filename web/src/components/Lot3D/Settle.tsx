@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
+import { sinkMoves } from './occlusion'
 import { useSequenceFrame } from './useSequence'
 
 /** How long after the last label the street counts as still: the floors' last bounce is over. */
@@ -22,13 +23,27 @@ export function SettleWatch({ onChange }: { onChange: (settled: boolean) => void
   return null
 }
 
-/** While frozen the sun's shadow map is drawn once and kept: the light and the street hold still. */
+/**
+ * While frozen the sun's shadow map is drawn once and kept: the light and the street hold still.
+ * It is redrawn on a frame when a neighbour sinks out of the camera's way or stands back up, so
+ * the shadow goes with it (occlusion.ts).
+ */
 export function ShadowFreeze({ frozen }: { frozen: boolean }) {
   const get = useThree((s) => s.get)
+  const seen = useRef(-1)
   useEffect(() => {
     const { shadowMap } = get().gl
     shadowMap.autoUpdate = !frozen
     shadowMap.needsUpdate = true
   }, [get, frozen])
+  // Same priority as CutawayFocus and mounted after it, so this runs once the sinks have moved
+  // this frame, before the frame draws.
+  useFrame(() => {
+    if (!frozen) return
+    const moves = sinkMoves()
+    if (moves === seen.current) return
+    seen.current = moves
+    get().gl.shadowMap.needsUpdate = true
+  })
   return null
 }

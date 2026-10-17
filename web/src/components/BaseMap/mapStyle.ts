@@ -5,6 +5,7 @@ import { tokenHex } from '../../styles/tokens'
 // stood up in 3D from the tiles' own heights. Layer ids are positron's.
 
 const BUILDING_FALLBACK_HEIGHT_M = 4
+export const BUILDINGS_LAYER = 'building-3d'
 
 type PaintProperty = Parameters<MapLibreMap['setPaintProperty']>[1]
 
@@ -31,7 +32,7 @@ export function applyPalette(map: MapLibreMap): void {
   const firstLabel = map.getStyle().layers.find((l) => l.type === 'symbol')?.id
   map.addLayer(
     {
-      id: 'building-3d',
+      id: BUILDINGS_LAYER,
       type: 'fill-extrusion',
       source: 'openmaptiles',
       'source-layer': 'building',
@@ -67,4 +68,15 @@ export function applyPalette(map: MapLibreMap): void {
     },
     firstLabel,
   )
+}
+
+/**
+ * Fades the map's buildings out (as the 3D street takes over at a lot) or back in. Opacity is one
+ * value for the whole layer, so MapLibre animates it without touching the tiles, and it draws a
+ * see-through layer nearest-surface-only, so the buildings fade as solid shapes.
+ */
+export function fadeBuildings(map: MapLibreMap, shown: boolean, durationMs: number): void {
+  if (!map.getLayer(BUILDINGS_LAYER)) return
+  map.setPaintProperty(BUILDINGS_LAYER, 'fill-extrusion-opacity-transition', { duration: durationMs, delay: 0 })
+  map.setPaintProperty(BUILDINGS_LAYER, 'fill-extrusion-opacity', shown ? 1 : 0)
 }

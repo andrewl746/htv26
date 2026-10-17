@@ -39,6 +39,13 @@
       "required": ["corridor_distance_m", "merge_angle_deg", "min_length_m"],
       "additionalProperties": false
     },
+    "placement": {
+      "type": "object",
+      "description": "T20: a design turns to follow the side lot lines when they lean align_to_sides_deg or more from the frontage normal.",
+      "properties": {"align_to_sides_deg": {"type": "number", "minimum": 0}},
+      "required": ["align_to_sides_deg"],
+      "additionalProperties": false
+    },
     "sample_step_m": {"type": "number", "exclusiveMinimum": 0},
     "nearby_permits_radius_m": {"type": "number", "minimum": 0},
     "context_radius_m": {"type": "number", "minimum": 0},
@@ -49,7 +56,7 @@
   },
   "required": [
     "version", "uncertainty_band_m", "uncertainty_band_coverage_pp", "larger_building", "attached",
-    "vacant_min_footprint_m2", "street_edge", "sample_step_m", "nearby_permits_radius_m", "context_radius_m",
+    "vacant_min_footprint_m2", "street_edge", "placement", "sample_step_m", "nearby_permits_radius_m", "context_radius_m",
     "permits_since", "permits_trend_since", "sixplex_wards", "partial_sixplex_wards"
   ],
   "additionalProperties": false,

@@ -1,0 +1,25 @@
+{
+  "_note": "Labels for the numbers map (MASTERSPEC 7.3). Shown as the title of each linked number. {design} is the design's name from contracts/copy/labels.json.",
+  "labels": {
+    "lot_width_actual": "This lot's width across the building",
+    "lot_width_required": "Lot width the {design} needs",
+    "lot_width_margin": "Lot width margin for the {design}",
+    "lot_depth_actual": "This lot's depth",
+    "lot_depth_required": "Lot depth the {design} needs",
+    "lot_depth_margin": "Lot depth margin for the {design}",
+    "building_length_allowed": "Building length allowed on this lot",
+    "building_length_design": "Length of the {design}",
+    "height_allowed": "Height allowed on this lot",
+    "height_design": "Height of the {design}",
+    "coverage_allowed_pct": "Lot coverage allowed on this lot",
+    "coverage_actual_pct": "Lot coverage of the {design} on this lot",
+    "units_allowed": "Homes allowed on this lot",
+    "units_design": "Homes in the {design}",
+    "permits_nearby_count": "Multiplex permits nearby since May 2023",
+    "permits_nearby_radius_m": "Distance counted as nearby",
+    "lot_area_m2": "This lot's area",
+    "design_bedrooms": "Bedrooms in the {design}",
+    "uncertainty_band_m": "Uncertainty band",
+    "uncertainty_band_coverage_pp": "Uncertainty band for lot coverage"
+  }
+}

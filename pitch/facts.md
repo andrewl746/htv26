@@ -22,6 +22,14 @@ Every number on a slide, in the Devpost or said in the demo comes from this tabl
 | 12 | A May 2026 recommendation to the City's Planning and Housing Committee asked staff to pilot open houses for residents interested in building multiplexes. | [Memo to Planning and Housing Committee, May 7, 2026](https://www.toronto.ca/legdocs/mmis/2026/ph/bgrd/backgroundfile-286730.pdf), recommendation 1(c); it also lists "making information available to interested residents and property owners about multiplex permissions" | Signed by the Mayor: don't name her (candidate rule). |
 | 13 | Of 290 minor variance applications for multiplexes from May 2023 to April 2025, 73% were approved. | Attachment 4 p31 | Only if asked. The detailed review found variance applications for 23 of 222 permits (10.4%); the spec's "about 10%" warning still applies: don't generalize it. |
 | 14 | The election is on Monday, October 26, 2026. | Ontario's Municipal Elections Act: the fourth Monday in October | |
+| 15 | Our permit count tracks the City's own: for May 2023 to November 2024, Ward 04 is 42 permits in both, and citywide we count 446 against the City's 452. | [Attachment 4](https://www.toronto.ca/legdocs/mmis/2025/ph/bgrd/backgroundfile-255851.pdf) p9–10, Figure 10 ("Multiplex Permits by Ward – All Permits"; wards 1–14 re-checked by Simone); comparison in `pipeline/reports/05-ward-check-vs-city.md` (branch `yuvi`) | Describe ours as "permits creating 2 to 6 homes, one row per project". Never say it equals the City's official count: most wards differ by a few permits (mean 3.0). Don't quote the City's "five most active wards" text next to that table: it ranks wards. |
+
+## Locked numbers (from `ward_summary.json` at `headline-locked`, never from this file)
+
+| Number | Current value | Final when |
+|---|---|---|
+| Ward 04 "did": multiplex permits since May 2023 | 81 (Yuvi's `permit_counts.json`, 2026-10-17) | after the Hour-24 lock |
+| Ward 04 "could" and every other ward count | not computed yet (batch run A10) | after the Hour-24 lock |
 
 ## Cut: could not be confirmed
 

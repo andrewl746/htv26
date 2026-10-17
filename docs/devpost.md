@@ -57,7 +57,7 @@ Data as of `[LOCKED: data_dates]`.
 
 ### Credit: the Toronto Multiplex Tracker
 
-The [Toronto Multiplex Tracker](https://malcolmkennedy.com/to-multiplex-map/) ([GitHub](https://github.com/zuzubak/to-multiplex-map)) maps building permits creating 1 to 6 homes since 2022. It is the prior art for our "did" half: we use its permit filtering rule and checked our counts against it. For May 2023 to November 2024 our rule finds 446 multiplex permits (permits creating 2 to 6 homes, one per project) against the City's own count of 452 (−1.3%). What we add is the "could" half: every lot checked against the City's free designs, side by side with what was permitted.
+The [Toronto Multiplex Tracker](https://malcolmkennedy.com/to-multiplex-map/) ([GitHub](https://github.com/zuzubak/to-multiplex-map)) maps building permits creating 1 to 6 homes since 2022. It is the prior art for our "did" half: we use its permit filtering rule. Our multiplex count is permits creating 2 to 6 homes, one row per project. We checked it against the City's own ward-by-ward table of the 452 multiplex permits issued from May 2023 to November 2024: Ward 04 matches exactly (42 and 42), and across all 25 wards the counts track closely (446 citywide against the City's 452). It is our count, not the City's official one, and most wards differ by a few permits. What we add is the "could" half: every lot checked against the City's free designs, side by side with what was permitted.
 
 ## How we used Gemini
 
@@ -72,7 +72,7 @@ The validator caught `[LOCKED: count from ai/logs/rejections.jsonl]` drafts duri
 
 ## How we used Tiger Data
 
-The "did" half of the headline is the permits the City has actually issued. We load every permit that passes the tracker's rule (7,342 located permits since January 2022, of which multiplexes are the ones creating 2 to 6 homes) into a TimescaleDB hypertable on Tiger Data. A continuous aggregate, `permits_ward_month`, keeps multiplex permits and homes per ward per month, so each ward's trend chart is one indexed read, refreshed by a policy. Compression is on: `[LOCKED: measured before → after on Tiger Data, pipeline/tiger/tiger.md]`. If Tiger Data is unreachable, the API serves a cached trend within two seconds and the chart says so. The address check never touches Tiger Data.
+The "did" half of the headline is the permits the City has actually issued. We load every permit that passes the tracker's rule (7,342 located permits since January 2022, of which multiplexes are the ones creating 2 to 6 homes) into a TimescaleDB hypertable on Tiger Data. The hypertable is split into 20 quarterly chunks. A continuous aggregate, `permits_ward_month`, keeps multiplex permits and homes per ward per month, so each ward's trend chart is one indexed read, refreshed by a policy. Compression is on and shrinks the table's total footprint by 27.6% (indexes by 77.7%), with every chunk compressed. The table is small today; the point is that it keeps working as the permit history grows. If Tiger Data is unreachable, the API serves a cached trend within two seconds and the chart says so. The address check never touches Tiger Data.
 
 ## Challenges we ran into
 

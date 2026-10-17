@@ -11,6 +11,6 @@
   "context_radius_m": 150,
   "permits_since": "2023-05-01",
   "permits_trend_since": "2022-01-01",
-  "sixplex_wards": ["04", "09", "10", "11", "12", "13", "14", "19"],
-  "partial_sixplex_wards": ["23"]
+  "sixplex_wards": ["04", "09", "10", "11", "12", "13", "14", "19", "23"],
+  "partial_sixplex_wards": []
 }

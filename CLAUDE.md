@@ -15,7 +15,17 @@ sections it assigns to your owner before coding. Repo: https://github.com/andrew
 - Jayden: /web. Branch jayden.
 - Simone: /ai, /docs, /pitch and contracts/copy/*.json. Branch simone.
 
+Approved exceptions (2026-10-17, MASTERSPEC 0.3 and 8.5); each file has exactly one owner:
+- Andrew also owns web/src/components/Lot3D/ (the 3D scene, taken over from Jayden).
+- Yuvi also owns web/src/components/WardMap/ (except TrendChart.tsx) and the next-steps files:
+  engine/suplex_engine/next_steps.py, engine/tests/test_next_steps.py,
+  contracts/copy/next_steps.json and web/src/components/ResultPanel/NextSteps.tsx.
+- Simone also owns web/src/components/WardMap/TrendChart.tsx.
+- Jayden owns the rest of /web (all UI that is not 3D): he wires WardMap into App.tsx and
+  mounts NextSteps.tsx.
+
 Never edit outside your folder. If you need a change elsewhere, stop and tell the owner.
+Every change reaches main through a pull request to Andrew. Never merge your own PR.
 Contract changes (anything in /contracts except contracts/copy) go through Andrew, who changes
 the schema, types.ts and the fixture together. Build against /contracts/fixtures first.
 

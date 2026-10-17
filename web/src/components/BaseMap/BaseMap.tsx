@@ -1,15 +1,19 @@
 import { useEffect, useRef } from 'react'
 import { Map as MapLibreMap, setWorkerUrl, type PaddingOptions } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
+import type { CheckResponse, DesignId } from '@contracts/types'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { PANEL_WIDTH_PX } from '../../layout'
 import { useApp } from '../../state/store'
-import { handoffZoom } from './handoff'
+import { lotFraming } from '../Lot3D/framing'
+import { FOV_DEG, REST_TILT_DEG } from '../Lot3D/view'
+import { zoomForDistance } from './handoff'
 import { applyPalette } from './mapStyle'
 
-// One map behind the whole app. On the landing page it is a slowly swaying 3D Toronto; a search
-// flies it down to the address, and the flight ends on the 3D scene's opening view (looking
-// straight down, north up, the lot centred beside the panel) so the scene can fade in over it.
+// One map behind the whole app. On the landing page it is a slowly swaying 3D Toronto. A search
+// flies it, in one move, to the lot's rest view: the 3D camera's own pose (tilt, heading toward the
+// lot from the street, distance, field of view, the lot centred beside the panel). The 3D scene
+// then fades in over it from that same camera, so the flight is the whole swoop.
 // The ward map (J5) and the lot-to-ward transition (J6) will reuse it.
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron'
@@ -21,7 +25,8 @@ const HERO = { center: [-79.3815, 43.6335] as [number, number], zoom: 14.2, pitc
 /** The landing view sways slowly either side of the grid instead of turning away from downtown. */
 const SWAY_DEG = 18
 const SWAY_PERIOD_S = 70
-const FLY_MS = 2800
+/** The flight carries the descent, the turn to the street side and the tilt, so it takes its time. */
+const FLY_MS = 3400
 /**
  * The flight never pulls back past this zoom. Further out the tiles thin out and buildings pop in
  * and out of the picture while it moves.
@@ -34,8 +39,6 @@ const FLY_MIN_ZOOM = 14
  */
 const TILE_ZOOM_LEVELS_ON_SCREEN = 3
 const TILE_COUNT_MAX_MIN_RATIO = 3
-/** The flight aims at the address point; this short ease lands on the lot centroid the scene uses. */
-const SETTLE_MS = 500
 const RETURN_MS = 2000
 // MapLibre looks for its worker next to its own file, which Vite moves. Hand it the worker as Vite
 // builds workers (a plain ?url import gets Vite's dev client injected, which cannot run in a worker).
@@ -44,10 +47,17 @@ setWorkerUrl(workerUrl)
 const NO_PADDING: PaddingOptions = { top: 0, right: 0, bottom: 0, left: 0 }
 const BESIDE_PANEL: PaddingOptions = { ...NO_PADDING, right: PANEL_WIDTH_PX }
 
-/** The handoff view over a point: what the 3D camera sees at the top of its swoop. */
-function lotView(map: MapLibreMap, [lon, lat]: [number, number]) {
-  const zoom = handoffZoom(lat, map.getContainer().clientHeight)
-  return { center: [lon, lat] as [number, number], zoom, pitch: 0, bearing: 0, padding: BESIDE_PANEL }
+/** The lot's rest view as a map camera: exactly where the 3D camera starts. */
+function restView(map: MapLibreMap, check: CheckResponse, designId: DesignId | null) {
+  const { lon, lat } = check.context.origin
+  const { distanceM, viewBearingDeg } = lotFraming(check, designId)
+  return {
+    center: [lon, lat] as [number, number],
+    zoom: zoomForDistance(lat, map.getContainer().clientHeight, distanceM),
+    pitch: 90 - REST_TILT_DEG,
+    bearing: viewBearingDeg,
+    padding: BESIDE_PANEL,
+  }
 }
 
 export function BaseMap() {
@@ -58,10 +68,9 @@ export function BaseMap() {
   const reduced = useReducedMotion()
 
   const view = useApp((s) => s.view)
-  const flight = useApp((s) => s.flight)
   const check = useApp((s) => s.check)
   const checkStatus = useApp((s) => s.checkStatus)
-  const arrive = useApp((s) => s.arrive)
+  const designId = useApp((s) => s.designId)
   const land = useApp((s) => s.land)
 
   useEffect(() => {
@@ -73,6 +82,8 @@ export function BaseMap() {
       interactive: false,
       attributionControl: { compact: true },
     })
+    // The 3D camera's field of view, so the two cameras see the same picture at the handoff.
+    map.setVerticalFieldOfView(FOV_DEG)
     // style.load, not load: load waits for every tile in view, and a quick click would skip the
     // flight. Recolouring here also means the grey stock style never shows.
     map.once('style.load', () => {
@@ -110,45 +121,30 @@ export function BaseMap() {
     return () => cancelAnimationFrame(frame)
   }, [view, reduced])
 
-  // Flying, part one: down to the address point while the check loads.
+  // Flying: once the check is in, one flight to the lot's rest view, then hand over.
   useEffect(() => {
     const map = mapRef.current
-    if (!map || view !== 'flying' || !flight || flight.arrived) return
-    if (!ready.current) {
-      arrive()
-      return
-    }
-    // Listen first: with reduced motion MapLibre jumps and fires moveend straight away.
-    map.once('moveend', arrive)
-    map.flyTo({ ...lotView(map, flight.to), duration: FLY_MS, minZoom: FLY_MIN_ZOOM })
-    return () => {
-      map.off('moveend', arrive)
-    }
-  }, [view, flight, arrive])
-
-  // Flying, part two: once the check is in, settle on the lot centroid and hand over.
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map || view !== 'flying' || !flight?.arrived || checkStatus === 'loading') return
+    if (!map || view !== 'flying' || checkStatus === 'loading') return
     if (checkStatus !== 'ready' || !check || !ready.current) {
       land()
       return
     }
-    const { lon, lat } = check.context.origin
+    // Listen first: with reduced motion MapLibre jumps and fires moveend straight away.
     map.once('moveend', land)
-    map.easeTo({ ...lotView(map, [lon, lat]), duration: SETTLE_MS })
+    // The design is the one set with the check; read it here so a tab change never restarts the flight.
+    const { designId: firstDesign } = useApp.getState()
+    map.flyTo({ ...restView(map, check, firstDesign), duration: FLY_MS, minZoom: FLY_MIN_ZOOM })
     return () => {
       map.off('moveend', land)
     }
-  }, [view, flight, check, checkStatus, land])
+  }, [view, check, checkStatus, land])
 
   // In the address check, keep the map under the lot (deep links and new searches jump straight there).
   useEffect(() => {
     const map = mapRef.current
     if (!map || view !== 'lot' || !check) return
-    const { lon, lat } = check.context.origin
-    map.jumpTo(lotView(map, [lon, lat]))
-  }, [view, check])
+    map.jumpTo(restView(map, check, designId))
+  }, [view, check, designId])
 
   return <div ref={container} className="basemap" aria-hidden="true" />
 }

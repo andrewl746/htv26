@@ -23,11 +23,14 @@ import { Sequence } from './Sequence'
 import { Street } from './Street'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
-import { restDistance } from './view'
+import { lotFraming, type Framing } from './framing'
+import { restDistance, restViewBearingDeg } from './view'
 import { WarmUp } from './WarmUp'
 
 // The ground reaches well past the 150 m context so its edge is always lost in the fog.
 const GROUND_SCALE = 4
+/** Before any lot: where the hidden camera waits. */
+const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg: restViewBearingDeg(null) }
 /** The street is cut away this far beyond the design's corners, so its edges stay clear. */
 const CUT_MARGIN_M = 2
 const FOG_NEAR_M = 90
@@ -41,7 +44,8 @@ const SHOW_STATS = import.meta.env.DEV && new URLSearchParams(window.location.se
  *
  * The canvas lives for the whole session: created while the landing page loads, its shaders
  * compiled by WarmUp, drawing nothing until the address check shows it. A lot's street is only
- * built once `check` is passed, after the map has landed, so none of that work lands mid-flight.
+ * built once `check` is passed, after the map has landed on the rest view, so none of that work
+ * lands mid-flight, and the scene fades in over the map from the very same camera.
  */
 export function Scene({
   check,
@@ -84,7 +88,8 @@ export function Scene({
   const groundRadius = check?.context.radius_m ?? engineConfig.context_radius_m
   const pinHeight = check ? Math.max(0, ...check.context.buildings.filter((b) => b.on_lot).map(buildingTop)) : 0
   const lotRadius = check ? Math.max(...openRing(check.lot.polygon_local).map(([x, y]) => Math.hypot(x, y))) : 0
-  const distanceM = restDistance(lotRadius, Math.max(pinHeight, spec?.height_m ?? 0))
+  // The same rest view the base map's flight ended on.
+  const framing = check ? lotFraming(check, designId) : DEFAULT_FRAMING
 
   // What the camera must always see through the street: the design, or the lot if none is placed.
   const focus = useMemo(() => {
@@ -108,8 +113,9 @@ export function Scene({
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
           <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
           <Camera
-            frontBearingDeg={check?.lot.front_bearing_deg ?? null}
-            distanceM={distanceM}
+            lotKey={lotKey}
+            distanceM={framing.distanceM}
+            viewBearingDeg={framing.viewBearingDeg}
             rightInsetPx={rightInsetPx}
           />
           <CutawayFocus focus={focus} />

@@ -11,17 +11,21 @@ import { useUrlSync } from './state/useUrlSync'
 export default function App() {
   useUrlSync()
   const view = useApp((s) => s.view)
+  const handoff = useApp((s) => s.handoff)
   const check = useApp((s) => s.check)
   const designId = useApp((s) => s.designId)
   const inLot = view === 'lot'
+  // The street is built as the check comes back (before the flight starts) and shown from the
+  // handoff, over the flight's last stretch.
+  const sceneCheck = inLot || view === 'flying' ? check : null
   return (
     <main className="app" style={{ '--panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties}>
       <BaseMap />
       {/* Always mounted so its shaders are ready before the first address (see Scene). */}
       <Scene
-        check={inLot ? check : null}
+        check={sceneCheck}
         designId={designId}
-        visible={inLot && check !== null}
+        visible={(inLot || handoff) && sceneCheck !== null}
         rightInsetPx={PANEL_WIDTH_PX}
       />
       {(view === 'landing' || view === 'flying') && <Landing leaving={view === 'flying'} />}

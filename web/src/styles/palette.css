@@ -1,31 +1,43 @@
 /*
- * Jayden's UI palette: Charcoal #605B56, Grey #837A75, Muted Olive #ACC18A, Tea Green #DAFEB7.
- * It overrides the UI tokens of contracts/design-tokens.css for /web only, until Andrew puts the
- * same values into that shared file so the briefing page matches (MASTERSPEC 6.10, Appendix D).
- * Then delete this file. The locked map colours (fit, nofit, permit) and the 3D scene tokens are
- * not changed here.
+ * The UI palette: Lime + Teal, a lime page with a deep teal accent. It overrides the UI and 3D
+ * scene tokens of contracts/design-tokens.css for /web only, until Andrew puts the same values into
+ * that shared file so the briefing page matches (MASTERSPEC 6.10, Appendix D). Then delete this
+ * file. The locked map colours (fit, nofit, permit) and the new homes in the 3D scene
+ * (--suplex-home-*) are not changed here, so a result never changes meaning with the palette.
  *
- * Contrast, measured: deep charcoal on Tea Green 12.8:1 (the spec asks 12:1 for the projector),
- * Charcoal on Tea Green 6.0:1, Tea Green on Charcoal 6.0:1, deep charcoal on Muted Olive 7.3:1,
- * Grey on Tea Green 3.8:1 (borders only; too low for text).
+ * Map tokens: --palette-olive is the low buildings, --palette-grey the water and mid-rise,
+ * --palette-charcoal the towers, --palette-tea the parks.
+ *
+ * Contrast, measured: ink on the page 13.1:1 (the spec asks 12:1 for the projector), ink on a
+ * panel 15.1:1, muted ink on the page 6.1:1, panel colour on the accent 6.6:1, and the input and
+ * tab borders against a panel 3.9:1.
  */
 :root {
-  --palette-charcoal: #605b56;
-  --palette-grey: #837a75;
-  --palette-olive: #acc18a;
-  --palette-tea: #dafeb7;
+  --palette-charcoal: #174549;
+  --palette-grey: #348e8e;
+  --palette-olive: #93b852;
+  --palette-tea: #c5e09a;
 
-  --suplex-ink: #2e2a27; /* Charcoal deepened for body text */
-  --suplex-ink-muted: #605b56; /* Charcoal */
-  --suplex-paper: #dafeb7; /* Tea Green */
-  --suplex-surface: #f4ffe9; /* Tea Green lifted toward white: panels, inputs, labels */
-  --suplex-line: #acc18a; /* Muted Olive: dividers and card edges */
-  --suplex-line-strong: #837a75; /* Grey: input and tab borders, which need 3:1 */
-  --suplex-accent: #605b56; /* Charcoal: primary buttons, focus rings, selection */
-  --suplex-accent-ink: #dafeb7; /* Tea Green on Charcoal */
-  --suplex-highlight: #acc18a; /* Muted Olive: hover and chips, with --suplex-ink text */
+  --suplex-ink: #14240a;
+  --suplex-ink-muted: #475a1c;
+  --suplex-paper: #dfecbf; /* the page */
+  --suplex-surface: #f4f8e5; /* panels, inputs, labels */
+  --suplex-line: #b1ca7c; /* dividers and card edges */
+  --suplex-line-strong: #69841b; /* input and tab borders, which need 3:1 */
+  --suplex-accent: #126464; /* primary buttons, focus rings, selection */
+  --suplex-accent-ink: #f7fde0;
+  --suplex-highlight: #b4d77f; /* hover and chips, with --suplex-ink text */
+  --suplex-lot: #fafcf2; /* the searched lot in the 3D scene */
 
-  /* The 3D lot used to borrow the page colour; a lime lot would read as "fits", so it keeps the
-     old warm off-white. */
-  --suplex-lot: #fbf8f2;
+  --suplex-sky-top: #c5df9e;
+  --suplex-sky-bottom: #f4f8e5;
+  --suplex-ground: #f4f8e5; /* the base map's land colour, so the scene fades in over the map */
+  --suplex-sun: #f7f3d8;
+  --suplex-neighbour-1: #d2e3ad;
+  --suplex-neighbour-2: #c1e0de;
+  --suplex-neighbour-3: #dfebbf;
+  --suplex-neighbour-4: #cde6de;
+  --suplex-neighbour-5: #d7e6b4;
+  --suplex-roof: #7ea05a;
+  --suplex-tree: #599c4d;
 }

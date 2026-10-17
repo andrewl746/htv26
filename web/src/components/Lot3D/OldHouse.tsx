@@ -17,7 +17,7 @@ const SQUASH_WIDEN = 0.15
 export function OldHouse({ buildings, squash }: { buildings: ContextBuilding[]; squash: boolean }) {
   const built = useMemo(() => buildings.filter((b) => b.on_lot).map(buildBuilding), [buildings])
   useEffect(() => () => disposeBuilt(built), [built])
-  const materials = useStreetMaterials()
+  const materials = useStreetMaterials({ cutaway: false })
   const groups = useRef<(Group | null)[]>([])
 
   useSequenceFrame((t, { timeline }) => {

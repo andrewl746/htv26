@@ -22,7 +22,7 @@ export function Landing({ leaving }: { leaving: boolean }) {
               key={e.address_id}
               type="button"
               className="chip"
-              onClick={() => openAddress(e.address_id, { flyTo: e.lonLat })}
+              onClick={() => openAddress(e.address_id, { fly: true })}
             >
               {e.address_full}
             </button>

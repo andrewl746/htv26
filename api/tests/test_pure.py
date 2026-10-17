@@ -14,8 +14,8 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from api.main import create_app, trend_response, ward_response, warm_tiger_import
-from api.store import normalise_address, normalise_data_dates, one_per_lot, prefix_range
+from api.main import Settings, create_app, trend_response, ward_response, warm_tiger_import
+from api.store import StoreError, load, normalise_address, normalise_data_dates, one_per_lot, prefix_range
 
 FIXTURES = Path(__file__).resolve().parents[2] / "contracts" / "fixtures"
 
@@ -115,6 +115,45 @@ def test_check_needs_exactly_one_lookup(bare_client, query: str) -> None:
     body = r.json()
     assert body["error"] == "bad_request"
     assert isinstance(body["detail"], str) and body["detail"]
+
+
+def test_cors_allows_localhost_ports_and_the_extra_origins(tmp_path) -> None:
+    settings = Settings(data_dir=tmp_path, gpkg_path=None, ai_url="http://localhost:8001",
+                        cors_origins=("https://demo.example",))
+    with TestClient(create_app(store=SimpleNamespace(), settings=settings)) as c:
+        for origin in ("http://localhost:5173", "http://127.0.0.1:4173", "http://localhost", "https://demo.example"):
+            r = c.get("/check", headers={"Origin": origin})
+            assert r.headers.get("access-control-allow-origin") == origin, origin
+        for origin in ("http://evil.example", "http://localhost.evil.example", "https://localhost:5173"):
+            r = c.get("/check", headers={"Origin": origin})
+            assert "access-control-allow-origin" not in r.headers, origin
+        r = c.options("/check", headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"})
+        assert r.status_code == 200
+
+
+def test_settings_from_the_environment(monkeypatch) -> None:
+    monkeypatch.setenv("SUPLEX_DATA_DIR", "some/dir")
+    monkeypatch.setenv("SUPLEX_GPKG", "C:/data/suplex_citywide.gpkg")
+    monkeypatch.setenv("SUPLEX_CORS_ORIGINS", "https://a.example, https://b.example,")
+    monkeypatch.setenv("SUPLEX_AI_URL", "http://ai.example:9/")
+    s = Settings.from_env()
+    assert (s.data_dir, s.gpkg_path) == (Path("some/dir"), Path("C:/data/suplex_citywide.gpkg"))
+    assert s.cors_origins == ("https://a.example", "https://b.example")
+    assert s.ai_url == "http://ai.example:9"
+    for name in ("SUPLEX_DATA_DIR", "SUPLEX_GPKG", "SUPLEX_CORS_ORIGINS", "SUPLEX_AI_URL"):
+        monkeypatch.delenv(name)
+    s = Settings.from_env()
+    assert (s.data_dir, s.gpkg_path, s.cors_origins, s.ai_url) == (Path("./data/out"), None, (),
+                                                                   "http://localhost:8001")
+
+
+def test_startup_fails_naming_the_missing_geopackage(tmp_path) -> None:
+    settings = Settings(data_dir=tmp_path, gpkg_path=None, ai_url="http://localhost:8001", cors_origins=())
+    with pytest.raises(StoreError, match=re.escape(str(tmp_path / "suplex.gpkg"))), \
+            TestClient(create_app(settings=settings)):
+        pass
+    with pytest.raises(StoreError, match="suplex_citywide.gpkg"):
+        load(tmp_path, tmp_path / "suplex_citywide.gpkg")
 
 
 @pytest.mark.parametrize("path", ["/check?lon=abc&lat=43.6", "/search?q=ab&limit=0", "/search?q=ab&limit=x"])

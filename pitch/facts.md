@@ -24,6 +24,8 @@ Every number on a slide, in the Devpost or said in the demo comes from this tabl
 | 14 | The election is on Monday, October 26, 2026. | Ontario's Municipal Elections Act: the fourth Monday in October | |
 | 15 | Our permit count tracks the City's own: for May 2023 to November 2024, Ward 04 is 42 permits in both, and citywide we count 446 against the City's 452. | [Attachment 4](https://www.toronto.ca/legdocs/mmis/2025/ph/bgrd/backgroundfile-255851.pdf) p9–10, Figure 10 ("Multiplex Permits by Ward – All Permits"; wards 1–14 re-checked by Simone); comparison in `pipeline/reports/05-ward-check-vs-city.md` (branch `yuvi`) | Describe ours as "permits creating 2 to 6 homes, one row per project". Never say it equals the City's official count: most wards differ by a few permits (mean 3.0). Don't quote the City's "five most active wards" text next to that table: it ranks wards. |
 
+| 16 | A multiplex of up to six units pays no development charges or parkland fees on its added homes: none on the second to fourth units, the fifth and sixth reduced to $0, and no parkland cash-in-lieu on the second to sixth, while the lot has no more than six units. | [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), enacted July 24, 2025, amending Municipal Code 415-6 A (2) ("shall not be imposed with respect to the second, third or fourth residential [unit]" … "for the fifth or sixth … shall be reduced to zero") and 415-30 A (16) (parkland, second to sixth unit). Read by Simone, 2026-10-17 | **Say "up to six units" and cite By-law 845-2025** (T21, settled by Andrew). The City's "Considerations when building multiplexes" page still says four (dated June 30, 2025): it is out of date, don't cite it. A garden or laneway suite on the City's deferral program doesn't count toward the six. **Never name the councillors** who moved or seconded the by-law (its first lines do). |
+
 ## Locked numbers (from `ward_summary.json` at `headline-locked`, never from this file)
 
 | Number | Current value | Final when |
@@ -39,3 +41,4 @@ Every number on a slide, in the Devpost or said in the demo comes from this tabl
 | "City reports say plain-language guidance is missing" | Not in the documents checked | Row 12 ("making information available …") |
 | "The Mayor has proposed open houses" | True, but names a likely candidate | Row 12 wording |
 | "Housing is a top issue" (no figure) | Too vague to source | Row 11 |
+| "Development charges are exempt only up to four units" | Out of date: By-law 845-2025 (July 24, 2025) extended it to six; the City's "Considerations" page hasn't caught up (T21) | Row 16: "up to six units", citing the by-law |

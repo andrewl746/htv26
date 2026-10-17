@@ -9,11 +9,12 @@
   "fr": {
     "reviewed": "Andrew, 2026-10-17",
     "rules": [
-      "A City of Toronto ward is a \"quartier\" (\"Quartier 04\", \"dans ce quartier\"). Never use \"circonscription\", which means a riding."
+      "A City of Toronto ward is a \"quartier\" (\"Quartier 04\", \"dans ce quartier\"). Never use \"circonscription\", which means a riding.",
+      "A house lot is a \"terrain\" (\"terrains résidentiels\", \"ce terrain\"). Never use \"lot\" or \"lots\"."
     ],
-    "forbidden": ["circonscription"],
+    "forbidden": ["circonscription", "lot"],
     "fixed": {
-      "heading_blocking_rule": "Pourquoi les lots ne conviennent pas"
+      "heading_blocking_rule": "Pourquoi les terrains ne conviennent pas"
     }
   }
 }

@@ -17,7 +17,7 @@ Status: full draft (S10), 2026-10-17. Paste each section into the matching Devpo
 
 ## Inspiration
 
-Since May 2023, multiplexes of up to four homes have been allowed on residential lots across Toronto. In the first 18 months the City issued 452 multiplex permits, creating about 726 net new homes, and three quarters of those permits were renovations or conversions rather than new buildings. On October 2, 2026 the City released free pre-approved designs for fourplexes and sixplexes. But nothing tells a resident whether one of those designs fits their lot, and nobody publishes, ward by ward, where multiplexes could go compared with where they've actually been permitted.
+Since May 2023, multiplexes of up to four homes have been allowed on residential lots across Toronto. In the first 18 months the City issued 452 multiplex permits, creating about 726 net new homes, and three quarters of those permits were renovations or conversions rather than new buildings. Development charges and parkland fees are already waived on the added homes of a multiplex of up to six units ([By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf)), and on October 2, 2026 the City released free pre-approved designs for fourplexes and sixplexes. But nothing tells a resident whether one of those designs fits their lot, and nobody publishes, ward by ward, where multiplexes could go compared with where they've actually been permitted.
 
 With Toronto's municipal election on October 26, 2026, and 69% of GTA residents saying housing affordability will affect their vote (Ipsos, September 2026), we wanted residents, journalists and community groups to have the same sourced, neutral facts: what's allowed, and what got built.
 

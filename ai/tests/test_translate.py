@@ -12,6 +12,7 @@ from jsonschema import Draft202012Validator
 from ai.config import contract, load_settings
 from ai.gemini import GeminiError
 from ai.main import app, get_generate, get_settings
+from ai.tests.fakes import fake_translate
 
 BRIEFING = contract("fixtures/briefing.request.json")
 EXPLAIN = contract("fixtures/explain.request.json")
@@ -23,7 +24,7 @@ EXPLAIN_EN = {"template_text": contract("fixtures/explain.response.json")["templ
 
 
 def french(english: dict) -> dict:
-    return {k: f"FR {v}" for k, v in english.items()}
+    return fake_translate(english, "FR ")
 
 
 class FakeGemini:
@@ -138,10 +139,22 @@ def test_english_never_gets_the_month_allowance(client):
 
 
 def test_french_glossary_fixes_the_reviewed_heading(client):
-    use(FakeGemini(lambda english: {k: f"FR {v}" for k, v in english.items()}))
+    use(FakeGemini(french))
     body = briefing(client, "fr")
     heading = next(s for s in body["sections"] if s["id"] == "blocking_rule")["heading"]
-    assert heading == "Pourquoi les lots ne conviennent pas"  # Andrew's review, not the model's wording
+    assert heading == "Pourquoi les terrains ne conviennent pas"  # the French review, not the model's wording
+
+
+@pytest.mark.parametrize(("text", "found"), [
+    ("Les lots ne conviennent pas.", {"lot"}),
+    ("Un lot étroit.", {"lot"}),
+    ("Un lotissement, un pilote, un ballot.", set()),
+    ("{{could_lots}} terrains et {{lots_per_permit}}", set()),
+    ("Deux duplexes.", {"duplex"}),
+])
+def test_forbidden_words_match_whole_words_only(text, found):
+    from ai.translate import forbidden_found
+    assert forbidden_found({"t": text}, ["lot", "duplex"]) == found
 
 
 def test_a_forbidden_word_is_rejected_and_retried(client, settings):
@@ -149,7 +162,7 @@ def test_a_forbidden_word_is_rejected_and_retried(client, settings):
 
     def ward_word(english):
         word = next(replies)
-        return {k: f"FR {v}".replace("Ward", word.capitalize()) for k, v in english.items()}
+        return {k: v.replace("Ward", word.capitalize()) for k, v in french(english).items()}
 
     fake = use(FakeGemini(ward_word))
     body = briefing(client, "fr")

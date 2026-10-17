@@ -28,4 +28,9 @@
   /* The 3D lot used to borrow the page colour; a lime lot would read as "fits", so it keeps the
      old warm off-white. */
   --suplex-lot: #fbf8f2;
+
+  /* The 3D ground and its fog take the base map's land colour, so the scene fades in over the map
+     with the same ground under it and only the buildings change hands. */
+  --suplex-ground: #f4ffe9;
+  --suplex-sky-bottom: #f4ffe9;
 }

@@ -11,6 +11,7 @@ import {
 } from 'three'
 import type { LocalPoint } from '@contracts/types'
 import { tokenHex } from '../../styles/tokens'
+import { withCutaway } from './cutaway'
 import { seededRandom } from './geometry'
 import { ease, growSpan, progress, type Timeline } from './timeline'
 import { useSequenceFrame } from './useSequence'
@@ -74,8 +75,9 @@ export function Trees({ trees }: { trees: LocalPoint[] }) {
       // Unit trunk standing on the ground; each instance scales it to its height.
       trunk: new CylinderGeometry(TRUNK.radiusTop, TRUNK.radiusBottom, 1, 7).translate(0, 0.5, 0),
       puff: new IcosahedronGeometry(1, 1),
-      bark: new MeshStandardMaterial({ color: tokenHex('--suplex-trunk'), roughness: 1 }),
-      leaves: new MeshStandardMaterial({ color: 'white', roughness: 0.9 }),
+      // Cut away like the neighbours where a tree stands between the camera and the design.
+      bark: withCutaway(new MeshStandardMaterial({ color: tokenHex('--suplex-trunk'), roughness: 1 })),
+      leaves: withCutaway(new MeshStandardMaterial({ color: 'white', roughness: 0.9 })),
     }),
     [],
   )

@@ -36,9 +36,16 @@ export function applyPalette(map: MapLibreMap): void {
       source: 'openmaptiles',
       'source-layer': 'building',
       minzoom: 12,
-      // A building drawn as parts also comes as an outline marked hide_3d; drawing both stacks
-      // coplanar faces that flicker as the camera moves.
-      filter: ['!=', ['get', 'hide_3d'], true],
+      filter: [
+        'all',
+        // A building drawn as parts also comes as an outline marked hide_3d; drawing both stacks
+        // coplanar faces that flicker as the camera moves.
+        ['!=', ['get', 'hide_3d'], true],
+        // Tiles below zoom 14 merge neighbouring buildings into whole blocks, which split apart
+        // into houses as the camera nears. Only zoom-14 tiles (and closer) draw buildings; a parent
+        // tile standing in while its children load shows ground rather than a block.
+        ['>=', ['zoom'], 14],
+      ],
       paint: {
         // Taller buildings darken from olive through grey to charcoal, so the skyline reads.
         'fill-extrusion-color': [

@@ -38,7 +38,7 @@ export function Street({ buildings }: { buildings: ContextBuilding[] }) {
     [buildings],
   )
   useEffect(() => () => disposeBuilt(built), [built])
-  const materials = useStreetMaterials()
+  const materials = useStreetMaterials({ cutaway: true })
 
   const [merged, setMerged] = useState(false)
   const asked = useRef(false)

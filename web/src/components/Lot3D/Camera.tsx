@@ -2,41 +2,38 @@ import { useLayoutEffect, useMemo, useRef, type ComponentRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import { Spherical, Vector3 } from 'three'
-import { ease, lerp, progress } from './timeline'
+import { cameraBridge } from './cameraBridge'
 import { useSequenceFrame } from './useSequence'
-import { FOV_DEG, START_BEARING_DEG, SWOOP_START_M, TARGET_HEIGHT_M } from './view'
+import { FOV_DEG, REST_TILT_DEG, TARGET_HEIGHT_M } from './view'
 
-// Step 1 (MASTERSPEC 6.3): the camera swoops from top-down at 120 m to a 35° tilt on the street side
-// of the lot, turning from the map's north-up as it goes. The spec's 45 m cuts off the front of a
-// 40 m deep lot, so it settles a little further out. Step 7: a slow orbit, 24 s per turn, that
-// stops while someone drags and resumes 5 s after.
-const DISTANCE_M = 60
-const TILT_DEG = 35
+// Steps 1 and 7 (MASTERSPEC 6.3). The swoop is the base map's flight: over its last stretch this
+// camera follows the map's (cameraBridge) while the scene fades in, then comes to rest with it on
+// the rest view. Then a slow orbit, 24 s per turn, that stops while someone drags and resumes 5 s
+// after.
 const TARGET = new Vector3(0, TARGET_HEIGHT_M, 0)
-/** Straight down has no heading, so the swoop starts a hair off vertical. */
-const SWOOP_START_POLAR = 0.02
 const ORBIT_PERIOD_S = 24
 const ORBIT_IDLE_S = 5
-/** A lot with no measurable frontage has no bearing; look from the south. */
-const DEFAULT_BEARING_DEG = 180
 const UP = new Vector3(0, 1, 0)
 
-export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: number | null; rightInsetPx: number }) {
+export function Camera({
+  lotKey,
+  distanceM,
+  viewBearingDeg,
+  rightInsetPx,
+}: {
+  lotKey: string
+  distanceM: number
+  viewBearingDeg: number
+  rightInsetPx: number
+}) {
   const camera = useRef<ComponentRef<typeof PerspectiveCamera>>(null)
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const size = useThree((s) => s.size)
   const clock = useThree((s) => s.clock)
-
-  // Spherical azimuth runs from +z toward +x. Looking down with a compass bearing at the top of the
-  // screen puts the camera on the opposite side; at rest it sits on the street side.
-  const startAzimuth = (-START_BEARING_DEG * Math.PI) / 180
-  const restAzimuth = Math.PI - ((frontBearingDeg ?? DEFAULT_BEARING_DEG) * Math.PI) / 180
-  const turn = Math.atan2(Math.sin(restAzimuth - startAzimuth), Math.cos(restAzimuth - startAzimuth))
-  const restPolar = ((90 - TILT_DEG) * Math.PI) / 180
-  const scratch = useMemo(() => ({ spherical: new Spherical(), offset: new Vector3() }), [])
+  const offset = useMemo(() => new Vector3(), [])
   const user = useRef({ dragging: false, releasedAt: -Infinity })
 
-  // Centre the lot in the part of the canvas the result panel does not cover.
+  // Centre the lot in the part of the canvas the result panel does not cover, as the map's padding does.
   useLayoutEffect(() => {
     const cam = camera.current
     if (!cam) return
@@ -46,6 +43,20 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
     else cam.clearViewOffset()
     cam.updateProjectionMatrix()
   }, [size, rightInsetPx])
+
+  // A new lot starts at the rest view: on the street side, looking along the view bearing.
+  // Spherical azimuth runs from +z toward +x; a camera looking at compass bearing b sits at -b.
+  useLayoutEffect(() => {
+    const cam = camera.current
+    if (!cam) return
+    const polar = ((90 - REST_TILT_DEG) * Math.PI) / 180
+    const azimuth = (-viewBearingDeg * Math.PI) / 180
+    cam.position.setFromSpherical(new Spherical(distanceM, polar, azimuth)).add(TARGET)
+    cam.lookAt(TARGET)
+    controls.current?.target.copy(TARGET)
+    controls.current?.update()
+    user.current = { dragging: false, releasedAt: -Infinity }
+  }, [lotKey, distanceM, viewBearingDeg])
 
   useLayoutEffect(() => {
     const ctl = controls.current
@@ -64,30 +75,26 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
     }
   }, [clock])
 
+  // Before the labels and the cutaway read the camera this frame, and after the controls (-1).
   useSequenceFrame((t, { timeline, reduced }, frame, delta) => {
     const cam = camera.current
     const ctl = controls.current
-    if (!cam || !ctl) return
-    if (t <= timeline.swoop.end + delta) {
-      // Hand over exactly at rest, even if the last swoop frame was skipped.
-      ctl.enabled = false
-      const p = ease.outCubic(progress(t, timeline.swoop))
-      scratch.spherical.set(
-        lerp(SWOOP_START_M, DISTANCE_M, p),
-        lerp(SWOOP_START_POLAR, restPolar, p),
-        startAzimuth + turn * p,
-      )
-      cam.position.setFromSpherical(scratch.spherical).add(TARGET)
-      cam.lookAt(TARGET)
+    if (!cam) return
+    // While the map is still flying in, be the map's camera.
+    const pose = cameraBridge.read?.()
+    if (pose) {
+      if (ctl) ctl.enabled = false
+      cam.position.set(...pose.position)
+      cam.lookAt(...pose.target)
       return
     }
-    ctl.enabled = true
+    if (ctl && !ctl.enabled) ctl.enabled = true
     const idle = !user.current.dragging && frame.clock.elapsedTime - user.current.releasedAt >= ORBIT_IDLE_S
     if (reduced || t < timeline.orbitStart || !idle) return
-    scratch.offset.copy(cam.position).sub(TARGET).applyAxisAngle(UP, ((2 * Math.PI) / ORBIT_PERIOD_S) * delta)
-    cam.position.copy(TARGET).add(scratch.offset)
+    offset.copy(cam.position).sub(TARGET).applyAxisAngle(UP, ((2 * Math.PI) / ORBIT_PERIOD_S) * delta)
+    cam.position.copy(TARGET).add(offset)
     cam.lookAt(TARGET)
-  })
+  }, -0.5)
 
   return (
     <>
@@ -99,7 +106,7 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
         enableDamping
         enablePan={false}
         minDistance={15}
-        maxDistance={SWOOP_START_M}
+        maxDistance={120}
         maxPolarAngle={1.35}
       />
     </>

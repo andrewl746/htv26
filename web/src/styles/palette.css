@@ -31,7 +31,7 @@
 
   --suplex-sky-top: #c5df9e;
   --suplex-sky-bottom: #f4f8e5;
-  --suplex-ground: #d8e5b8;
+  --suplex-ground: #f4f8e5; /* the base map's land colour, so the scene fades in over the map */
   --suplex-sun: #f7f3d8;
   --suplex-neighbour-1: #d2e3ad;
   --suplex-neighbour-2: #c1e0de;

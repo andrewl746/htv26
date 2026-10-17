@@ -4,6 +4,7 @@ import { search } from '../../api/client'
 import { isAbort } from '../../api/errors'
 import { labels, pending } from '../../copy'
 import { useApp } from '../../state/store'
+import { streetPart } from './streetPart'
 
 // Address autocomplete (MASTERSPEC 6.2, J2): a WAI-ARIA combobox over GET /search.
 const DEBOUNCE_MS = 150
@@ -22,7 +23,7 @@ export function Search({ variant }: { variant: 'hero' | 'compact' }) {
   const [open, setOpen] = useState(false)
   const listId = useId()
 
-  const q = query.trim()
+  const q = streetPart(query)
   const tooShort = q.length < MIN_CHARS
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export function Search({ variant }: { variant: 'hero' | 'compact' }) {
     if (!result) return
     setQuery(result.address_full)
     setOpen(false)
-    openAddress(result.address_id, { flyTo: [result.lon, result.lat] })
+    openAddress(result.address_id, { fly: true })
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -97,7 +98,8 @@ export function Search({ variant }: { variant: 'hero' | 'compact' }) {
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
       />
-      <div className="search-dropdown" hidden={!showList}>
+      {/* With no options, the dropdown only says so; clicks pass through it to the example chips below. */}
+      <div className="search-dropdown" hidden={!showList} data-message-only={results.length === 0 || undefined}>
         <ul id={listId} role="listbox" className="search-list">
           {results.map((r, i) => (
             <li

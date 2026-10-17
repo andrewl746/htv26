@@ -15,8 +15,9 @@ def _load(name: str, folder: str) -> dict[str, Any]:
 
 
 def copy(name: str) -> dict[str, Any]:
-    """labels | reasons | not_checked | questions | disclaimers."""
-    return _load(name, str(contracts_dir().resolve()))
+    """labels | reasons | not_checked | questions | disclaimers. Cached per folder as spelled: resolving the path
+    on every call was a fifth of the batch run's time (a filesystem call per rule label)."""
+    return _load(name, str(contracts_dir()))
 
 
 def rule_label(rule_id: str) -> str:

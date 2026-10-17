@@ -11,6 +11,8 @@ import math
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 
+import numpy as np
+import shapely
 from shapely import affinity
 from shapely.geometry import LineString, MultiLineString, MultiPolygon, Point, Polygon
 from shapely.geometry.base import BaseGeometry
@@ -55,8 +57,12 @@ class StreetFrame:
 
 
 def centroid_local(geom: BaseGeometry, centroid: Point) -> BaseGeometry:
-    """Translate a world geometry into the centroid frame (metres east and north of the centroid)."""
-    return affinity.translate(geom, xoff=-centroid.x, yoff=-centroid.y)
+    """Translate a world geometry into the centroid frame (metres east and north of the centroid).
+
+    The same arithmetic as `affinity.translate` (x - cx exactly), without its matrix set-up: the context
+    buildings call this hundreds of times per lot."""
+    offset = np.array([centroid.x, centroid.y])
+    return shapely.transform(geom, lambda xy: xy - offset)
 
 
 def coords_rounded(geom: BaseGeometry, ndigits: int = 2) -> list[Coord]:
@@ -325,15 +331,19 @@ class LotGeometry:
         return (float(x1), float(y1)), (float(x2), float(y2))
 
     # --- measurements (street frame) ---
+    def width_at(self, y: float) -> float | None:
+        """`cross_section_width` at height y under the centroid, cached: the four designs share most samples."""
+        assert self.lot_street is not None and self.centroid_street is not None
+        cache = self._extra.setdefault("width_at", {})
+        if y not in cache:
+            cache[y] = cross_section_width(self.lot_street, y, self.centroid_street.x)
+        return cache[y]
+
     def width_across_band(self, front_setback_m: float, length_m: float) -> float:
         """Section 5.2 step 4: the minimum cross-section width over the building band."""
-        assert self.lot_street is not None and self.centroid_street is not None
         step = self.cfg.sample_step_m
-        widths = []
-        for y in _frange(front_setback_m, front_setback_m + length_m, step):
-            w = cross_section_width(self.lot_street, y, self.centroid_street.x)
-            if w is not None:
-                widths.append(w)
+        widths = [w for y in _frange(front_setback_m, front_setback_m + length_m, step)
+                  if (w := self.width_at(y)) is not None]
         return min(widths) if widths else 0.0
 
     def depth_across_width(self, x_from: float, x_to: float) -> float:

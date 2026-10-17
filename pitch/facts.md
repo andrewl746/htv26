@@ -24,6 +24,8 @@ Every number on a slide, in the Devpost or said in the demo comes from this tabl
 | 14 | The election is on Monday, October 26, 2026. | Ontario's Municipal Elections Act: the fourth Monday in October | |
 | 15 | Our permit count tracks the City's own: for May 2023 to November 2024, Ward 04 is 42 permits in both, and citywide we count 446 against the City's 452. | [Attachment 4](https://www.toronto.ca/legdocs/mmis/2025/ph/bgrd/backgroundfile-255851.pdf) p9–10, Figure 10 ("Multiplex Permits by Ward – All Permits"; wards 1–14 re-checked by Simone); comparison in `pipeline/reports/05-ward-check-vs-city.md` (branch `yuvi`) | Describe ours as "permits creating 2 to 6 homes, one row per project". Never say it equals the City's official count: most wards differ by a few permits (mean 3.0). Don't quote the City's "five most active wards" text next to that table: it ranks wards. |
 
+| 16 | A multiplex with up to four units on the lot is generally exempt from development charges and parkland cash-in-lieu. | [City of Toronto, "Considerations when building multiplexes"](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/): "In most cases, Multiplexes are exempt from development charges and cash-in-lieu of parkland dedication … provided there are no more than four units on the residential lot" (Municipal Code 415-6 and 415-30; page dated June 30, 2025) | **Say four, never six** (T21). Keep "generally" or "in most cases". For five or six units: "confirm with the City". Open question: the May 7, 2026 memo (row 12's source) says waivers were expanded to "up to six units plus a garden or laneway suite", and a 2026 TRREB submission says the same; the City's page and the by-law sections say four. Until T21 settles it, four is the only figure we use. |
+
 ## Locked numbers (from `ward_summary.json` at `headline-locked`, never from this file)
 
 | Number | Current value | Final when |
@@ -39,3 +41,4 @@ Every number on a slide, in the Devpost or said in the demo comes from this tabl
 | "City reports say plain-language guidance is missing" | Not in the documents checked | Row 12 ("making information available …") |
 | "The Mayor has proposed open houses" | True, but names a likely candidate | Row 12 wording |
 | "Housing is a top issue" (no figure) | Too vague to source | Row 11 |
+| "Development charges are waived for up to six units" | Comes from a May 2026 recommendation and a memo, not the City's exemption page or the by-law sections it cites (T21) | Row 16: "up to four units" |

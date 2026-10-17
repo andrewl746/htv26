@@ -81,7 +81,7 @@ export function Lot({ polygon, design }: { polygon: LocalPoint[]; design: Design
     <group>
       <GroundPatch points={polygon} y={LOT_Y} colorToken="--suplex-lot" step="outline" order={1} />
       {design && setbacks && (
-        <group key={design.design_id}>
+        <group key={`setbacks-${design.design_id}`}>
           {[setbacks.front, setbacks.rear, setbacks.left, setbacks.right].map((strip, i) => (
             <GroundPatch key={i} points={strip} y={SETBACK_Y} colorToken="--suplex-setback" step="setbacks" order={2} />
           ))}
@@ -89,7 +89,7 @@ export function Lot({ polygon, design }: { polygon: LocalPoint[]; design: Design
       )}
       {design?.buildable_local && (
         <GroundPatch
-          key={design.design_id}
+          key={`buildable-${design.design_id}`}
           points={design.buildable_local}
           y={BUILDABLE_Y}
           colorToken="--suplex-buildable"

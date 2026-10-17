@@ -551,5 +551,113 @@
     "disclaimer": "Screening only, not a permit or legal advice.",
     "generated_at": "2026-10-17T00:00:00Z",
     "cached": false
-  }
+  },
+  "next_steps": [
+    {
+      "id": "survey",
+      "group": "confirm",
+      "title": "Get a current survey of your lot",
+      "text": "The City's plans need a site plan based on a current survey by an Ontario Land Surveyor. Suplex measures from City lot lines, which are not survey-accurate.",
+      "who": "An Ontario Land Surveyor",
+      "why": "Because at least one City design may fit this lot.",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ]
+    },
+    {
+      "id": "zoning_check",
+      "group": "confirm",
+      "title": "Check the zoning with the City",
+      "text": "Toronto Building's zoning staff can confirm what the by-law allows on this lot. For a written answer before you apply, a Zoning Applicable Law Certificate reviews your drawings.",
+      "who": "Toronto Building",
+      "why": "Because at least one City design may fit this lot.",
+      "links": [
+        {
+          "label": "Considerations when building multiplexes",
+          "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/"
+        },
+        {
+          "label": "Zoning Applicable Law Certificate",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/"
+        }
+      ]
+    },
+    {
+      "id": "trees",
+      "group": "approvals",
+      "title": "Check the trees",
+      "text": "Trees 30 cm or more across on your lot, and City street trees of any size, need a permit before work that could injure or remove them. A building permit does not cover trees.",
+      "who": "Urban Forestry",
+      "why": "Because at least one City design may fit this lot.",
+      "links": [
+        {
+          "label": "When to apply for a tree or ravine permit",
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/"
+        }
+      ]
+    },
+    {
+      "id": "designer",
+      "group": "apply",
+      "title": "Work with a design professional",
+      "text": "A qualified design professional completes the site-specific parts: the site plan, the lot grading plan, the zoning and code matrices and the signed letters. Changing the plan itself means it is no longer pre-approved.",
+      "who": "A design professional",
+      "why": "Because at least one City design may fit this lot.",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ]
+    },
+    {
+      "id": "permit",
+      "group": "apply",
+      "title": "Apply for the building permit",
+      "text": "Apply online through Toronto Building and enter the pre-approved plan number; you do not resubmit the City's drawings.",
+      "who": "Toronto Building",
+      "why": "Because at least one City design may fit this lot.",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ]
+    },
+    {
+      "id": "demolition",
+      "group": "apply",
+      "title": "Add a demolition permit",
+      "text": "Replacing the house needs a demolition permit, which can be added to the same application after you submit.",
+      "who": "Toronto Building",
+      "why": "Because there is a house on this lot today.",
+      "links": [
+        {
+          "label": "Pre-approved multiplex plans",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/"
+        }
+      ]
+    },
+    {
+      "id": "fees",
+      "group": "apply",
+      "title": "Check development charges",
+      "text": "Under By-law 845-2025, a lot with up to six units pays no development charges or parkland cash-in-lieu on the new units. Confirm the fees with the City before you rely on them.",
+      "who": "Toronto Building",
+      "why": "Because at least one City design may fit this lot.",
+      "links": [
+        {
+          "label": "By-law 845-2025",
+          "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf"
+        },
+        {
+          "label": "Building permit fees",
+          "url": "https://www.toronto.ca/services-payments/building-construction/apply-for-a-building-permit/building-permit-fees/"
+        }
+      ]
+    }
+  ]
 }

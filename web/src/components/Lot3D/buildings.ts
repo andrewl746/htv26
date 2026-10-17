@@ -1,7 +1,9 @@
 import { BoxGeometry, BufferGeometry, ExtrudeGeometry, Float32BufferAttribute, type Object3D } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
+import { SLOT_ATTRIBUTE } from './cutaway'
 import { openRing, seededIndex, shapeFrom, signedArea, vertexMean } from './geometry'
+import type { Box } from './occlusion'
 import { ease, lerp } from './timeline'
 
 // Neighbouring buildings (MASTERSPEC 6.3 step 2): houses get a cartoon gable roof with the ridge
@@ -48,6 +50,8 @@ export interface BuiltBuilding {
   /** Walls, plus the parapet on large buildings. */
   body: BufferGeometry
   roof: BufferGeometry | null
+  /** What can hide the design: the footprint's squared-up box, roof included. */
+  box: Box
 }
 
 /** How a street's houses are turned: the way most walls run, and the way most ridges run. */
@@ -98,6 +102,16 @@ export function buildBuilding(building: ContextBuilding, grid: StreetGrid): Buil
     colorIndex: seededIndex(building.building_id, NEIGHBOUR_TOKENS.length),
     body,
     roof,
+    box: boxOf(ring, [cx, cy], grid, buildingTop(building)),
+  }
+}
+
+/** Tags every vertex of a building with its slot in the cutaway's sink texture (before merging). */
+export function setSlot(built: BuiltBuilding, slot: number): void {
+  for (const geometry of [built.body, built.roof]) {
+    if (!geometry) continue
+    const slots = new Float32Array(geometry.getAttribute('position').count).fill(slot)
+    geometry.setAttribute(SLOT_ATTRIBUTE, new Float32BufferAttribute(slots, 1))
   }
 }
 
@@ -179,6 +193,23 @@ function squaredBox(ring: LocalPoint[], [cx, cy]: LocalPoint, grid: StreetGrid) 
     angle += Math.PI / 2
   }
   return { a, b, ea: extent(a), eb: extent(b), ridgeRad: angle, clear }
+}
+
+/** The squared-up bounding box in scene coordinates, for the sight-line tests. */
+function boxOf(ring: LocalPoint[], centre: LocalPoint, grid: StreetGrid, top: number): Box {
+  const { a, b, ea, eb } = squaredBox(ring, centre, grid)
+  const [mu, mv] = [(ea[0] + ea[1]) / 2, (eb[0] + eb[1]) / 2]
+  const east = centre[0] + a[0] * mu + b[0] * mv
+  const north = centre[1] + a[1] * mu + b[1] * mv
+  return {
+    x: east,
+    z: -north,
+    ux: a[0],
+    uz: -a[1],
+    halfU: (ea[1] - ea[0]) / 2,
+    halfV: (eb[1] - eb[0]) / 2,
+    top,
+  }
 }
 
 /** A triangular prism over the footprint's squared-up bounding box, its ridge along axis a. */

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Line } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { Color, MeshStandardMaterial, type Group, type InstancedMesh } from 'three'
-import { withCutaway } from './cutaway'
+import { cutawayDepthMaterial, withCutaway } from './cutaway'
 
 /**
  * One object for each kind of shader the lot scene draws, compiled while the landing page sits
@@ -11,9 +11,9 @@ import { withCutaway } from './cutaway'
  *
  * Variants: plain standard, opaque (ground, floors, pin, the house on the lot) and transparent
  * (the lot's flat layers); cutaway standard (neighbours), cutaway instanced (tree trunks) and
- * cutaway instanced with per-instance colour (tree tops); and the dashed lot outline.
- * compileAsync covers the main pass; one render, on the still-hidden canvas, covers the shadow
- * pass. The objects then stay mounted but hidden, because disposing their materials would release
+ * cutaway instanced with per-instance colour (tree tops), each with its cutaway shadow; and the
+ * dashed lot outline. compileAsync covers the main pass; one render, on the still-hidden canvas,
+ * covers the shadow pass. The objects then stay mounted but hidden, because disposing their materials would release
  * the compiled programs.
  */
 export function WarmUp() {
@@ -58,13 +58,24 @@ export function WarmUp() {
         <boxGeometry />
         <meshStandardMaterial transparent opacity={0.5} depthWrite={false} />
       </mesh>
-      <mesh material={cutaway.mesh} castShadow receiveShadow>
+      <mesh material={cutaway.mesh} customDepthMaterial={cutawayDepthMaterial} castShadow receiveShadow>
         <boxGeometry />
       </mesh>
-      <instancedMesh args={[undefined, cutaway.instanced, 1]} castShadow receiveShadow>
+      <instancedMesh
+        args={[undefined, cutaway.instanced, 1]}
+        customDepthMaterial={cutawayDepthMaterial}
+        castShadow
+        receiveShadow
+      >
         <boxGeometry />
       </instancedMesh>
-      <instancedMesh ref={coloured} args={[undefined, cutaway.coloured, 1]} castShadow receiveShadow>
+      <instancedMesh
+        ref={coloured}
+        args={[undefined, cutaway.coloured, 1]}
+        customDepthMaterial={cutawayDepthMaterial}
+        castShadow
+        receiveShadow
+      >
         <boxGeometry />
       </instancedMesh>
       <Line

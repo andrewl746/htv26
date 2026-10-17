@@ -155,7 +155,7 @@ Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branc
 | Y7 QA | partly done (PR #2): `pipeline/smoke_engine.py` runs the real engine on real lots. First run failed on every lot because 409,164 of 428,184 massing buildings were single-part `MultiPolygon`s the engine's geometry reader could not take; fixed in `build_lots.py` (single-part shapes are now `Polygon`, the 221 true multi-part buildings keep their largest part) and the data release replaced. After the fix all 21,300 Ward 04 lots run through `run_check` in 163 s (8 ms a lot) with 0 errors; wards 09, 19 and 23 clean on 800-lot samples. Plumbing only, not accuracy: the hand-checked lots (A8) still decide that | `PYTHONPATH=engine python pipeline/smoke_engine.py --ward 04` |
 | Y8 trees, Y9 refresh | done (PR #2): optional `trees` layer, `pipeline/refresh.py`, new `lots` columns (`bldg_count`, `bldg_area_on_lot_m2`, `bldg_max_footprint_m2`, `bldg_avg_height_m`, `is_sliver`), `addresses.is_primary`, a Tiger Data Devpost draft in `pipeline/tiger/devpost_tiger.md` | PR #2 |
 
-Data is distributed as the GitHub release `data-2026-10-17` on the repo (replaced after the MultiPolygon fix: re-download if fetched before). PR #2 touches only `pipeline/` and is open for Andrew's merge.
+Data is distributed as the GitHub release `data-2026-10-17` on the repo (replaced after the MultiPolygon fix: re-download if fetched before). PR #2 touched only `pipeline/` and is merged into `main` as 3f9ddcc.
 
 **What Yuvi found that changes the spec** (each applied to its section; the engine-side actions are Andrew's):
 

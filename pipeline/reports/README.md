@@ -8,3 +8,4 @@ One report per push to the `yuvi` branch (newest last). Each says what changed, 
 | 2 | [`02-qa-trees-refresh.md`](02-qa-trees-refresh.md) | Y7 QA columns, Y8 trees layer, Y9 refresh script. |
 | 3 | [`03-morning-review.md`](03-morning-review.md) | Overnight: engine smoke test and the geometry fix, whole-repo review, design-doc status, open items, cleanup commands. |
 | 4 | [`04-tiger-data-live.md`](04-tiger-data-live.md) | Tiger Data service live: schema, load, real compression numbers, verification. |
+| 5 | [`05-ward-check-vs-city.md`](05-ward-check-vs-city.md) | Ward-by-ward comparison with the City's 452 (Ward 04: 42 vs 42). |

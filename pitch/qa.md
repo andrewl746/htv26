@@ -1,51 +1,62 @@
 # Q&A prep
 
-Status: first draft (S2). The questions are from MASTERSPEC section 12; the draft answers follow the spec's notes. Final answers are written in S10, after the batch numbers are locked. Any number said aloud must come from the locked run or a linked source.
+Status: answers drafted (S10), 2026-10-17. Facts come from [`facts.md`](facts.md) (row numbers in brackets); `[LOCKED: …]` from `ward_summary.json` at `headline-locked`. Keep answers under 20 seconds.
 
-Ground rules for every answer: "may fit", never "will be built"; no candidate names, parties or positions; no ranking of wards; never "threat" or "opportunity"; it's screening only, not a permit or legal advice.
+Ground rules: "may fit", never "will be built"; no candidate or party names; no ranking of wards; never "threat" or "opportunity"; it's screening, not a permit or legal advice.
 
 ---
 
-### "Who will actually use this?"
+## From MASTERSPEC section 12
 
-Before you build: homeowners checking for free whether a City design could work on their lot. Before you vote: residents, journalists and community groups who need ward facts. The City is planning open houses to answer this question; we answer it for any address, at any hour.
+**"Who will actually use this?"**
+Before you build: homeowners checking, for free, whether one of the City's designs could work on their lot. Before you vote: residents, journalists and community groups who need sourced ward facts. A May 2026 recommendation to the City's planning committee asked for open houses to explain multiplexes [12]; we answer the first question for any address, at any hour.
 
-### "Will homeowners really rebuild?"
+**"Will homeowners really rebuild?"**
+Most won't, and that's fine. Three quarters of the multiplex permits so far were renovations or conversions, not new buildings [6]. Whether a design could fit is still the first question, and our own numbers show far more lots where a design may fit than permits, so we say upfront that fit isn't the only barrier.
 
-Most won't, and that's fine. Whether a design could fit is still the first question every one of them asks. Our own data shows many lots where a design may fit and few permits, so we say upfront that fit isn't the only barrier.
+**"Isn't cost the real barrier?"**
+Probably, and our gap shows it: the rules allow far more than gets built. For scale, the average declared construction value was about $1.01 million for a new-build multiplex and about $216,000 for a renovation [7]. Cost modelling is our next step.
 
-### "Isn't cost the real barrier?"
+**"Why not LotMore?"**
+LotMore leads into its own paid architecture services. Suplex is free and neutral, uses the City's own four designs, and adds the ward picture: what could fit next to what got permitted.
 
-Agreed, and the permission vs. reality gap shows it: the rules allow far more than gets built. Cost modelling is a next step.
-
-### "Why not LotMore?"
-
-LotMore leads into its own paid architecture services. Suplex is free and neutral, uses the City's own four designs, and adds the ward picture.
-
-### "Isn't this a tool for developers?"
-
+**"Isn't this a tool for developers?"**
 No. There's no list or export of lots, and the map never shows addresses. Opening one lot shows the same screening anyone can look up for an address, with "screening only" on every result.
 
-### "How accurate is it?"
+**"How accurate is it?"**
+It's a first screen, not a permit. Lot lines in the City's data aren't survey-accurate, so anything within half a metre reads "too close to call". We list what we don't check on every result, and we hand-checked `[LOCKED: n]` real lots against the by-law.
 
-It's a first screen, not a permit. We say what we check and what we don't, label results within the uncertainty band "Too close to call", and hand-checked a set of real lots. *(S10: add how many lots were hand-checked, from `engine/tests/test_lots.py`.)*
+**"Does it arm opposition to new homes?"**
+It shows the same facts to everyone, in neutral words: what's allowed, and how much has been permitted. No rankings, no addresses on the map.
 
-### "Does it arm opposition to new homes?"
-
-It shows the same facts to everyone, in neutral words: what's allowed, and how much has been permitted.
-
-### "Are you ranking wards?"
-
+**"Are you ranking wards?"**
 No. Each ward shows only its own numbers.
 
-### "Doesn't the Toronto Multiplex Tracker already map permits?"
+**"Doesn't the Toronto Multiplex Tracker already map permits?"**
+Yes, and we credit it; we use its permit rule and our count matches the City's within about 1% (446 vs 452) [4]. It shows what got permitted. We add what could be built with the City's free designs, side by side.
 
-Yes, and we credit it. It shows what got permitted. We add what could be built with the City's free designs, and put the two side by side.
+**"Why does the Sixplex Narrow fail on so many lots?"**
+It's 19 m long. The by-law allows 19 m for a detached houseplex only on lots at least 36 m deep (frontage under 10 m) or 40 m deep (frontage 10 m or more); elsewhere the limit is 17 m. That's a finding, not a bug, and the checklist shows the section. *(Holds unless Andrew's T3 re-read changes decision 17.)*
 
-### "Why does the Sixplex Narrow fail on so many lots?"
+**"Why is the AI allowed anywhere near this?"**
+It never decides anything. It phrases numbers the engine computed, writes placeholders instead of digits, and a validator rejects any number it didn't get, including after translation. It rejected `[LOCKED: count]` drafts this weekend; we can show the log.
 
-It's 19 m long. The by-law allows 19 m for a detached houseplex only on lots at least 36 m deep (frontage under 10 m) or 40 m deep (frontage 10 m or more); elsewhere the limit is 17 m. That's a finding, not a bug, and the checklist shows the section. *(Depends on T3, Andrew's re-read of the A011 sheet; update if that decision changes.)*
+## Likely extra questions
 
-### "Why is the AI allowed anywhere near this?"
+**"Where does the data come from, and how current is it?"**
+All City of Toronto open data: property boundaries, zoning, address points, building permits, 3D massing. Data as of `[LOCKED: data_dates]`; the pipeline re-runs on the City's daily refresh.
 
-It never decides anything. It phrases numbers the engine computed, writes placeholders instead of digits, and a validator rejects any number it didn't get. We can show the rejection log. *(S10: add the rejection count from `ai/logs/rejections.jsonl`.)*
+**"What about semis and row houses?"**
+The free designs are detached buildings that need side yards on both sides, so attached houses are marked "not checked" with that reason. In Ward 04, `[LOCKED: attached_pct]`% of house lots are semis or row houses. Owners there may still add homes in other ways, such as basement or garden suites, which we don't check.
+
+**"Is the AI translation reliable?"**
+Every number in a translation is checked again and must match the English, and a native speaker reviewed `[languages reviewed]`. If a translation fails the check, we show English with a notice instead.
+
+**"Do you store the addresses people type?"**
+`[Andrew: confirm what the API logs.]` The map never shows addresses, and there's no list of lots.
+
+**"How is this different from the City's own tools?"**
+The City publishes the designs and the rules; Suplex applies them to every lot and puts the result next to what was permitted, in plain language, for any ward.
+
+**"Why only these four designs?"**
+They're the City's free pre-approved plans released October 2, 2026 [3]. Custom designs and variances can do more, which is why some permit dots land on grey lots.

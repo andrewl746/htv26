@@ -158,20 +158,40 @@ def _unwrap_single_part(geoms: np.ndarray) -> np.ndarray:
 
 
 def _read_json(path: Path) -> Any:
+    """The parsed file, or None when it is missing or not valid JSON (the optional files never stop startup)."""
     if not path.is_file():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        log.warning("suplex: %s is not readable JSON (%s); treated as missing", path, e)
+        return None
+
+
+def _permit_lonlat(feature: Any, since: str) -> list[float] | None:
+    """[lon, lat] of a multiplex permit point issued on or after `since`; None for anything else, including a
+    feature with no date, no point or malformed properties."""
+    if not isinstance(feature, dict):
+        return None
+    props, geom = feature.get("properties"), feature.get("geometry")
+    if not isinstance(props, dict) or not isinstance(geom, dict) or geom.get("type") != "Point":
+        return None
+    d = props.get("d")
+    if props.get("k") != "multiplex" or not isinstance(d, str) or d < since:
+        return None
+    xy = geom.get("coordinates")
+    if not isinstance(xy, list) or len(xy) < 2 or not all(isinstance(v, int | float) for v in xy[:2]):
+        return None
+    return [float(xy[0]), float(xy[1])]
 
 
 def read_permit_points(path: Path, since: str) -> np.ndarray:
     """Multiplex permits issued on or after `since` from permits.geojson, as EPSG:2952 points."""
     doc = _read_json(path)
-    if doc is None:
-        log.warning("suplex: %s not found; /check reports no nearby permits", path)
+    if not isinstance(doc, dict) or not isinstance(doc.get("features"), list):
+        log.warning("suplex: %s missing or not a FeatureCollection; /check reports no nearby permits", path)
         return np.array([], dtype=object)
-    lonlat = [f["geometry"]["coordinates"] for f in doc["features"]
-              if f.get("geometry") and f["properties"].get("k") == "multiplex"
-              and str(f["properties"].get("d", "")) >= since]
+    lonlat = [p for p in (_permit_lonlat(f, since) for f in doc["features"]) if p is not None]
     if not lonlat:
         return np.array([], dtype=object)
     xy = np.asarray(lonlat, dtype=np.float64)
@@ -375,6 +395,20 @@ class Store:
         return run_check(self.lot_input(lot_pos, address_pos), self.cfg, self.designs, self.data_dates).to_dict()
 
 
+def read_designs_json() -> dict[str, Any]:
+    """/contracts/designs.json as served by GET /designs."""
+    return json.loads((contracts_dir() / "designs.json").read_text(encoding="utf-8"))
+
+
+def check_crs(gpkg: Path, frames: dict[str, gpd.GeoDataFrame]) -> None:
+    """Every layer must be in EPSG:2952 metres (MASTERSPEC 4.4): the engine's distances and areas assume it."""
+    for name, frame in frames.items():
+        epsg = frame.crs.to_epsg() if frame.crs is not None else None
+        if epsg != 2952:
+            raise StoreError(f"{gpkg} layer {name} is in {frame.crs.to_string() if frame.crs else 'no CRS'}, "
+                             f"not {EPSG_METRES}")
+
+
 def load(data_dir: str | Path, gpkg_path: str | Path | None = None) -> Store:
     """Read the GeoPackage and the small JSON files in `data_dir` and build every index.
 
@@ -393,17 +427,21 @@ def load(data_dir: str | Path, gpkg_path: str | Path | None = None) -> Store:
 
     frames = {name: gpd.read_file(gpkg, layer=name, engine="pyogrio", use_arrow=True)
               for name in REQUIRED_LAYERS + OPTIONAL_LAYERS if name in present}
+    check_crs(gpkg, frames)
     cfg = load_config()
     raw_dates = _read_json(data_dir / "data_dates.json")
-    if raw_dates is None:
-        log.warning("suplex: %s not found; responses carry no data dates", data_dir / "data_dates.json")
+    if not isinstance(raw_dates, dict):
+        log.warning("suplex: %s missing or not an object; responses carry no data dates", data_dir / "data_dates.json")
+        raw_dates = {}
+    ward_summary = _read_json(data_dir / "ward_summary.json")
+    if ward_summary is not None and not isinstance((ward_summary or {}).get("wards"), dict):
+        log.warning("suplex: %s has no wards object; /ward/{id} answers 503", data_dir / "ward_summary.json")
+        ward_summary = None
     store = Store(
         data_dir=data_dir, gpkg_path=gpkg, frames=frames,
         permit_points=read_permit_points(data_dir / "permits.geojson", cfg.permits_since),
-        cfg=cfg, designs=load_designs(),
-        designs_json=json.loads((contracts_dir() / "designs.json").read_text(encoding="utf-8")),
-        data_dates=normalise_data_dates(raw_dates or {}),
-        ward_summary=_read_json(data_dir / "ward_summary.json"),
+        cfg=cfg, designs=load_designs(), designs_json=read_designs_json(),
+        data_dates=normalise_data_dates(raw_dates), ward_summary=ward_summary,
     )
     store.load_seconds = time.perf_counter() - t0
     return store

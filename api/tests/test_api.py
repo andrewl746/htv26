@@ -142,6 +142,27 @@ def test_check_by_lot_id_uses_the_primary_address(client, store, schema_errors) 
                                                                  body["context"]["origin"]["lat"])
 
 
+def test_check_context_reaches_the_engine(client, store) -> None:
+    """Buildings, trees and permits fetched by the store end up in the response, counted independently here."""
+    def permits_within(lot: int) -> int:
+        centroid = store.lot_geoms[lot].centroid
+        return int((shapely.distance(store.permit_geoms, centroid) <= store.cfg.nearby_permits_radius_m).sum())
+
+    lot, address = next((lot, a) for lot, a in ward_lots_with_address(store)
+                        if permits_within(lot) > 0 and store.check(lot, a)["lot"]["class"] == "checked")
+    body = client.get("/check", params={"address_id": str(store.adr_ids[address])}).json()
+    centroid = store.lot_geoms[lot].centroid
+    ctx, permits = body["context"], body["permits_nearby"]
+
+    radius = store.cfg.context_radius_m
+    near_buildings = int((shapely.distance(store.bld_geoms, centroid) <= radius).sum())
+    assert len({b["building_id"] for b in ctx["buildings"]}) == near_buildings > 0
+    assert any(b["on_lot"] for b in ctx["buildings"]) is not body["lot"]["vacant"]
+    assert len(ctx["trees"]) == int((shapely.distance(store.tree_geoms, centroid) <= radius).sum())
+    assert permits["count"] == len(permits["points"]) == permits_within(lot) > 0
+    assert (ctx["origin"]["x_2952"], ctx["origin"]["y_2952"]) == (round(centroid.x, 2), round(centroid.y, 2))
+
+
 def test_check_unknown_ids_are_address_not_found(client) -> None:
     for params in ({"address_id": "999999999999"}, {"address_id": "not-an-id"}, {"lot_id": "999999999999"}):
         r = client.get("/check", params=params)

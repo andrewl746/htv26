@@ -4,10 +4,12 @@
 
 Environment: SUPLEX_DATA_DIR (default ./data/out), SUPLEX_GPKG (optional path overriding
 <data_dir>/suplex.gpkg), SUPLEX_CORS_ORIGINS (optional, comma-separated extra origins),
-SUPLEX_AI_URL (default http://localhost:8001, for briefing_url), TIGER_DSN (read by
-pipeline/tiger/queries.py; unset = the trend cache).
+SUPLEX_AI_URL (default http://localhost:8001, for briefing_url), SUPLEX_DEMO_CACHE (1 = answer from
+api/cache/ whenever a cached response exists, and start without the data; api/demo_cache.py),
+TIGER_DSN (read by pipeline/tiger/queries.py; unset = the trend cache).
 
-Every error is JSON with an `error` key. /check never calls Tiger Data or Gemini.
+Every error is JSON with an `error` key, 500s included, and carries the CORS headers. /check never
+calls Tiger Data or Gemini.
 """
 from __future__ import annotations
 
@@ -29,9 +31,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response
 from suplex_engine import ENGINE_VERSION
 
-from .store import SEARCH_MAX_RESULTS, Store, StoreError, load
+from . import demo_cache
+from .demo_cache import CACHE_DIR
+from .store import SEARCH_MAX_RESULTS, Store, StoreError, load, read_designs_json
 
 log = logging.getLogger("uvicorn.error")
 
@@ -42,6 +48,8 @@ GZIP_MIN_BYTES = 1000      # transport only: responses smaller than this are sen
 LOCAL_ORIGINS = r"^http://(localhost|127\.0\.0\.1)(:\d+)?$"   # any localhost port (MASTERSPEC 3.3 CORS)
 GEOJSON = "application/geo+json"
 BATCH_HINT = "run the batch (python -m suplex_engine.batch --all)"
+CACHE_ONLY_HINT = "the API runs on the demo cache only and has no cached response for this request"
+TRUE_VALUES = ("1", "true", "yes", "on")
 
 
 @dataclass(frozen=True)
@@ -50,6 +58,8 @@ class Settings:
     gpkg_path: Path | None
     ai_url: str
     cors_origins: tuple[str, ...]
+    demo_cache: bool = False
+    cache_dir: Path = CACHE_DIR
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -60,6 +70,7 @@ class Settings:
             gpkg_path=Path(gpkg) if gpkg else None,
             ai_url=(os.environ.get("SUPLEX_AI_URL", "").strip() or DEFAULT_AI_URL).rstrip("/"),
             cors_origins=tuple(o.strip() for o in origins.split(",") if o.strip()),
+            demo_cache=os.environ.get("SUPLEX_DEMO_CACHE", "").strip().lower() in TRUE_VALUES,
         )
 
 
@@ -105,6 +116,36 @@ async def _on_validation_error(request: Request, exc: RequestValidationError) ->
 async def _on_unexpected(request: Request, exc: Exception) -> JSONResponse:
     log.exception("suplex: unhandled error on %s", request.url.path)
     return error_response(500, "internal_error")
+
+
+# ---------- middleware (added innermost first; CORS and gzip wrap both) ----------
+
+class CatchUnexpected(BaseHTTPMiddleware):
+    """Turns an unhandled error into the JSON 500 inside the CORS middleware, so the browser can read it.
+    (Starlette's own 500 handler runs outside every middleware and its responses carry no CORS headers.)"""
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        try:
+            return await call_next(request)
+        except Exception as e:  # noqa: BLE001  everything the route handlers did not turn into an ApiError
+            return await _on_unexpected(request, e)
+
+
+class DemoCache(BaseHTTPMiddleware):
+    """SUPLEX_DEMO_CACHE=1: a GET with a file in the cache directory is answered from it (api/demo_cache.py)."""
+
+    def __init__(self, app: Any, cache_dir: Path) -> None:
+        super().__init__(app)
+        self.cache_dir = cache_dir
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.method == "GET":
+            hit = demo_cache.read(self.cache_dir, request.url.path, request.query_params)
+            if hit is not None:
+                name, doc = hit
+                media_type = GEOJSON if name.endswith(demo_cache.GEOJSON_SUFFIX) else None
+                return JSONResponse(doc, media_type=media_type, headers={demo_cache.HEADER: name})
+        return await call_next(request)
 
 
 # ---------- pure response builders ----------
@@ -173,7 +214,10 @@ router = APIRouter()
 
 
 def _store(request: Request) -> Store:
-    return request.app.state.store
+    store = request.app.state.store
+    if store is None:                 # started on the demo cache alone, and the cache had no answer
+        raise ApiError(503, "data_unavailable", CACHE_ONLY_HINT)
+    return store
 
 
 def _ward_or_404(store: Store, ward_id: str, error: str = "ward_not_found") -> None:
@@ -183,9 +227,15 @@ def _ward_or_404(store: Store, ward_id: str, error: str = "ward_not_found") -> N
 
 @router.get("/health")
 def health(request: Request) -> JSONResponse:
+    demo = request.app.state.settings.demo_cache
+    if request.app.state.store is None:
+        return JSONResponse({"status": "ok", "mode": "demo_cache_only", "demo_cache": demo,
+                             "engine_version": ENGINE_VERSION})
     store = _store(request)
     return JSONResponse({
         "status": "ok",
+        "mode": "data",
+        "demo_cache": demo,
         "data_dates": store.data_dates,
         "lot_count": store.lot_count,
         "ward_count": len(store.ward_ids),
@@ -201,7 +251,8 @@ def health(request: Request) -> JSONResponse:
 
 @router.get("/designs")
 def designs(request: Request) -> JSONResponse:
-    return JSONResponse(_store(request).designs_json)
+    store = request.app.state.store
+    return JSONResponse(read_designs_json() if store is None else store.designs_json)
 
 
 @router.get("/search")
@@ -299,7 +350,14 @@ def create_app(store: Store | Any | None = None, settings: Settings | None = Non
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         if app.state.store is None:
-            app.state.store = load_store(settings)
+            try:
+                app.state.store = load_store(settings)
+            except StoreError:
+                if not settings.demo_cache:
+                    raise
+                log.warning("suplex: no data; serving the demo cache only from %s", settings.cache_dir)
+        if settings.demo_cache:
+            log.info("suplex: demo cache on (%s)", settings.cache_dir)
         warm_tiger_import()
         yield
 
@@ -310,6 +368,9 @@ def create_app(store: Store | Any | None = None, settings: Settings | None = Non
     app.add_exception_handler(StarletteHTTPException, _on_http_error)
     app.add_exception_handler(RequestValidationError, _on_validation_error)
     app.add_exception_handler(Exception, _on_unexpected)
+    if settings.demo_cache:
+        app.add_middleware(DemoCache, cache_dir=settings.cache_dir)
+    app.add_middleware(CatchUnexpected)
     app.add_middleware(GZipMiddleware, minimum_size=GZIP_MIN_BYTES)
     app.add_middleware(CORSMiddleware, allow_origin_regex=LOCAL_ORIGINS, allow_origins=list(settings.cors_origins),
                        allow_methods=["GET"], allow_headers=["*"])

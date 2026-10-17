@@ -59,13 +59,14 @@ Four engine changes came out of these lots. Each has a synthetic test as well as
    wider than the lot's band width that sample runs past a leaning side lot line and exits the lot part-way back: 24.6 m on the 33.5 m lot
    at 34 Rexford Rd, 3.2 m on 32 Warren Cres. When the width row fails (by any amount, borderline included) the
    row now reports the lot's centre-line depth. Designs that fit the width are still measured under the placed
-   rectangle, as 5.5 step 4 says. **Known limit:** on skewed lots (sides more than about 8 degrees off the
-   frontage normal) the frontage-aligned rectangle leans over a side line even when the lot is wide enough, and
-   the sampled depth reads short there: on Ward 04 this affects 1,844 of the 26,756 design rows that pass or are
-   borderline on width and 542 results, all pessimistic (a wider rule that reported the centre-line depth for
-   them was tried and withdrawn: those 542 then read "fits" or "too close to call" while the 3D view drew the
-   building over the side yard). The fix is in the placement, aligning the rectangle to the lot's sides on skewed lots, before
-   the A10 batch.
+   rectangle, as 5.5 step 4 says. On skewed lots (sides leaning off the frontage normal) the frontage-aligned
+   rectangle leaned over a side line even when the lot was wide enough, and the sampled depth read short there
+   (on Ward 04, 1,844 of the 26,756 design rows that pass or are borderline on width, and 542 results, all
+   pessimistic). **Fixed by T20 (2026-10-17):** when both side lot lines lean the same way by 2 degrees or more
+   (`placement.align_to_sides_deg`), the lot depth is measured along them and each design turns to follow them,
+   with its width measured square to the sides (MASTERSPEC 5.2 step 3, 5.5). On Ward 04 that changed 1,501
+   design results, 1,411 for the better; lots that may fit went from 3,611 to 3,992. Every lot above keeps its
+   expected result; 4 Olympus Ave, whose sides lean opposite ways, tapers rather than leans and is unchanged.
 3. **Footprints are clipped to the lot** (Task 1c, MASTERSPEC section 0 item 6): 155 Vine Ave stops being a
    "larger building" because its row polygon is 883 m2.
 4. **Thresholds** in `contracts/engine_config.json`, below.

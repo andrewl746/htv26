@@ -52,7 +52,7 @@ REPO = Path(__file__).resolve().parents[2]
 SUMMARY_VERSION = "0.1.0"
 SIMPLIFY_M = 0.5            # MASTERSPEC 3.4: lot outlines simplified by 0.5 m for the map
 COORD_DECIMALS = 6          # EPSG:4326 to about 0.1 m
-DEFAULT_CHUNK = 2500        # lots per worker task (one strip of a ward)
+DEFAULT_CHUNK = 1500        # lots per worker task (one strip of a ward)
 NEIGHBOUR_MARGIN_M = 10.0   # read margin beyond the context radius, so a strip sees every neighbour /check sees
 
 RESULTS = ("fits", "borderline", "no_fit", "not_checked")            # best first

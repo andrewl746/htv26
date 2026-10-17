@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import type { LotClass, Lang, RuleId, WardResponse } from '@contracts/types'
+import type { LotClass, Lang, RuleId, TrendResponse, WardResponse } from '@contracts/types'
 import reasons from '@contracts/copy/reasons.json'
 import { disclaimers, fill, formatNumber, labels } from '../../copy'
 import { wardCopy } from './copy'
+import { TrendChart } from './TrendChart'
 import { useCountUp } from './useCountUp'
 
 /** Classes counted under "Not checked"; attached houses have their own sentence. */
@@ -13,8 +13,8 @@ const whole = (n: number) => formatNumber(n, true)
 interface Props {
   ward: WardResponse
   lang: Lang
-  /** Simone's TrendChart goes here (the panel shows it after the headline numbers). */
-  trendSlot?: ReactNode
+  /** Permits per month for Simone's TrendChart; the chart is left out when this is null or empty. */
+  trend?: TrendResponse | null
   onBack?: () => void
 }
 
@@ -23,7 +23,7 @@ interface Props {
  * the most common reason lots don't fit, the attached share, the review flags, what is not
  * checked, the data dates and the way to the ward briefing. No ranking language anywhere.
  */
-export function WardPanel({ ward, lang, trendSlot, onBack }: Props) {
+export function WardPanel({ ward, lang, trend = null, onBack }: Props) {
   const { headline, flags, classes } = ward
   const could = useCountUp(headline.could)
   const did = useCountUp(headline.did)
@@ -83,7 +83,12 @@ export function WardPanel({ ward, lang, trendSlot, onBack }: Props) {
         </ul>
       </section>
 
-      {trendSlot}
+      {trend && trend.series.length > 0 && (
+        <section className="ward-trend">
+          <h3>{labels.briefing_page.trend_heading}</h3>
+          <TrendChart trend={trend} />
+        </section>
+      )}
 
       <a className="ward-briefing" href={`${ward.briefing_url}?lang=${lang}`} target="_blank" rel="noopener">
         {labels.ui.get_briefing}

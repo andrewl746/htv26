@@ -11,23 +11,30 @@ import { useUrlSync } from './state/useUrlSync'
 export default function App() {
   useUrlSync()
   const view = useApp((s) => s.view)
+  const check = useApp((s) => s.check)
+  const designId = useApp((s) => s.designId)
+  const inLot = view === 'lot'
   return (
     <main className="app" style={{ '--panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties}>
       <BaseMap />
+      {/* Always mounted so its shaders are ready before the first address (see Scene). */}
+      <Scene
+        check={inLot ? check : null}
+        designId={designId}
+        visible={inLot && check !== null}
+        rightInsetPx={PANEL_WIDTH_PX}
+      />
       {(view === 'landing' || view === 'flying') && <Landing leaving={view === 'flying'} />}
-      {view === 'lot' && <LotView />}
+      {inLot && <LotChrome />}
     </main>
   )
 }
 
-/** The address check (MASTERSPEC 6.2): the 3D scene full-bleed, the result panel on the right. */
-function LotView() {
-  const check = useApp((s) => s.check)
-  const designId = useApp((s) => s.designId)
+/** The address check's search bar and result panel (MASTERSPEC 6.2), over the 3D scene. */
+function LotChrome() {
   const showLanding = useApp((s) => s.showLanding)
   return (
     <>
-      {check && <Scene check={check} designId={designId} rightInsetPx={PANEL_WIDTH_PX} />}
       <div className="topbar">
         <button type="button" className="brand" onClick={() => showLanding()}>
           Suplex

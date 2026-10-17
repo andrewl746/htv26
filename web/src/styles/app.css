@@ -59,8 +59,13 @@ button {
   transition: opacity 300ms ease-out;
 }
 
+/* Hidden once faded, so the card's backdrop blur stops being recomputed over the moving map. */
 .landing-leaving {
   opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 300ms ease-out,
+    visibility 0s 300ms;
 }
 
 .landing-card {
@@ -211,8 +216,16 @@ button {
   /* Keeps the floating 3D labels below the panel and the search. */
   isolation: isolate;
   background: linear-gradient(to bottom, var(--suplex-sky-top), var(--suplex-sky-bottom));
-  /* Fades in over the base map, which has just landed on the same view. */
-  animation: fade-in 400ms ease-out both;
+  /* Hidden at once on the way out, so the map shows the lot it is about to fly away from. */
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* Fades in over the base map, which has just landed on the same view. */
+.scene-visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 400ms ease-out;
 }
 
 .topbar,
@@ -443,13 +456,14 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .skeleton,
-  .scene,
   .topbar,
   .panel {
     animation: none;
   }
 
-  .landing {
+  .landing,
+  .landing-leaving,
+  .scene-visible {
     transition: none;
   }
 }

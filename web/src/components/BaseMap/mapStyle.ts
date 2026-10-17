@@ -36,6 +36,9 @@ export function applyPalette(map: MapLibreMap): void {
       source: 'openmaptiles',
       'source-layer': 'building',
       minzoom: 12,
+      // A building drawn as parts also comes as an outline marked hide_3d; drawing both stacks
+      // coplanar faces that flicker as the camera moves.
+      filter: ['!=', ['get', 'hide_3d'], true],
       paint: {
         // Taller buildings darken from olive through grey to charcoal, so the skyline reads.
         'fill-extrusion-color': [
@@ -51,7 +54,8 @@ export function applyPalette(map: MapLibreMap): void {
         ],
         'fill-extrusion-height': ['coalesce', ['get', 'render_height'], BUILDING_FALLBACK_HEIGHT_M],
         'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
-        'fill-extrusion-opacity': 0.92,
+        // Opaque: see-through extrusions show the walls behind them and shimmer in motion.
+        'fill-extrusion-opacity': 1,
       },
     },
     firstLabel,

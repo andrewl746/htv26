@@ -7,7 +7,7 @@ import { useApp } from '../../state/store'
 import { handoffZoom } from './handoff'
 import { applyPalette } from './mapStyle'
 
-// One map behind the whole app. On the landing page it is a slowly turning 3D Toronto; a search
+// One map behind the whole app. On the landing page it is a slowly swaying 3D Toronto; a search
 // flies it down to the address, and the flight ends on the 3D scene's opening view (looking
 // straight down, north up, the lot centred beside the panel) so the scene can fade in over it.
 // The ward map (J5) and the lot-to-ward transition (J6) will reuse it.
@@ -22,7 +22,18 @@ const HERO = { center: [-79.3815, 43.6335] as [number, number], zoom: 14.2, pitc
 const SWAY_DEG = 18
 const SWAY_PERIOD_S = 70
 const FLY_MS = 2800
-const FLY_CURVE = 1.6
+/**
+ * The flight never pulls back past this zoom. Further out the tiles thin out and buildings pop in
+ * and out of the picture while it moves.
+ */
+const FLY_MIN_ZOOM = 14
+/**
+ * At most this many tile zoom levels on screen at once (MapLibre's default is about 9). Distant
+ * tiles at low zoom carry few or no buildings, and the edge where they stop slides about as the
+ * camera moves.
+ */
+const TILE_ZOOM_LEVELS_ON_SCREEN = 3
+const TILE_COUNT_MAX_MIN_RATIO = 3
 /** The flight aims at the address point; this short ease lands on the lot centroid the scene uses. */
 const SETTLE_MS = 500
 const RETURN_MS = 2000
@@ -42,7 +53,7 @@ function lotView(map: MapLibreMap, [lon, lat]: [number, number]) {
 export function BaseMap() {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
-  /** False until the style loads; offline it never does, and every flight is skipped. */
+  /** False until the style loads (not every tile); offline it never does, and flights are skipped. */
   const ready = useRef(false)
   const reduced = useReducedMotion()
 
@@ -62,8 +73,11 @@ export function BaseMap() {
       interactive: false,
       attributionControl: { compact: true },
     })
-    map.on('load', () => {
+    // style.load, not load: load waits for every tile in view, and a quick click would skip the
+    // flight. Recolouring here also means the grey stock style never shows.
+    map.once('style.load', () => {
       applyPalette(map)
+      map.setSourceTileLodParams(TILE_ZOOM_LEVELS_ON_SCREEN, TILE_COUNT_MAX_MIN_RATIO)
       ready.current = true
     })
     mapRef.current = map
@@ -106,7 +120,7 @@ export function BaseMap() {
     }
     // Listen first: with reduced motion MapLibre jumps and fires moveend straight away.
     map.once('moveend', arrive)
-    map.flyTo({ ...lotView(map, flight.to), duration: FLY_MS, curve: FLY_CURVE })
+    map.flyTo({ ...lotView(map, flight.to), duration: FLY_MS, minZoom: FLY_MIN_ZOOM })
     return () => {
       map.off('moveend', arrive)
     }

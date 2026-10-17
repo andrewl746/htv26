@@ -346,20 +346,6 @@ class LotGeometry:
                 depths.append(d)
         return min(depths) if depths else 0.0
 
-    def band_x_extent(self, front_setback_m: float, length_m: float) -> tuple[float, float] | None:
-        """The x range that lies inside the lot on every sampled row of the building band (the piece under
-        the centroid): the innermost left side and the innermost right side over the band."""
-        assert self.lot_street is not None and self.centroid_street is not None
-        lefts, rights = [], []
-        for y in _frange(front_setback_m, front_setback_m + length_m, self.cfg.sample_step_m):
-            sides = self.side_lines_at(y)
-            if sides is not None:
-                lefts.append(sides[0])
-                rights.append(sides[1])
-        if not lefts or max(lefts) >= min(rights):
-            return None
-        return max(lefts), min(rights)
-
     def side_lines_at(self, y: float) -> tuple[float, float] | None:
         """The lot's left and right x at height y in the street frame (the piece under the centroid)."""
         assert self.lot_street is not None and self.centroid_street is not None

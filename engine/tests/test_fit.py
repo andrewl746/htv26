@@ -502,8 +502,8 @@ def test_fixture_lots_reproduce_their_fixture(name):
 
 def test_depth_is_measured_inside_the_lot_when_the_design_is_wider_than_the_lot():
     # 34 Rexford Rd: a 6.40 x 33.5 m lot whose side lot lines lean 0.1 m over their length, as surveyed lines do.
-    # The Fourplex Wide (6.64 m) overhangs both sides; its depth row must still report the lot's depth, not a
-    # sample taken just past a leaning side line, which exits the lot halfway back.
+    # Every design is wider than the lot's band width; the depth row must report the lot's depth, not a sample
+    # taken just past a leaning side line, which exits the lot halfway back.
     skewed = Polygon([(OX, OY), (OX + 6.4, OY), (OX + 6.3, OY + 33.5), (OX - 0.1, OY + 33.5)])
     lot = rect_lot(6.4, 33.5, geometry=skewed,
                    buildings=[BuildingInput(building_id=1, geometry=box(OX + 0.5, OY + 8, OX + 5.9, OY + 18), avg_height_m=7.0)])
@@ -511,3 +511,14 @@ def test_depth_is_measured_inside_the_lot_when_the_design_is_wider_than_the_lot(
     assert rule(res, "fourplex_narrow", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
     assert rule(res, "fourplex_wide", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
     assert rule(res, "sixplex_wide", "lot_depth").actual == pytest.approx(33.5, abs=0.05)
+
+
+def test_depth_is_measured_under_the_placed_building_when_the_width_fits():
+    # A rear corner notched out by 5 m on a lot wide enough for every design: the notch sits under the building's
+    # right side, so the depth row reports the notched depth, not the centre-line depth (5.5 step 4).
+    notched = Polygon([(OX, OY), (OX + 12, OY), (OX + 12, OY + 25.5), (OX + 7, OY + 25.5), (OX + 7, OY + 40), (OX, OY + 40)])
+    lot = rect_lot(12.0, 40.0, geometry=notched,
+                   buildings=[BuildingInput(building_id=1, geometry=box(OX + 1, OY + 8, OX + 6, OY + 18), avg_height_m=7.0)])
+    res = run_check(lot, CFG)
+    assert res.lot.depth_m == pytest.approx(40.0, abs=0.05)                      # centre line misses the notch
+    assert rule(res, "fourplex_wide", "lot_depth").actual == pytest.approx(25.5, abs=0.05)

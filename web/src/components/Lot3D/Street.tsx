@@ -53,8 +53,9 @@ export function Street({ buildings }: { buildings: ContextBuilding[] }) {
     <MergedStreet built={built} materials={materials} />
   ) : (
     <group>
-      {built.map((b) => (
-        <GrowingBuilding key={b.id} building={b} wall={materials.walls[b.colorIndex]} roof={materials.roof} />
+      {/* Keyed by position: one massing polygon can come back as several parts with the same id. */}
+      {built.map((b, i) => (
+        <GrowingBuilding key={i} building={b} wall={materials.walls[b.colorIndex]} roof={materials.roof} />
       ))}
     </group>
   )

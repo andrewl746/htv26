@@ -38,7 +38,7 @@ export function OldHouse({ buildings, squash }: { buildings: ContextBuilding[]; 
     <group>
       {built.map((b, i) => (
         <group
-          key={b.id}
+          key={i}
           ref={(el) => {
             groups.current[i] = el
           }}

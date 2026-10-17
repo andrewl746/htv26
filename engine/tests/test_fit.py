@@ -502,7 +502,7 @@ def test_fixture_lots_reproduce_their_fixture(name):
 
 def test_depth_is_measured_inside_the_lot_when_the_design_is_wider_than_the_lot():
     # 34 Rexford Rd: a 6.40 x 33.5 m lot whose side lot lines lean 0.1 m over their length, as surveyed lines do.
-    # Every design is wider than the lot's band width; the depth row must report the lot's depth, not a sample
+    # Every design plus its yards is wider than the lot's band width; the depth row must report the lot's depth, not a sample
     # taken just past a leaning side line, which exits the lot halfway back.
     skewed = Polygon([(OX, OY), (OX + 6.4, OY), (OX + 6.3, OY + 33.5), (OX - 0.1, OY + 33.5)])
     lot = rect_lot(6.4, 33.5, geometry=skewed,

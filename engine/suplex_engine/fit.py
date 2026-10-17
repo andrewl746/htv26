@@ -135,7 +135,8 @@ def check_design(design: Design, lot: LotInput, geo: LotGeometry, zone: str, lot
     rear = rules.rear_setback(zone, geo.depth_m)
     pl = place(design, geo, yard_l, yard_r, rear.value)
     req_d = front.value + design.length_m + rear.value
-    # A design wider than the lot's band width (margin_w < 0, including a borderline miss) cannot be placed
+    # A design that, with its required side yards, is wider than the lot's band width (margin_w < 0, a borderline
+    # miss included) cannot be placed
     # inside the side lot lines, so sampling the depth under it would run past a leaning side line and read a
     # false short depth (24.6 m on the 33.5 m lot at 34 Rexford Rd); its depth row reports the lot's own
     # centre-line depth instead (5.2 step 3). A design that fits the width is measured under the placed

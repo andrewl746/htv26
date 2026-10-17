@@ -1,4 +1,4 @@
-# Suplex masterspec, version 3 (status board updated 2026-10-17 18:00, see section 0)
+# Suplex masterspec, version 3 (status board updated 2026-10-17 18:05, see section 0)
 
 **Hack the Valley 11 · Hack the Valley × School of Cities challenge · 4 people · about 36 hours**
 
@@ -12,7 +12,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-17, 18:00, about Hour 20 of 36)](#0-status-board-updated-2026-10-17-1800-about-hour-20-of-36)
+- [0. Status board (updated 2026-10-17, 18:05, about Hour 20 of 36)](#0-status-board-updated-2026-10-17-1805-about-hour-20-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
   - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
@@ -109,7 +109,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ---
 
-## 0. Status board (updated 2026-10-17, 18:00, about Hour 20 of 36)
+## 0. Status board (updated 2026-10-17, 18:05, about Hour 20 of 36)
 
 Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 
@@ -119,11 +119,11 @@ Measured against the planned hours in section 8, after the approved re-plan move
 
 | Person | Planned hours | Done hours | Done | Biggest piece left |
 |---|---|---|---|---|
-| Andrew | 35.0 | 19.8 | 57% | push and run the A10 batch citywide, the Hour-24 lock and demo cache (A11), A14, the palette into `contracts/design-tokens.css`, and the 3D scene (J8, A16, A15: about 8 hours, in its own session) |
-| Yuvi | 32.0 | 21.2 | 66% | J5 the ward map (4 h), then next steps Y11 to Y14 (5.5 h), the Hour-24 refresh |
-| Jayden | 19.5 | 10.4 | 53% | J4 result panel, J6 transition, J9 demo mode, the landing search card and the non-3D UI polish (about 9 hours; he is away for a few hours first) |
-| Simone | 29.0 | 21.0 | 72% | J7 the ward-panel chart, S14, real ward numbers in the briefing and the backup addresses (after A10), the final Devpost, ten rehearsals |
-| **Team** | **115.5** | **72.4** | **63%** | the web app, the 3D scene and running the batch |
+| Andrew | 35.0 | 19.8 | 57% | A9 and A10 in his main session; the 3D scene (J8, A16, A15) in a separate session since 18:00; then the Hour-24 lock and demo cache (A11), A14, the palette into `contracts/design-tokens.css` |
+| Yuvi | 33.0 | 22.2 | 67% | J5 the ward map (4 h), then next steps Y11 to Y14 (5.5 h), the Hour-24 refresh; his 2D plan view (PR #12, 1 h of J9) is done |
+| Jayden | 18.5 | 10.4 | 56% | J4 result panel, J6 transition, J9 demo mode (the 2D view now comes from Yuvi's plan view), the landing search card and the non-3D UI polish (about 8 hours; away for a few hours first) |
+| Simone | 29.0 | 21.7 | 75% | real ward numbers in the briefing and the backup addresses (after A10), the [LOCKED] numbers after Hour 24, S14, ten rehearsals |
+| **Team** | **115.5** | **74.1** | **64%** | the A10 batch run, the ward map, the result panel and the 3D scene |
 
 Andrew's session has also written the A10 batch (code and tests, committed locally, not yet pushed); it counts as two of A10's three hours until it runs citywide. Andrew's list is now the longest (about 15 hours left) because he took over the 3D scene; the 3D work runs in a separate Claude session on its own branch, so his own time goes to the batch, the merges and the Hour-24 lock. Yuvi has about 10.8 hours left against about 8 before rehearsals, so next steps is the first thing cut if the ward map runs late.
 
@@ -140,10 +140,10 @@ Andrew's session has also written the A10 batch (code and tests, committed local
 
 | Person | Done and merged | Waiting for Andrew to merge | Now and next |
 |---|---|---|---|
-| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8 and T19 closed; approved next steps and the re-plan; merged PRs #8 and #9 | the A10 batch with tests (dfecfb2) and a three times faster engine (c3ddfe1), committed by his session but not yet pushed | push A10 and run it citywide, A11 at Hour 24, A14, the final palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13; the 3D scene (J8, A16, A15) in a separate session on branch `andrew-3d`; T20 only if time allows |
-| Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9) | nothing open | J5 the ward map now, then next steps Y11 to Y14; the Hour-24 refresh (Y9) |
-| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | 4 commits on `jayden` with no PR yet (the palette merge, the map fade, roofs on the street grid, the neighbour sink) | away for a few hours, then J4 the result panel, J6 the transition, J9 the demo mode, the landing search card and the non-3D UI, then wiring in WardMap and NextSteps (0.4 lists the fixes) |
-| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary; PR #8 (French "terrains", `pct` units, the site-exception copy, the plan-view strings, `/explain` on the 19 real lots, the four-unit fee fix; 118 tests pass) | nothing open | J7 the ward-panel chart, S14, S8 and S9 after A10, translation review sheets, ten rehearsals (S11) |
+| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8, T19 and T22 closed; approved next steps and the re-plan; merged PRs #8 and #9; T21 settled (six units, By-law 845-2025) | the A10 batch with tests (dfecfb2) and a three times faster engine (c3ddfe1), committed by his A9-A10 session but not yet pushed | A9 and A10 in his main session; the 3D scene (J8, A16, A15) in a separate session on its own branch, started at 18:00; then A11 at Hour 24, A14, the palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13 |
+| Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9) | PR #12: a 2D plan view tab (the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and permit diamonds on a street map; zoom and pan; no addresses, no lists), which also carries Jayden's four unmerged commits with their palette conflict resolved; merged together with #13 onto `main` in a test checkout it builds and lints clean | J5 the ward map now, on a neutral base (Simone measured the fit green at 1.83:1 against the new green parks), then next steps Y11 to Y14; the Hour-24 refresh (Y9) |
+| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | PR #14 (his four commits) now conflicts with `main` and is superseded by #12, which contains them | away for a few hours, then J4 the result panel (with the 3D Massing disclaimer, which is not shown anywhere yet), J6 the transition, J9 the demo mode, the landing search card and the non-3D UI; after #13 merges, switch the pending strings in `copy.ts` and `Plan/copy.ts` to `labels.json` |
+| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary, PR #8; S8 part one: the explanations on the 19 hand-checked lots with the real API and Gemini, 19 of 19 passing the number check and matching Andrew's table after she caught and fixed a margin read as a depth ("the lot depth is -0.37 m"); the plan-view strings; the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A and the README draft, with [LOCKED] markers for numbers that only exist after Hour 24 | PR #13: J7 `TrendChart.tsx` (the briefing chart for the ward panel, checked against the fixture) and the web's five pending strings in `labels.json`; 118 tests pass | after A10: S8's briefing page on real data (`/ward` answers 503 until the batch runs) and S9, the backup addresses (the landing chips, 326 Quebec Ave and 281 Armadale Ave, check out on real data); after Hour 24: the [LOCKED] numbers, screenshots, the one `gemini-3.8-flash` pass and a re-read of the French; S14; translation sheets (Tamil drops "if anything" in question 1) |
 
 ### 0.3 Critical path and the approved re-plan
 
@@ -156,7 +156,7 @@ Andrew's session has also written the A10 batch (code and tests, committed local
 
 **Re-plan (approved by Andrew, 2026-10-17).** Jayden had about 14.6 hours of core web work left (0.4) and about 8.5 hours before rehearsals, and the ward map is on the never-cut list. So:
 
-- **Jayden** (away for a few hours first) does, in order: J4 (the result panel), J6 (the lot-to-ward transition), J9 (the demo-cache mode, a WebGL check and a "sample data" banner), then polishes the landing search card and the rest of the UI that is not 3D.
+- **Jayden** (away for a few hours first) does, in order: J4 (the result panel), J6 (the lot-to-ward transition), J9 (the demo-cache mode, a WebGL check and a "sample data" banner; the 2D view now comes from Yuvi's plan view in PR #12), then polishes the landing search card and the rest of the UI that is not 3D.
 - **Andrew** took over the 3D scene (`web/src/components/Lot3D/`): J8 (the red fail slice and the borderline stripes), the four designs modelled from the City's elevation sheets (A16) and a realism pass (A15). It runs in its own Claude session on branch `andrew-3d` and merges by Hour 27; the current look stays as the fallback. The A10 batch and the Hour-24 lock come first.
 - **Yuvi** builds the ward map (J5) in a new folder, `web/src/components/WardMap/`, from the ward files he designed; Jayden wires it into `App.tsx`. Next steps follows J5 (Y11, the sourcing, can start at once because it only touches Yuvi's report folder).
 - **Simone** ports her briefing-page SVG chart to `web/src/components/WardMap/TrendChart.tsx` (J7), so both charts are the same chart.
@@ -194,9 +194,10 @@ Built but not in the task list: the landing hero map and the fly-in (a good open
 11. The briefing page draws its chart as inline SVG and uses `--suplex-permit-bar` (`#A27100`), because the permit gold is 1.5:1 on white (7.7, Appendix D).
 12. Branches are `main` (Andrew), `yuvi`, `jayden`, `simone`; React 19; Python 3.14 (section 9).
 13. The web app's look is now Yuvi's Lime and Teal palette with the Newsreader serif (PR #10), replacing Appendix D's Inter and Space Grotesk; `contracts/design-tokens.css` still holds the old values, so the briefing page will not match until Andrew moves the final palette there.
-14. **Development charges and parkland cash-in-lieu are exempt for multiplexes with no more than four units** (the City's "Considerations when building multiplexes" page). The "up to six" figure came from a May 2026 recommendation, not the by-law: never say six on a slide (T21).
+14. **Development charges and parkland cash-in-lieu are waived for multiplexes of up to six units** ([By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), enacted July 24, 2025): no development charges on the second to fourth units, the fifth and sixth reduced to $0, and no parkland cash-in-lieu on the second to sixth, while the lot has no more than six units (a garden or laneway suite on the City's deferral program does not count). The City's "Considerations when building multiplexes" page still says four and is out of date. Say "up to six units" and cite the by-law; never name the councillors who moved it (T21). An earlier version of this board said "four, never six": that was wrong.
 15. **Approved by Andrew on 2026-10-17:** "Your next steps" at the end of the address check (2.4, 5.10, 8.5), and the re-plan in 0.3 (J5 to Yuvi, J7 to Simone); `CLAUDE.md` lists the ownership exceptions.
 16. **Andrew took over the 3D scene** (`web/src/components/Lot3D/`) from Jayden on 2026-10-17: J8 and J10 move to him, plus the four designs modelled from the City's elevation sheets (A16) and a realism pass (A15); Jayden keeps all UI that is not 3D. The 3D work lands on branch `andrew-3d` by Hour 27, with the current look kept as the fallback (T23).
+17. **The 2D plan view** (Yuvi, PR #12) is the spec's 2D view (6.7): the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and the permit diamonds on a street map. It takes the 2D part off J9, and after the merge it is part of Jayden's UI like the rest of `/web`.
 
 ### 0.6 Known data limits (say "about", never "exactly")
 
@@ -218,6 +219,8 @@ Section 9.1 says only Andrew merges into `main` and everyone edits only their ow
 
 Nothing broke: `main` builds, type-checks and lints clean, and the engine, API and AI tests pass. But after Hour 24 a self-merge that breaks `main` costs the demo, and two people restyling the same folder is how a demo ends up half one palette and half the other. From now on: every change goes in as a PR to Andrew; nobody merges their own PR; a change someone wants in another person's folder is a message to that person. The palette that wins must also land in `contracts/design-tokens.css` (through Andrew) so Simone's briefing page matches the app.
 
+
+PR #12 (Yuvi) changed Jayden's files and carried Jayden's unmerged commits. It was opened before the new ownership rules were pushed, and it resolves the palette conflict that blocks Jayden's own PR #14, so it is the one to merge; #14 is then superseded. From now on `CLAUDE.md` applies: in `/web`, Yuvi edits only `WardMap/` and the next-steps component.
 ---
 
 ## 1. Summary, decisions locked, assumptions
@@ -763,7 +766,7 @@ Five to ten real lots in Ward 04, chosen at Hour 8 to 10 by looking at the parce
 | Apply with a City design | `designer` | any design `fits` or `borderline` | A qualified design professional completes the site-specific parts: site plan, lot grading plan, the zoning and code matrices on sheets A010 and A011, and signed architectural, structural and mechanical letters. Changing the plan itself, even the heating or plumbing, means it is no longer pre-approved | Design professional | Plans page |
 | Apply with a City design | `permit` | any design `fits` or `borderline` | Apply online through Toronto Building and enter the pre-approved plan number; you do not resubmit the City's drawings. The application also includes forms such as the Residential Infill Public Notice declaration and the Municipal Road Damage form | Toronto Building | Plans page; [Building permit fees](https://www.toronto.ca/services-payments/building-construction/apply-for-a-building-permit/building-permit-fees/) |
 | Apply with a City design | `demolition` | any design `fits` or `borderline` and the lot is not `vacant` | Replacing the house needs a demolition permit, which can be added to the same application after you submit | Toronto Building | Plans page ("Demolition, mechanical, plumbing, and drain permits can be added after submission") |
-| Apply with a City design | `fees` | any design `fits` or `borderline` | A multiplex with no more than four units on the lot is generally exempt from development charges and parkland cash-in-lieu. For five or six units, confirm with the City: the published exemption covers up to four. When only a sixplex fits, the second sentence comes first | Toronto Building | Considerations page ("provided there are no more than four units on the residential lot"); [Municipal Code Chapter 415](https://www.toronto.ca/legdocs/municode/1184_415.pdf) |
+| Apply with a City design | `fees` | any design `fits` or `borderline` | A multiplex with up to six units pays no development charges on its second to fourth units, the fifth and sixth are reduced to $0, and parkland cash-in-lieu is waived for the second to sixth, while the lot has no more than six units (a garden or laneway suite on the City's deferral program does not count) | Toronto Building | [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), enacted July 24, 2025, amending Municipal Code 415-6 A (2) and 415-30 A (16); the City's "Considerations" page still says four units and is out of date |
 | If the designs don't fit | `attached_options` | class `attached` | The City's free designs are for detached lots. On a semi or row-house lot you may still convert the existing house to up to four homes, or add a garden or laneway suite, if the rules are met (a semi cannot become a fiveplex or sixplex, 600.60.40(3)(D)) | Toronto Building | Considerations page; [Garden suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/garden-suites/); [Laneway suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/changing-lanes-laneway-suites-in-toronto/); By-law 654-2025 |
 | If the designs don't fit | `custom_or_variance` | class `checked` and all four designs `no_fit` | None of the City's four designs fits as checked. A design professional can look at a custom design; plans that go beyond the zoning rules can apply to the Committee of Adjustment for a minor variance | Design professional; Committee of Adjustment | Considerations page; [Committee of Adjustment](https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/) |
 | If the designs don't fit | `ask_zoning` | class `condo`, `non_residential`, `older_bylaw`, `larger_building` or `unmeasurable` | Suplex could not check this lot ({reason}). Toronto Building's zoning staff can tell you what is allowed: 416-397-5330, weekdays 8:30 a.m. to 4:30 p.m. | Toronto Building | Considerations page |
@@ -1220,7 +1223,7 @@ Yuvi owns next steps end to end, including its panel component, because his data
 | Y12 | Yuvi | Copy file | Y11 | `contracts/copy/next_steps.json` with all 14 steps, the `why` templates, the footer and a `sources` entry per step | Simone's tone review (S14) passes; no step names a business, a person or a candidate | Y11, A14 | 1.0 |
 | Y13 | Yuvi | Engine module and tests | section 5.10; Y12 | `engine/suplex_engine/next_steps.py`; `engine/tests/test_next_steps.py` covering every trigger on synthetic fixtures and the six real lots in the 5.10 table | `pytest engine` green with the real-lot tests running; the six lots return exactly the steps in the table; no AI or network call in the module | A14, Y12 | 2.0 |
 | Y14 | Yuvi | Render "Your next steps" | `fixtures/check.*.json` with `next_steps`; Jayden's panel styles | `web/src/components/ResultPanel/NextSteps.tsx`: the four group headings, each step with title, text, who, links and its `why` line as a muted chip; the footer; keyboard reachable; no colour-only state. Jayden mounts it at the end of the result panel with one line | all four fixtures render; a not-checked lot shows only `ask_zoning`; links open in a new tab; `npm run build` passes | A14, J4 | 1.5 |
-| S14 | Simone | Tone and fact review | Y11, Y12 | review notes; `pitch/facts.md` corrected so development charges say "up to four units", never six; one demo line (2.8) | every step reads neutral and plain; nothing reads as legal advice or as a promise | Y12 | 0.5 |
+| S14 | Simone | Tone and fact review | Y11, Y12 | review notes; `pitch/facts.md` corrected so development charges say "up to six units", citing By-law 845-2025; one demo line (2.8) | every step reads neutral and plain; nothing reads as legal advice or as a promise | Y12 | 0.5 |
 
 Total about 6.5 hours, mostly Yuvi's (5.5).
 
@@ -1496,7 +1499,7 @@ Visual extras are not on this list because they never start before the core work
 | T18 | **Done (Yuvi):** the real Tiger Data service is loaded and checked for all 25 wards; compression 3.59 MB to 2.60 MB; trend cache rebuilt from it; `TIGER_DSN` shared privately | Yuvi | Hour 12 | the Hour-14 go/no-go is passed |
 | T19 | **Done 2026-10-17:** the site-exception policy is confirmed and built (`classify.INFORMATIONAL_FLAGS`, `review_flags`): the flag stays in the address check with the exception number, never an icon on the map, never counted as "need extra review"; `ward_summary.flags.site_exception` still counts it | Andrew | Hour 8 | 88% of Ward 04 lots carry an exception number |
 | T20 | Fix the skewed-lot placement so the depth row stops reading short on lots whose sides lean more than about 8° (542 pessimistic Ward 04 results, `docs/test-lots.md` fix 2) | Andrew | before A10 | fit accuracy on tapered lots |
-| T21 | Half done (Simone, PR #8): `pitch/facts.md` row 16 says development charges are exempt up to four units, never six. Remaining: find out whether the May 2026 recommendation to extend the exemption to six units was adopted (Yuvi, Y11) | Simone, Yuvi | Hour 26 | a wrong fee claim in the pitch |
+| T21 | **Done 2026-10-17:** [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf) (enacted July 24, 2025) waives development charges on the second to fourth units, reduces the fifth and sixth to $0, and waives parkland cash-in-lieu on the second to sixth, for lots with no more than six units. Say "up to six units" and cite the by-law; never name the councillors who moved it. The City's "Considerations" page saying four is out of date. Simone updates `pitch/facts.md` row 16 and the Devpost | Simone | Hour 26 | a wrong fee claim in the pitch |
 | T22 | **Done 2026-10-17 (Andrew):** next steps and the re-plan approved; `CLAUDE.md` and section 9 list the ownership exceptions | Andrew | Hour 20 | done |
 | T23 | The 3D work (J8, A16, A15) merges from branch `andrew-3d` by Hour 27, or the current look ships; `?look=classic` stays as the fallback either way, and the demo laptop is tested at 50 fps or better before the merge | Andrew | Hour 27 | a half-finished 3D scene on stage |
 | T12 | Pick the two backup addresses and confirm the demo ward from real batch results | Simone, Andrew | Hour 20 | demo safety |
@@ -1540,7 +1543,7 @@ Visual extras are not on this list because they never start before the core work
 
 **Permit process (next steps, read 2026-10-17)**
 
-- [Pre-approved multiplex building plans](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/), [Considerations when building multiplexes](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/), [Zoning Applicable Law Certificate](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/), [When to apply for a tree or ravine permit](https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/), [Municipal Code Chapter 415](https://www.toronto.ca/legdocs/municode/1184_415.pdf), [Garden suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/garden-suites/), [Laneway suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/changing-lanes-laneway-suites-in-toronto/), [Committee of Adjustment](https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/)
+- [Pre-approved multiplex building plans](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/), [Considerations when building multiplexes](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/), [Zoning Applicable Law Certificate](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/), [When to apply for a tree or ravine permit](https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/), [Municipal Code Chapter 415](https://www.toronto.ca/legdocs/municode/1184_415.pdf), [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), [Garden suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/garden-suites/), [Laneway suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/changing-lanes-laneway-suites-in-toronto/), [Committee of Adjustment](https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/)
 
 **Tools**
 
@@ -2290,6 +2293,13 @@ You asked for every decision to be made rather than asked. Here is each one, why
 ## Appendix J. Status log (every report, word for word)
 
 Section 0 is rewritten on each update; this appendix keeps what it said before, so nothing is lost. Newest first. The entries below were section 0 from 2026-10-17 03:40 to 17:00.
+
+### 2026-10-17, 18:05: Simone's evening report, PRs 12 to 14, development charges settled
+
+- Simone: S8 part one on the 19 real lots (19 of 19 clean after a margin-as-depth fix), the plan-view strings, the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A, the README draft; PR #13 (J7 `TrendChart.tsx` and the web's five pending strings) is clean.
+- Yuvi: PR #12, a 2D plan view tab that also carries Jayden's four unmerged commits; merged with #13 onto `main` in a test checkout it builds and lints clean. Jayden's PR #14 conflicts and is superseded by #12.
+- T21: By-law 845-2025 (July 24, 2025) waives development charges and parkland cash-in-lieu for multiplexes of up to six units. The 18:00 board said "four, never six"; that was wrong and is corrected.
+- Andrew's 3D session started at 18:00 on its own branch; his A9-A10 session continues on `main`.
 
 ### 2026-10-17, 18:00: approvals and merges
 

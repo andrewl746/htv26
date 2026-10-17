@@ -29,21 +29,21 @@ Notes: facts.md row 3 (news release Oct 2 2026; plans page).
 ### 4 · Demo
 (Live demo slide: switch to the app. Fallback: a 20-second screen recording of the address check.)
 
-### 5 · Could vs. did, Ward 20
+### 5 · Could vs. did, Ward 04
 Big: "`[LOCKED: could]` lots could fit a free design." / "`[LOCKED: did]` multiplex permits since May 2023."
 Small: "Upper bound: where a design may fit, not what gets built."
 Screenshot: the ward map with green/grey lots and gold dots (no addresses).
 
-Notes: `ward_summary.json` wards.20.headline at `headline-locked`; permit rule = Rule A (facts.md row 4 for the sanity check).
+Notes: `ward_summary.json` wards.04.headline at `headline-locked`; permit rule = Rule A (facts.md row 4 for the sanity check).
 
 ### 6 · Why lots don't fit
 The most common reason in plain words, with its count: `[LOCKED: top rule]`, `[LOCKED: count]`.
 "`[LOCKED: attached_pct]`% of house lots are semis or row houses, where the free designs don't apply."
 
-Notes: `ward_summary.json` wards.20.top_blocking_rules and attached_share_pct.
+Notes: `ward_summary.json` wards.04.top_blocking_rules and attached_share_pct.
 
 ### 7 · The ward briefing
-Screenshot of `/b/20` with a number link hovered, and the language picker open (eight languages).
+Screenshot of `/b/04` with a number link hovered, and the language picker open (eight languages).
 "Written by Gemini from the engine's numbers. Every number links to its source."
 
 Notes: no numbers on this slide besides "eight" languages (the AI_LANGS list).

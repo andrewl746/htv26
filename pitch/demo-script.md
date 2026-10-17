@@ -2,7 +2,7 @@
 
 Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …]` from the Hour-24 batch run; every other number is in [`facts.md`](facts.md). Rehearse with a timer and log each run in [`rehearsal-log.md`](rehearsal-log.md).
 
-**Before judges arrive:** demo laptop on the demo cache (`SUPLEX_DEMO_CACHE=1`), API on :8000, AI service on :8001, web on :5173, browser zoom 100%, the backup addresses from [`demo.md`](demo.md) on a sticky note (73 Manderley Dr fits; 88 Manderley Dr, same street, is too close to call; 37 Wanstead Ave is a semi or row-house lot), `/b/20?lang=en` pre-loaded in a second tab, Wi-Fi off once everything is cached (the rehearsal at Hour 30 proves this works).
+**Before judges arrive:** demo laptop on the demo cache (`SUPLEX_DEMO_CACHE=1`), API on :8000, AI service on :8001, web on :5173, browser zoom 100%, the backup addresses from [`demo.md`](demo.md) on a sticky note (326 Quebec Ave: all four designs fit; 281 Armadale Ave: too close to call; 155 Vine Ave: a row house), `/b/04?lang=en` pre-loaded in a second tab, Wi-Fi off once everything is cached (the rehearsal at Hour 30 proves this works).
 
 **Words to never say:** "will be built", "threat", "opportunity", "best/worst ward", any candidate's or party's name. Say "may fit", "could", "screening".
 
@@ -17,14 +17,14 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 ## 0:30–1:30 · Address check (driver: `[name]`)
 
-1. **Offer the keyboard:** "Want to try your street, or a family member's?" (Never press for a home address; if they decline, type 73 Manderley Dr.)
+1. **Offer the keyboard:** "Want to try your street, or a family member's?" (Never press for a home address; if they decline, type 326 Quebec Ave.)
 2. As the street builds: "These are the real neighbouring buildings from the City's 3D data. The old house is replaced by an illustrative new build."
 3. When the design rises: "That's the City's own Fourplex Narrow. The result comes from code, not AI: lot width, depth, building length, height, coverage, each with its by-law section."
 4. Open the checklist on the deciding rule: read the required value, the lot's value and the margin.
-5. Type **88 Manderley Dr**, a few doors along (or use the judge's lot if it is borderline): "Same street, and both fourplexes are too close to call. The City's lot lines aren't survey-accurate, so anything within half a metre we call too close to call instead of pretending to know."
+5. Type **281 Armadale Ave** (or use the judge's lot if it is borderline): "Here the Fourplex Narrow is too close to call: 7.45 m of lot width against the 7.6 m it needs. The City's lot lines aren't survey-accurate, so anything within half a metre we call too close to call instead of pretending to know."
 6. Point at "Screening only, not a permit or legal advice" and "What we don't check".
 
-*If the address isn't found or is outside Toronto:* the app says so; switch to 73 Manderley Dr. *If a judge asks about semis or row houses:* 37 Wanstead Ave: "Attached, so none of the free designs apply; a basement or garden suite might, and we don't check those." *If the API is down:* the demo cache serves the backup addresses.
+*If the address isn't found or is outside Toronto:* the app says so; switch to 326 Quebec Ave. *If a judge asks about semis or row houses:* 155 Vine Ave: "Attached, so none of the free designs apply; a basement or garden suite might, and we don't check those." *If the API is down:* the demo cache serves the backup addresses.
 
 ## 1:30–2:30 · Permission vs. reality (driver)
 
@@ -37,7 +37,7 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 ## 2:30–3:20 · Ward briefing (driver, Simone narrates)
 
-1. Click **Get the ward briefing** (opens `/b/20`).
+1. Click **Get the ward briefing** (opens `/b/04`).
 2. "Gemini writes this from the engine's numbers. Every number is a link." Click one number and show its source (the ward map or the City dataset).
 3. Switch the language picker to French (or the language a judge speaks; all eight are cached). "Translated in one click; the numbers are checked again after translation."
 4. "Three neutral questions for candidates, the same in every ward."

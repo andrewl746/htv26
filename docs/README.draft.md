@@ -42,7 +42,7 @@ python contracts/validate.py
 | AI service | `uvicorn ai.main:app --port 8001` |
 | Web app | `cd web && npm install && npm run dev` (port 5173) |
 | Ward briefing page | http://localhost:8001/b/04?lang=en (add `&fixture=1` for the sample data) |
-| Fill the AI cache for the demo | `python -m ai.pregenerate --ward 20 --langs all` |
+| Fill the AI cache for the demo | `python -m ai.pregenerate --ward 04 --langs all` |
 | Everything for the demo | `scripts/demo.ps1` or `scripts/demo.sh` |
 
 The processed data (`data/out/`) is not in git; it is rebuilt with the pipeline commands in `CLAUDE.md`.

@@ -40,7 +40,7 @@ For each language still marked "Machine translation, not yet reviewed" (`reviewe
 | Tamil | | question 1 drops "if anything" | |
 | Portuguese | | | |
 
-After the Hour-24 regeneration, read the **French** Ward 20 briefing once more: it is the one translated on stage.
+After the Hour-24 regeneration, read the **French** Ward 04 briefing once more: it is the one translated on stage.
 
 ## Things to check every run
 

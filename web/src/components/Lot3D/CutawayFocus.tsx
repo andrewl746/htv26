@@ -1,13 +1,10 @@
-import { useFrame } from '@react-three/fiber'
-import { cutawayUniforms } from './cutaway'
 import type { Vec3 } from './geometry'
+import { updateSinks } from './occlusion'
+import { useSequenceFrame } from './useSequence'
 
-/** Points the street's cutaway at what the camera should always see: the design, or the lot. */
-export function CutawayFocus({ focus }: { focus: { centre: Vec3; radius: number } | null }) {
-  useFrame(({ camera }) => {
-    cutawayUniforms.uCutEye.value.copy(camera.position)
-    if (focus) cutawayUniforms.uCutFocus.value.set(...focus.centre)
-    cutawayUniforms.uCutRadius.value = focus ? focus.radius : 0
-  })
+/** Each frame, sinks the neighbours that hide any of these points from the camera: the design's corners, or the lot's. */
+export function CutawayFocus({ targets }: { targets: Vec3[] }) {
+  // After the camera has moved this frame (-0.5).
+  useSequenceFrame((_t, { reduced }, { camera }, delta) => updateSinks(camera.position, targets, delta, reduced))
   return null
 }

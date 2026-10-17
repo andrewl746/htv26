@@ -14,6 +14,12 @@ const DEFAULT_FRONT_BEARING_DEG = 180
  * so the street rises while the camera is still coming down and the flight's ease-out ends it.
  */
 export const HANDOFF_S = 0.9
+/**
+ * At the start of the handoff the map's own buildings fade away, and the 3D street only starts
+ * growing once they are gone: the two sets of houses (OpenStreetMap's and the City's) never show
+ * at once.
+ */
+export const MAP_FADE_S = 0.45
 
 // Distance from the lot: the spec's 45 m for a small lot, further out for a deep lot or a tall
 // building (a 24 m condo filled the whole view at a fixed 60 m).

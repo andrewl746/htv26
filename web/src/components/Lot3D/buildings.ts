@@ -1,14 +1,25 @@
 import { BoxGeometry, BufferGeometry, ExtrudeGeometry, Float32BufferAttribute, type Object3D } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
+import { SLOT_ATTRIBUTE } from './cutaway'
 import { openRing, seededIndex, shapeFrom, signedArea, vertexMean } from './geometry'
+import type { Box } from './occlusion'
 import { ease, lerp } from './timeline'
 
 // Neighbouring buildings (MASTERSPEC 6.3 step 2): houses get a cartoon gable roof with the ridge
-// along the footprint's long axis; large buildings stay flat with a parapet.
+// along the footprint's long axis; large buildings stay flat with a parapet. Roofs are squared up
+// to the street's grid, so a row of houses reads as parallel roofs rather than a scatter of angles.
 const ROOF_PITCH_DEG = 30
 const ROOF_RIDGE_MAX_M = 2.5
-const ROOF_OVERHANG_M = 0.3
+/**
+ * The roof overhangs the gable ends only. Along the eaves, where semis and row houses meet, an
+ * overhang would reach into the roof next door and flicker against it.
+ */
+const GABLE_OVERHANG_M = 0.3
+/** A house whose walls run within this of the street's grid is squared up to it. */
+const GRID_SNAP_DEG = 10
+/** A footprint closer to square than this has no clear long axis; its ridge runs the street's way. */
+const SQUARE_ASPECT = 1.25
 const PARAPET_HEIGHT_M = 0.5
 const PARAPET_THICKNESS_M = 0.3
 /** Buildings start a little narrower than their footprint while they grow up. */
@@ -39,9 +50,35 @@ export interface BuiltBuilding {
   /** Walls, plus the parapet on large buildings. */
   body: BufferGeometry
   roof: BufferGeometry | null
+  /** What can hide the design: the footprint's squared-up box, roof included. */
+  box: Box
 }
 
-export function buildBuilding(building: ContextBuilding): BuiltBuilding {
+/** How a street's houses are turned: the way most walls run, and the way most ridges run. */
+export interface StreetGrid {
+  /** Radians, modulo a quarter turn; null without houses. */
+  wallRad: number | null
+  /** Radians, modulo a half turn; null without a house that has a clear long axis. */
+  ridgeRad: number | null
+}
+
+export function streetGrid(buildings: ContextBuilding[]): StreetGrid {
+  const houses = buildings.filter((b) => b.kind === 'house').map((b) => openRing(b.footprint_local))
+  if (houses.length === 0) return { wallRad: null, ridgeRad: null }
+  const walls = houses.map(wallSum).reduce(addSums, [0, 0])
+  const wallRad = angleOf(walls, 4)
+
+  let ridges: Sum = [0, 0]
+  for (const ring of houses) {
+    const box = squaredBox(ring, vertexMean(ring), { wallRad, ridgeRad: null })
+    if (!box.clear) continue
+    const weight = Math.abs(signedArea(ring))
+    ridges = addSums(ridges, [weight * Math.cos(2 * box.ridgeRad), weight * Math.sin(2 * box.ridgeRad)])
+  }
+  return { wallRad, ridgeRad: ridges[0] === 0 && ridges[1] === 0 ? null : angleOf(ridges, 2) }
+}
+
+export function buildBuilding(building: ContextBuilding, grid: StreetGrid): BuiltBuilding {
   const ring = openRing(building.footprint_local)
   const [cx, cy] = vertexMean(ring)
   const height = building.avg_height_m
@@ -52,7 +89,7 @@ export function buildBuilding(building: ContextBuilding): BuiltBuilding {
   let body: BufferGeometry = walls
   let roof: BufferGeometry | null = null
   if (building.kind === 'house') {
-    roof = gableRoof(ring, [cx, cy], height)
+    roof = gableRoof(ring, [cx, cy], height, grid)
   } else {
     body = mergeGeometries([walls, ...parapet(ring, [cx, cy], height)]) ?? walls
   }
@@ -65,6 +102,16 @@ export function buildBuilding(building: ContextBuilding): BuiltBuilding {
     colorIndex: seededIndex(building.building_id, NEIGHBOUR_TOKENS.length),
     body,
     roof,
+    box: boxOf(ring, [cx, cy], grid, buildingTop(building)),
+  }
+}
+
+/** Tags every vertex of a building with its slot in the cutaway's sink texture (before merging). */
+export function setSlot(built: BuiltBuilding, slot: number): void {
+  for (const geometry of [built.body, built.roof]) {
+    if (!geometry) continue
+    const slots = new Float32Array(geometry.getAttribute('position').count).fill(slot)
+    geometry.setAttribute(SLOT_ATTRIBUTE, new Float32BufferAttribute(slots, 1))
   }
 }
 
@@ -88,33 +135,89 @@ export function mergeStreet(built: BuiltBuilding[]): { bodies: (BufferGeometry |
   return { bodies, roofs }
 }
 
+type Sum = [number, number]
+
+const addSums = ([a, b]: Sum, [c, d]: Sum): Sum => [a + c, b + d]
+
+/** The mean angle of a sum of (cos kφ, sin kφ), which is defined modulo a k-th of a turn. */
+const angleOf = ([c, s]: Sum, k: number) => Math.atan2(s, c) / k
+
+/** An angle wrapped into [-period / 2, period / 2). */
+const wrap = (angle: number, period: number) => ((((angle + period / 2) % period) + period) % period) - period / 2
+
 /**
- * A triangular prism over the footprint's oriented bounding box. The long axis comes from the
- * vertices' principal direction, which is exact for the rectangles most house footprints are.
+ * Σ length·(cos 4φ, sin 4φ) over a footprint's edges. Walls at right angles to each other add up
+ * rather than cancel, and long walls outweigh the short edges of porches and bay windows, so the
+ * angle of the sum is the way the house's walls run.
  */
-function gableRoof(ring: LocalPoint[], [cx, cy]: LocalPoint, wallHeight: number): BufferGeometry {
-  let sxx = 0
-  let syy = 0
-  let sxy = 0
-  for (const [x, y] of ring) {
-    sxx += (x - cx) ** 2
-    syy += (y - cy) ** 2
-    sxy += (x - cx) * (y - cy)
+function wallSum(ring: LocalPoint[]): Sum {
+  let c = 0
+  let s = 0
+  ring.forEach(([x, y], i) => {
+    const [nx, ny] = ring[(i + 1) % ring.length]
+    const length = Math.hypot(nx - x, ny - y)
+    const phi = Math.atan2(ny - y, nx - x)
+    c += length * Math.cos(4 * phi)
+    s += length * Math.sin(4 * phi)
+  })
+  return [c, s]
+}
+
+/**
+ * The footprint's bounding box turned to its walls (or the street's, when they are close), with
+ * axis a along the ridge and b counter-clockwise of it, across the roof.
+ */
+function squaredBox(ring: LocalPoint[], [cx, cy]: LocalPoint, grid: StreetGrid) {
+  let angle = angleOf(wallSum(ring), 4)
+  if (grid.wallRad !== null && Math.abs(wrap(angle - grid.wallRad, Math.PI / 2)) < (GRID_SNAP_DEG * Math.PI) / 180) {
+    angle = grid.wallRad
   }
-  const angle = 0.5 * Math.atan2(2 * sxy, sxx - syy)
-  let a: LocalPoint = [Math.cos(angle), Math.sin(angle)]
-  let b: LocalPoint = [-a[1], a[0]]
-  const extent = (axis: LocalPoint) => {
+  const extent = (axis: LocalPoint): [number, number] => {
     const values = ring.map(([x, y]) => (x - cx) * axis[0] + (y - cy) * axis[1])
     return [Math.min(...values), Math.max(...values)]
   }
-  if (extent(a)[1] - extent(a)[0] < extent(b)[1] - extent(b)[0]) {
-    // Turn both axes a quarter so the ridge runs along the longer side and b stays counter-clockwise of a.
-    ;[a, b] = [b, [-b[0], -b[1]]]
+  let a: LocalPoint = [Math.cos(angle), Math.sin(angle)]
+  let b: LocalPoint = [-a[1], a[0]]
+  const [along, across] = [a, b].map((axis) => {
+    const [lo, hi] = extent(axis)
+    return hi - lo
+  })
+  const clear = Math.max(along, across) >= SQUARE_ASPECT * Math.min(along, across)
+  const ridgeAcross =
+    clear || grid.ridgeRad === null
+      ? along < across
+      : Math.abs(wrap(angle + Math.PI / 2 - grid.ridgeRad, Math.PI)) < Math.abs(wrap(angle - grid.ridgeRad, Math.PI))
+  if (ridgeAcross) {
+    // Turn both axes a quarter so the ridge runs along a and b stays counter-clockwise of a.
+    ;[a, b] = [b, [-a[0], -a[1]]]
+    angle += Math.PI / 2
   }
-  const o = ROOF_OVERHANG_M
-  const [a0, a1] = extent(a).map((v, i) => (i === 0 ? v - o : v + o))
-  const [b0, b1] = extent(b).map((v, i) => (i === 0 ? v - o : v + o))
+  return { a, b, ea: extent(a), eb: extent(b), ridgeRad: angle, clear }
+}
+
+/** The squared-up bounding box in scene coordinates, for the sight-line tests. */
+function boxOf(ring: LocalPoint[], centre: LocalPoint, grid: StreetGrid, top: number): Box {
+  const { a, b, ea, eb } = squaredBox(ring, centre, grid)
+  const [mu, mv] = [(ea[0] + ea[1]) / 2, (eb[0] + eb[1]) / 2]
+  const east = centre[0] + a[0] * mu + b[0] * mv
+  const north = centre[1] + a[1] * mu + b[1] * mv
+  return {
+    x: east,
+    z: -north,
+    ux: a[0],
+    uz: -a[1],
+    halfU: (ea[1] - ea[0]) / 2,
+    halfV: (eb[1] - eb[0]) / 2,
+    top,
+  }
+}
+
+/** A triangular prism over the footprint's squared-up bounding box, its ridge along axis a. */
+function gableRoof(ring: LocalPoint[], centre: LocalPoint, wallHeight: number, grid: StreetGrid): BufferGeometry {
+  const { a, b, ea, eb } = squaredBox(ring, centre, grid)
+  const o = GABLE_OVERHANG_M
+  const [a0, a1] = [ea[0] - o, ea[1] + o]
+  const [b0, b1] = eb
   const bm = (b0 + b1) / 2
   const rise = Math.min(ROOF_RIDGE_MAX_M, ((b1 - b0) / 2) * Math.tan((ROOF_PITCH_DEG * Math.PI) / 180))
 

@@ -7,10 +7,9 @@ import { useSequenceFrame } from './useSequence'
 import { FOV_DEG, START_BEARING_DEG, SWOOP_START_M, TARGET_HEIGHT_M } from './view'
 
 // Step 1 (MASTERSPEC 6.3): the camera swoops from top-down at 120 m to a 35° tilt on the street side
-// of the lot, turning from the map's north-up as it goes. The spec's 45 m cuts off the front of a
-// 40 m deep lot, so it settles a little further out. Step 7: a slow orbit, 24 s per turn, that
-// stops while someone drags and resumes 5 s after.
-const DISTANCE_M = 60
+// of the lot, turning from the map's north-up as it goes, and settles at a distance sized to the
+// lot (restDistance in view.ts). Step 7: a slow orbit, 24 s per turn, that stops while someone
+// drags and resumes 5 s after.
 const TILT_DEG = 35
 const TARGET = new Vector3(0, TARGET_HEIGHT_M, 0)
 /** Straight down has no heading, so the swoop starts a hair off vertical. */
@@ -21,7 +20,15 @@ const ORBIT_IDLE_S = 5
 const DEFAULT_BEARING_DEG = 180
 const UP = new Vector3(0, 1, 0)
 
-export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: number | null; rightInsetPx: number }) {
+export function Camera({
+  frontBearingDeg,
+  distanceM,
+  rightInsetPx,
+}: {
+  frontBearingDeg: number | null
+  distanceM: number
+  rightInsetPx: number
+}) {
   const camera = useRef<ComponentRef<typeof PerspectiveCamera>>(null)
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const size = useThree((s) => s.size)
@@ -73,7 +80,7 @@ export function Camera({ frontBearingDeg, rightInsetPx }: { frontBearingDeg: num
       ctl.enabled = false
       const p = ease.outCubic(progress(t, timeline.swoop))
       scratch.spherical.set(
-        lerp(SWOOP_START_M, DISTANCE_M, p),
+        lerp(SWOOP_START_M, distanceM, p),
         lerp(SWOOP_START_POLAR, restPolar, p),
         startAzimuth + turn * p,
       )

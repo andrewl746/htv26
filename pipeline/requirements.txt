@@ -1,0 +1,9 @@
+geopandas>=1.0
+pyogrio>=0.9
+shapely>=2.0
+pyproj>=3.6
+pandas>=2.2
+pyarrow>=15
+requests>=2.31
+psycopg[binary]>=3.1
+pytest>=8

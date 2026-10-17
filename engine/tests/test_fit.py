@@ -375,7 +375,7 @@ def test_row_house_touching_along_a_shared_wall_is_attached():
 
 
 def test_detached_house_with_a_close_neighbour_is_not_attached():
-    lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1 m gap, wider than the tolerance
+    lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1.2 m gap, far wider than the tolerance
     assert is_attached(lot, neighbours, [house, other], CFG) is False
     # Two roof outlines 0.2 m apart (eaves of detached houses 1.2 m apart) are not a shared wall either.
     lot, neighbours, house, other = _lot_and_neighbour(0.0)       # the helper adds 0.2 m: a real 0.2 m gap

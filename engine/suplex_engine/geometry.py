@@ -174,9 +174,10 @@ def _opposite(a: LineString, b: LineString, cfg: EngineConfig) -> bool:
 
 def _drop_opposite_edges(edges: list[LineString], address_point: Point, cfg: EngineConfig) -> list[LineString]:
     """Opposite street edges are not a corner. Walk the edges from the one nearest the lot's address point
-    outward and drop every edge that lies opposite an edge already kept, so a rear lane never becomes the
-    frontage (on a corner lot addressed from its long side the lane is opposite the *other* street, which is
-    why the test is pairwise); the corner rule then applies to what is left.
+    outward and drop every edge that lies opposite an edge already kept; the corner rule then applies to what
+    is left. Of an opposite pair, the edge nearer the address point wins (an exact tie keeps boundary order),
+    so a rear lane loses whenever the address point sits on the street half of the lot; on a corner lot
+    addressed from its long side the lane is opposite the *other* street, which is why the test is pairwise.
 
     A8 finding on Ward 04 (2026-10-17): 78% of lots with two street edges have a public lane behind them, not a
     second street, and the shorter-edge rule alone faced the lane in half of those. Without an address point

@@ -80,12 +80,25 @@ LOTS = {
 
 @pytest.fixture(scope="module")
 def results():
-    return {pid: run_check(lot_input(pid), CFG, DESIGNS).to_dict() for pid in LOTS}
+    """One CheckResponse per lot; a parcel missing from a rebuilt data release skips its own tests only."""
+    out = {}
+    for pid in LOTS:
+        try:
+            out[pid] = run_check(lot_input(pid), CFG, DESIGNS).to_dict()
+        except pytest.skip.Exception as e:
+            out[pid] = str(e)
+    return out
+
+
+def _result(results, pid):
+    if isinstance(results[pid], str):
+        pytest.skip(results[pid])
+    return results[pid]
 
 
 @pytest.mark.parametrize("pid", list(LOTS))
 def test_class_and_results_per_design(results, pid):
-    exp, d = LOTS[pid], results[pid]
+    exp, d = LOTS[pid], _result(results, pid)
     if "not_cls" in exp:
         assert d["lot"]["class"] != exp["not_cls"], exp["name"]
         return
@@ -98,14 +111,14 @@ def test_class_and_results_per_design(results, pid):
 
 @pytest.mark.parametrize("pid", [p for p, e in LOTS.items() if "width" in e])
 def test_width_and_depth_match_the_hand_measurement(results, pid):
-    exp, lot = LOTS[pid], results[pid]["lot"]
+    exp, lot = LOTS[pid], _result(results, pid)["lot"]
     assert lot["width_m"] == pytest.approx(exp["width"], abs=TOL_M), exp["name"]
     assert lot["depth_m"] == pytest.approx(exp["depth"], abs=TOL_M), exp["name"]
 
 
 def test_flags_vacant_and_bearing(results):
     for pid, exp in LOTS.items():
-        lot = results[pid]["lot"]
+        lot = _result(results, pid)["lot"]
         ids = {f["id"] for f in lot["flags"]} - {"site_exception"}
         if "flags" in exp:
             assert ids == exp["flags"], exp["name"]
@@ -116,19 +129,19 @@ def test_flags_vacant_and_bearing(results):
 
 
 def test_specific_margins_and_areas(results):
-    d = results[5422686]                      # 34 Rexford Rd
+    d = _result(results, 5422686)             # 34 Rexford Rd
     fn = next(x for x in d["designs"] if x["design_id"] == FN)
     assert next(r for r in fn["rules"] if r["rule_id"] == "lot_width")["margin"] == pytest.approx(LOTS[5422686]["fn_width_margin"], abs=0.05)
-    d = results[5464574]                      # 4 Olympus Ave: width measured across the band, not at the street
+    d = _result(results, 5464574)             # 4 Olympus Ave: width measured across the band, not at the street
     fn = next(x for x in d["designs"] if x["design_id"] == FN)
     assert next(r for r in fn["rules"] if r["rule_id"] == "lot_width")["actual"] == pytest.approx(LOTS[5464574]["fn_band_width"], abs=TOL_M)
-    d = results[5411260]                      # 155 Vine Ave: the clipped footprint, not the 883 m2 row polygon
+    d = _result(results, 5411260)             # 155 Vine Ave: the clipped footprint, not the 883 m2 row polygon
     assert d["lot"]["existing_building"]["footprint_m2"] == pytest.approx(LOTS[5411260]["existing_footprint_m2"], abs=2.0)
 
 
 def test_depth_actual_is_never_measured_outside_the_lot(results):
     """A design wider than the lot must still report the lot's real depth, not a sample taken past the side lot line."""
-    d = results[5422686]                      # 6.40 m lot, Fourplex Wide is 6.64 m wide
+    d = _result(results, 5422686)             # 6.40 m lot, Fourplex Wide is 6.64 m wide
     fw = next(x for x in d["designs"] if x["design_id"] == FW)
     row = next(r for r in fw["rules"] if r["rule_id"] == "lot_depth")
     assert row["actual"] == pytest.approx(LOTS[5422686]["depth"], abs=TOL_M)

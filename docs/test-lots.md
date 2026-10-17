@@ -44,12 +44,16 @@ Four engine changes came out of these lots. Each has a synthetic test as well as
 1. **Rear lanes are not the frontage** (`geometry.choose_frontage`). The derived street-space layer includes
    public lanes, so 34 % of Ward 04 lots have two or more street edges, and in a sample of 600 of them 78 % had
    *parallel* edges (a lane behind) rather than a corner. The by-law's shorter-edge rule then faced the lane in
-   about half of those (62 Alhambra Ave: bearing 253 instead of 73). Now, when the lot has an address point,
-   street edges parallel to the edge nearest that point and apart from it (direction within
-   `street_edge.merge_angle_deg`, distance over `street_edge.min_length_m`) are dropped before the corner rule.
-   On Ward 04 this changes the frontage of 2,451 house lots (13 %); 1,824 true corners are untouched; 33 lots
-   with no address point keep the shorter edge. Rectangular lots keep the same width and depth; placement,
-   bearing and tapered lots change.
+   about half of those (62 Alhambra Ave: bearing 253 instead of 73). Now, when the lot has an address point, the
+   street edges are walked from the one nearest that point outward and every edge opposite an edge already kept
+   (direction within `street_edge.merge_angle_deg`, apart by more than `street_edge.min_length_m`) is dropped;
+   the corner rule then applies to the rest. Of an opposite pair the edge nearer the address point wins, so a
+   lane loses whenever the address point sits on the street half of the lot; an exact tie keeps boundary order,
+   and an address on the lane half keeps the lane (a known limit). On Ward 04 the nearest-edge version changed
+   the frontage of 2,451 house lots (13 %); the pairwise version changes about 258 more (189 in house zones, of
+   which about 162 moved off a lane and 9 onto one, judging lanes by street space under 8 m wide). 1,824 true
+   corners are untouched; 33 lots with no address point keep the shorter edge. Rectangular lots keep the same
+   width and depth; placement, bearing and tapered lots change.
 2. **Depth row when the design does not fit the lot's width** (`fit.check_design`). The depth across the building's
    width used to be sampled wherever the centred rectangle stood, and for a design that, with its side yards, is
    wider than the lot's band width that sample runs past a leaning side lot line and exits the lot part-way back: 24.6 m on the 33.5 m lot

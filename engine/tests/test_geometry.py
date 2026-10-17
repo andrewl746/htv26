@@ -229,8 +229,9 @@ def test_corner_lot_with_a_rear_lane_still_follows_the_corner_rule_on_the_street
 
 
 def test_corner_lot_addressed_on_the_long_side_still_drops_the_rear_lane():
-    # Address on the west (long) street, a little toward the street corner as house entrances are: the lane is
-    # opposite the south street, not the west one, and must still go. (A point exactly midway is a true tie.)
+    # Address on the west (long) street, toward the street corner as house entrances are: the lane is opposite
+    # the south street, not the west one, and must still go. Of an opposite pair the edge nearer the address
+    # point wins, so an address on the lane half of the long side would keep the lane (a known limit).
     geo = measure(box(0, 0, 10, 30), [SOUTH_STREET, WEST_STREET, LANE], address_point=Point(1.5, 12))
     assert geo.front_bearing_deg == pytest.approx(180.0, abs=0.5)    # the 10 m south edge wins the corner rule, not the lane
 

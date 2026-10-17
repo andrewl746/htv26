@@ -23,10 +23,9 @@ import warnings
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlencode
 
-from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import best_match
 from suplex_engine.config import contracts_dir
@@ -34,6 +33,9 @@ from suplex_engine.config import contracts_dir
 from .demo_cache import CACHE_DIR, GEOJSON_SUFFIX, HEADER, cache_name, search_slug
 from .main import Settings, create_app
 from .store import SEARCH_MIN_CHARS, StoreError, normalise_address
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
 
 # The demo (MASTERSPEC 0.5, decision 18): Ward 04 and the three addresses the presenter types, by address_id.
 WARD_ID = "04"
@@ -165,7 +167,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     logging.getLogger("httpx").setLevel(logging.WARNING)       # one line per request otherwise
+    # Starlette asks for httpx2 when the test client is first imported; httpx 0.28 still works (api/tests/conftest.py).
     warnings.filterwarnings("ignore", message="Using `httpx` with `starlette.testclient` is deprecated")
+    from fastapi.testclient import TestClient
 
     data_dir = Path(args.data_dir)
     out_dirs = [Path(args.out), Path(args.web_out) if args.web_out else data_dir / WEB_COPY]

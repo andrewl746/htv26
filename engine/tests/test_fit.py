@@ -378,7 +378,7 @@ def test_detached_house_with_a_close_neighbour_is_not_attached():
     lot, neighbours, house, other = _lot_and_neighbour(1.0)       # 1 m gap, wider than the tolerance
     assert is_attached(lot, neighbours, [house, other], CFG) is False
     # Two roof outlines 0.2 m apart (eaves of detached houses 1.2 m apart) are not a shared wall either.
-    lot, neighbours, house, other = _lot_and_neighbour(0.2)
+    lot, neighbours, house, other = _lot_and_neighbour(0.0)       # the helper adds 0.2 m: a real 0.2 m gap
     assert is_attached(lot, neighbours, [house, other], CFG) is False
 
 
@@ -392,7 +392,7 @@ def test_small_crossing_under_the_threshold_is_not_attached():
 def test_crossing_into_a_condo_parcel_does_not_count_as_attached():
     lot = box(OX, OY, OX + 7.62, OY + 40)
     neighbour = NeighbourLot("n", box(OX - 7.62, OY, OX, OY + 40), "CONDO")
-    footprint = box(OX - 1.0, OY + 8, OX + 6.5, OY + 19)
+    footprint = box(OX - 3.0, OY + 8, OX + 6.5, OY + 19)         # 33 m2 over the line, over cross_lot_m2
     assert is_attached(lot, [neighbour], [footprint], CFG) is False
 
 

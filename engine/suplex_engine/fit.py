@@ -135,9 +135,11 @@ def check_design(design: Design, lot: LotInput, geo: LotGeometry, zone: str, lot
     rear = rules.rear_setback(zone, geo.depth_m)
     pl = place(design, geo, yard_l, yard_r, rear.value)
     req_d = front.value + design.length_m + rear.value
-    # A design wider than the lot at the building band has already failed on width and cannot be placed, so
-    # its depth row reports the lot's own depth (centre line, 5.2 step 3) instead of samples taken past a
-    # leaning side lot line, which exit the lot part-way back and read as a false short depth.
+    # When the placed rectangle reaches past the lot's inside extent over the building band (a design wider than
+    # the lot, or the centred placement on a leaning or dogleg lot whose sides shift along the band), sampling
+    # the depth under it would run past a side lot line and read a false short depth (17 m on a 31 m lot). The
+    # depth row then reports the lot's own centre-line depth (5.2 step 3) instead. On Ward 04 this touches 1,844
+    # design rows and changes 542 results, all moving away from those false-short depths (docs/test-lots.md).
     inside = geo.band_x_extent(design.front_setback_m, design.length_m)
     overhangs = inside is None or pl.x_left < inside[0] - 1e-6 or pl.x_right > inside[1] + 1e-6
     act_d = geo.depth_m if overhangs else geo.depth_across_width(pl.x_left, pl.x_right)

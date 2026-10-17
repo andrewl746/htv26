@@ -1,8 +1,8 @@
-"""Draft of engine/tests/real_lots.py: build a LotInput for one real Ward 04 parcel from data/out/suplex.gpkg.
+"""Build a LotInput for one real Ward 04 parcel from data/out/suplex.gpkg (test utility for test_lots.py).
 
-Test utility only (the engine itself never imports geopandas). Mirrors pipeline/smoke_engine.py and the
-API store: corridors within 5 m, COMMON/CONDO neighbours within 1 m, buildings and trees within the
-context radius, the primary address point. Skips cleanly when the data is absent.
+The engine itself never imports geopandas. Mirrors pipeline/smoke_engine.py and api/store.py: corridors within
+5 m, COMMON/CONDO neighbours within 1 m, buildings within the context radius, the primary address point. Skips
+cleanly when the data is absent or a parcel is no longer in the file.
 """
 from __future__ import annotations
 
@@ -62,6 +62,8 @@ def lot_input(parcelid: int) -> LotInput:
     L = layers()
     lots, cor, bld, adr = L["lots"], L["cor"], L["bld"], L["adr"]
     cfg = load_config()
+    if parcelid not in lots.index:
+        pytest.skip(f"parcel {parcelid} is not in {GPKG} (rebuilt data release?)")
     r = lots.loc[parcelid]
     geom = r.geometry
     near_cor = [cor.geometry.iloc[i] for i in cor.sindex.query(geom.buffer(CORRIDOR_FETCH_M), predicate="intersects")]

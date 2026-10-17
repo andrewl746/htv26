@@ -50,9 +50,15 @@ Four engine changes came out of these lots. Each has a synthetic test as well as
    On Ward 04 this changes the frontage of 2,451 house lots (13 %); 1,824 true corners are untouched; 33 lots
    with no address point keep the shorter edge. Rectangular lots keep the same width and depth; placement,
    bearing and tapered lots change.
-2. **Depth row when the design overhangs the lot** (`fit.check_design`). A design wider than the lot has already
-   failed on width; its depth used to be sampled past a leaning side lot line and read 24.6 m on the 33.5 m lot
-   at 34 Rexford Rd (3.2 m on 32 Warren Cres). It now reports the lot's centre-line depth.
+2. **Depth row when the placed design reaches past the lot's sides** (`fit.check_design`). The depth across the
+   building's width used to be sampled wherever the centred rectangle stood, and past a leaning or dogleg side
+   lot line that sample exits the lot part-way back: 24.6 m on the 33.5 m lot at 34 Rexford Rd (a design wider
+   than the lot), 17.4 m on the 31 m lot at 166 Varsity Rd and 21.4 m on the 35 m lot at 72 Humbercrest Blvd
+   (designs that pass on width but sit on leaning lots). Whenever the placed rectangle leaves the lot's inside
+   extent over the band, the row now reports the lot's centre-line depth. On Ward 04 this touches 1,844 of the
+   26,756 design rows that pass or are borderline on width and changes 542 results, the sampled ones all moving
+   away from the false-short depths (the full direction count was not completed). A finer rule, measuring each
+   depth sample along its own front-to-rear piece of the lot, is a candidate for the next session.
 3. **Footprints are clipped to the lot** (Task 1c, MASTERSPEC section 0 item 6): 155 Vine Ave stops being a
    "larger building" because its row polygon is 883 m2.
 4. **Thresholds** in `contracts/engine_config.json`, below.

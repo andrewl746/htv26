@@ -43,6 +43,8 @@ export interface EngineConfig {
   attached: { on_lot_m2: number; cross_lot_m2: number; shared_edge_m: number; tolerance_m: number };
   vacant_min_footprint_m2: number;
   street_edge: { corridor_distance_m: number; merge_angle_deg: number; min_length_m: number };
+  // T20: when the side lot lines lean this many degrees or more from the frontage normal, the design turns to follow them.
+  placement: { align_to_sides_deg: number };
   sample_step_m: number; nearby_permits_radius_m: number; context_radius_m: number;
   permits_since: string; permits_trend_since: string;
   sixplex_wards: WardId[]; partial_sixplex_wards: WardId[];

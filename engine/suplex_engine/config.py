@@ -43,6 +43,11 @@ class StreetEdge:
 
 
 @dataclass(frozen=True)
+class Placement:
+    align_to_sides_deg: float
+
+
+@dataclass(frozen=True)
 class EngineConfig:
     version: str
     uncertainty_band_m: float
@@ -51,6 +56,7 @@ class EngineConfig:
     attached: Attached
     vacant_min_footprint_m2: float
     street_edge: StreetEdge
+    placement: Placement
     sample_step_m: float
     nearby_permits_radius_m: float
     context_radius_m: float
@@ -69,6 +75,7 @@ class EngineConfig:
             attached=Attached(**d["attached"]),
             vacant_min_footprint_m2=float(d["vacant_min_footprint_m2"]),
             street_edge=StreetEdge(**d["street_edge"]),
+            placement=Placement(**d["placement"]),
             sample_step_m=float(d["sample_step_m"]),
             nearby_permits_radius_m=float(d["nearby_permits_radius_m"]),
             context_radius_m=float(d["context_radius_m"]),

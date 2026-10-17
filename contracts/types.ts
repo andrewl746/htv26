@@ -55,6 +55,8 @@ export interface SearchResponse { query: string; results: SearchResult[]; }
 
 // ---------- GET /check ----------
 export interface Reason { id: LotClass | "outside_toronto"; label: string; text: string; }
+// Informational flags (site_exception) are still returned in CheckResponse.lot.flags, but never appear in
+// LotFeatureProps.f or in flags.any_on_fitting_lots ("need extra review").
 export interface Flag { id: FlagId; label: string; text: string; source_url: string | null; detail: string | null; }
 export interface ZoneInfo {
   zn_zone: string | null; zn_string: string | null; gen_zone: number | null; zbl_sectn: string | null;
@@ -136,7 +138,8 @@ export interface TrendResponse { ward_id: WardId; source: "tigerdata" | "cache" 
 // ---------- wards/{id}.geojson and permits.geojson feature properties ----------
 export interface LotFeatureProps { id: number; c: LotClass; b: Result; r: Record<DesignKey, Result>;
   k: RuleId | null;                 // the rule that limits the best design (blocking or borderline); null when it fits
-  f: FlagKey[]; a: 0 | 1; v: 0 | 1; }
+  f: FlagKey[];                     // review flags only: informational flags (site_exception, "ex") never appear here
+  a: 0 | 1; v: 0 | 1; }
 export interface PermitFeatureProps { id: number; d: string; w: WardId; u: number; k: PermitKind; }
 
 // ---------- AI service ----------

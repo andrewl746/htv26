@@ -238,7 +238,7 @@
         "b": "not_checked",
         "r": {"fn": "not_checked", "fw": "not_checked", "sn": "not_checked", "sw": "not_checked"},
         "k": null,
-        "f": ["ex"],
+        "f": [],
         "a": 0,
         "v": 0
       }

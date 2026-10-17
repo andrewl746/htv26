@@ -57,7 +57,8 @@
     },
     "site_exception": {
       "label": "Site-specific exception",
-      "text": "The zoning on this lot has a site-specific exception that can change any of the rules checked here. Suplex does not read exceptions.",
+      "text": "This zone has a site-specific exception ({exception}), which Suplex does not read.",
+      "text_without_number": "This zone has a site-specific exception, which Suplex does not read.",
       "source_url": "https://open.toronto.ca/dataset/zoning-by-law/"
     },
     "vacant": {

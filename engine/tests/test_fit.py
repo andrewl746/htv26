@@ -12,6 +12,7 @@ from shapely.geometry import MultiPolygon, Point, Polygon, box
 
 from suplex_engine.attached import is_attached
 from suplex_engine.check import run_check
+from suplex_engine.classify import review_flags
 from suplex_engine.config import contracts_dir, load_config
 from suplex_engine.models import BuildingInput, LotInput, NeighbourLot
 
@@ -267,6 +268,25 @@ def test_flags_come_from_the_lot_row_and_never_change_the_result():
     assert "123" in ex.detail
     assert results(flagged) == results(plain)
     assert all(f.label and f.text for f in flagged.lot.flags)
+
+
+def test_site_exception_flag_names_the_exception_and_is_informational():
+    plain = run_check(rect_lot(12.0, 40.0), CFG)
+    res = run_check(rect_lot(12.0, 40.0, zn_exception="Y", exception_no=1234, flag_heritage_register=True), CFG)
+    ex = next(f for f in res.lot.flags if f.id == "site_exception")
+    assert ex.text == "This zone has a site-specific exception (x1234), which Suplex does not read."
+    assert ex.detail == "x1234"
+    assert [f.id for f in res.lot.flags] == ["heritage_register", "site_exception"]
+    assert [f.id for f in review_flags(res.lot.flags)] == ["heritage_register"]
+    assert results(res) == results(plain)
+
+
+def test_site_exception_without_a_number_uses_the_plain_sentence():
+    res = run_check(rect_lot(12.0, 40.0, zn_exception="Y", exception_no=None), CFG)
+    [ex] = [f for f in res.lot.flags if f.id == "site_exception"]
+    assert ex.text == "This zone has a site-specific exception, which Suplex does not read."
+    assert ex.detail is None
+    assert review_flags(res.lot.flags) == []
 
 
 # ---------- placement ----------

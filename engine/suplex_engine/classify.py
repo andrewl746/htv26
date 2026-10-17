@@ -8,6 +8,7 @@ The attached test (5.7) still uses the unclipped footprint, which is what crosse
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from shapely.geometry.base import BaseGeometry
 
@@ -21,6 +22,13 @@ from .rules import zone_code
 DROPPED_FEATURE_TYPES = ("CORRIDOR", "RESERVE")
 NOT_CHECKED_CLASSES = ("condo", "non_residential", "older_bylaw", "larger_building", "unmeasurable")
 FLAG_ORDER = ("heritage_register", "heritage_district", "ravine", "trca", "site_exception", "vacant")
+
+INFORMATIONAL_FLAGS = ("site_exception",)
+"""Flags that inform but never ask for extra review (MASTERSPEC section 0 item 7: 88% of Ward 04 lots
+carry a site exception, so the flag says nothing on its own). They are listed on the address check
+(`CheckResponse.lot.flags`), never drawn as an icon on the map (`LotFeatureProps.f`) and never counted in
+`flags.any_on_fitting_lots` ("need extra review"); `ward_summary.flags.site_exception` still counts every
+lot that carries the flag."""
 
 
 @dataclass(frozen=True)
@@ -98,6 +106,18 @@ def classify(lot: LotInput, geo: LotGeometry | None, cfg: EngineConfig) -> Class
     return Classification(class_=cls, attached=attached, vacant=vacant, existing=existing, footprints_on_lot=on_lot)
 
 
+def exception_ref(exception_no: int) -> str:
+    """The by-law's notation for a site-specific exception number, as in a zone string's "(x1234)"."""
+    return f"x{exception_no}"
+
+
+def _flag_text(fid: str, entry: dict[str, Any], detail: str | None) -> str:
+    """The flag's sentence; the site exception's names its number when the zone row has one."""
+    if fid == "site_exception":
+        return entry["text"].replace("{exception}", detail) if detail is not None else entry["text_without_number"]
+    return entry["text"]
+
+
 def flags_for(lot: LotInput, vacant: bool) -> list[Flag]:
     """Flags in the fixed order; copy from contracts/copy/reasons.json."""
     present: dict[str, str | None] = {}
@@ -110,15 +130,22 @@ def flags_for(lot: LotInput, vacant: bool) -> list[Flag]:
     if lot.flag_trca:
         present["trca"] = None
     if (lot.zn_exception or "").upper() == "Y" or lot.exception_no is not None:
-        present["site_exception"] = f"Exception {lot.exception_no}" if lot.exception_no is not None else None
+        present["site_exception"] = exception_ref(lot.exception_no) if lot.exception_no is not None else None
     if vacant:
         present["vacant"] = None
     out = []
     for fid in FLAG_ORDER:
         if fid in present:
             c = copy_.flag_copy(fid)
-            out.append(Flag(id=fid, label=c["label"], text=c["text"], source_url=c.get("source_url"), detail=present[fid]))
+            detail = present[fid]
+            out.append(Flag(id=fid, label=c["label"], text=_flag_text(fid, c, detail), source_url=c.get("source_url"),
+                            detail=detail))
     return out
+
+
+def review_flags(flags: list[Flag]) -> list[Flag]:
+    """The flags that count toward extra review: for the map's `f` and `flags.any_on_fitting_lots`."""
+    return [f for f in flags if f.id not in INFORMATIONAL_FLAGS]
 
 
 def should_drop(feature_type: str | None) -> bool:

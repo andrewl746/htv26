@@ -1,7 +1,8 @@
 # One root Python environment for engine, api, pipeline and ai (MASTERSPEC 3.2).
-# Engine (pure Python): shapely, pyproj only.
+# Engine (pure Python): shapely, pyproj only. Installed editable so `python -m suplex_engine.batch` runs from the root.
 shapely>=2.0
 pyproj>=3.6
+-e ./engine
 # Contracts
 jsonschema>=4.20
 # API and pipeline

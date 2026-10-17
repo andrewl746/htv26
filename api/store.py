@@ -409,11 +409,14 @@ def check_crs(gpkg: Path, frames: dict[str, gpd.GeoDataFrame]) -> None:
                              f"not {EPSG_METRES}")
 
 
-def load(data_dir: str | Path, gpkg_path: str | Path | None = None) -> Store:
+def load(data_dir: str | Path, gpkg_path: str | Path | None = None,
+         bbox: tuple[float, float, float, float] | None = None) -> Store:
     """Read the GeoPackage and the small JSON files in `data_dir` and build every index.
 
-    `gpkg_path` overrides `<data_dir>/suplex.gpkg` (SUPLEX_GPKG). Raises StoreError naming the missing
-    file or layer when the GeoPackage cannot be used; the other files are optional."""
+    `gpkg_path` overrides `<data_dir>/suplex.gpkg` (SUPLEX_GPKG). `bbox` (EPSG:2952 minx, miny, maxx, maxy)
+    reads only the features of each layer that intersect it, wards excepted; the batch run loads one strip of a
+    ward this way. Raises StoreError naming the missing file or layer when the GeoPackage cannot be used; the
+    other files are optional."""
     t0 = time.perf_counter()
     data_dir = Path(data_dir)
     gpkg = Path(gpkg_path) if gpkg_path else data_dir / "suplex.gpkg"
@@ -425,7 +428,8 @@ def load(data_dir: str | Path, gpkg_path: str | Path | None = None) -> Store:
     if missing:
         raise StoreError(f"{gpkg} has no layer {', '.join(missing)}")
 
-    frames = {name: gpd.read_file(gpkg, layer=name, engine="pyogrio", use_arrow=True)
+    frames = {name: gpd.read_file(gpkg, layer=name, engine="pyogrio", use_arrow=True,
+                                  bbox=None if name == "wards" else bbox)
               for name in REQUIRED_LAYERS + OPTIONAL_LAYERS if name in present}
     check_crs(gpkg, frames)
     cfg = load_config()

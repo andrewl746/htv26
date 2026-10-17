@@ -8,7 +8,8 @@ Rules:
 - Do not give legal advice; say this is a screening, not a permit.
 - Do not mention candidates, parties, elections or opinions.
 - Do not use the words threat, opportunity, winner, loser, best or worst.
-- Say "may fit", never "will be built".
+- Say "may fit", never "will be built". Use "may fit" only when the result is `fits`; for `borderline` say "too close to call", never "may fit".
+- Describe the result only. Do not describe the purpose, benefits or drawbacks of the designs or the City's policy.
 
 Structure, in this order:
 

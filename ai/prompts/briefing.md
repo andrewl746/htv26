@@ -10,6 +10,7 @@ Rules:
 - Permits are "multiplex permits since May 2023, before the free designs existed".
 - Never compare this ward with other wards and never rank wards.
 - Never name a candidate, party or position, and give no opinions.
+- Report the facts only. Do not describe the purpose, benefits or drawbacks of the designs or the City's policy (no "these designs are meant to help build more homes").
 - Do not use the words threat, opportunity, winner, loser, best or worst.
 
 What each section covers:

@@ -37,10 +37,20 @@ type RawLots = FeatureCollection<Geometry, LotFeatureProps>
 function flatten(raw: RawLots): LotCollection {
   return {
     type: 'FeatureCollection',
-    features: raw.features.map((f): Feature<Geometry, LotProps> => ({
-      ...f,
-      properties: { ...f.properties, rfn: f.properties.r.fn, rfw: f.properties.r.fw, rsn: f.properties.r.sn, rsw: f.properties.r.sw },
-    })),
+    features: raw.features.map((f): Feature<Geometry, LotProps> => {
+      // A lot that was not checked may arrive without per-design results; it reads as not checked.
+      const r: Partial<Record<DesignKey, Result>> = f.properties.r ?? {}
+      return {
+        ...f,
+        properties: {
+          ...f.properties,
+          rfn: r.fn ?? 'not_checked',
+          rfw: r.fw ?? 'not_checked',
+          rsn: r.sn ?? 'not_checked',
+          rsw: r.sw ?? 'not_checked',
+        },
+      }
+    }),
   }
 }
 

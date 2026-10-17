@@ -22,8 +22,6 @@ def run(ward: str | None, failures: list[str], check) -> None:
     layers = {n: g for n, g in pyogrio.list_layers(GPKG)}
     print("  layers: " + ", ".join(f"{n} ({g})" for n, g in layers.items()))
     for need in ["lots", "corridors", "addresses", "buildings", "wards", "sixplex_overlay"]:
-        if need == "corridors":
-            continue  # the current Property Boundaries file has no CORRIDOR parcels; see REPORT.md
         check(need in layers, f"layer {need} present")
 
     lots = gpd.read_file(GPKG, layer="lots", engine="pyogrio")
@@ -50,6 +48,11 @@ def run(ward: str | None, failures: list[str], check) -> None:
     ratio = (lots["area_m2"] / lots["stated_area_m2"]).dropna()
     med = ratio.median()
     check(0.97 <= med <= 1.03, "median area_m2 / STATEDAREA between 0.97 and 1.03", f"{med:.4f} over {len(ratio):,} lots")
+
+    cor = gpd.read_file(GPKG, layer="corridors", engine="pyogrio")
+    pairs = gpd.sjoin(lots[["parcelid", "geometry"]], cor.assign(geometry=cor.buffer(0.5))[["geometry"]], predicate="intersects")
+    touch = pairs["parcelid"].nunique() / n
+    check(touch >= 0.95, "95% or more of lots touch street space (the derived corridors layer)", f"{touch:.1%} of {n:,}; {len(cor):,} street tiles")
 
     addr = gpd.read_file(GPKG, layer="addresses", engine="pyogrio", ignore_geometry=True)
     join = addr["parcelid"].notna().mean()

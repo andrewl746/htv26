@@ -99,6 +99,21 @@ def rect_short_side(rects) -> np.ndarray:
     return out
 
 
+def unwrap_single_parts(geoms: np.ndarray, keep_largest: bool = False) -> np.ndarray:
+    """Single-part MultiPolygon -> Polygon. Real multi-part shapes stay MultiPolygon, or with keep_largest only
+    their biggest part is kept (the engine's footprint code cannot read multi-part buildings)."""
+    out = []
+    for g in geoms:
+        if g.geom_type == "MultiPolygon":
+            parts = list(g.geoms)
+            if len(parts) == 1:
+                g = parts[0]
+            elif keep_largest:
+                g = max(parts, key=lambda x: x.area)
+        out.append(g)
+    return np.array(out, dtype=object)
+
+
 def nullify(s: pd.Series, bad: tuple = (-1,)) -> pd.Series:
     return s.where(~s.isin(bad))
 
@@ -296,6 +311,7 @@ def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame,
     b.geometry = shapely.make_valid(b.geometry.values)
     near = b.intersects(w.buffer(NEIGHBOUR_M).union_all())
     b = b[near].copy()
+    b["geometry"] = unwrap_single_parts(b.geometry.values, keep_largest=True)  # 221 of 428,184 are multi-part
     b["building_id"] = b.index.astype("int64")
     b["footprint_m2"] = b.geometry.area
     bj = largest_overlap(b, all_lots, ["parcelid"])
@@ -328,6 +344,7 @@ def build_ward(ward_id: str, wards: gpd.GeoDataFrame, overlay: gpd.GeoDataFrame,
                 "address_count_land", "bldg_count", "bldg_area_on_lot_m2", "bldg_max_footprint_m2", "bldg_avg_height_m",
                 "is_sliver", "geometry"]
     lots = lots[lot_cols].reset_index(drop=True)
+    lots["geometry"] = unwrap_single_parts(lots.geometry.values)  # the ~30 real multi-part lots stay MultiPolygon (engine: unmeasurable)
     log(f"ward {ward_id}: {len(lots):,} lots, {len(corridors):,} corridors, {len(addr):,} addresses, {len(b):,} buildings, {len(trees):,} trees in {time.time() - t0:.0f}s")
     return {"lots": lots, "corridors": corridors.reset_index(drop=True), "addresses": addr.reset_index(drop=True), "buildings": b,
             "trees": trees}
@@ -368,7 +385,8 @@ def main() -> None:
         for layer, gdf in res.items():
             if gdf.empty:
                 continue
-            pyogrio.write_dataframe(gdf, tmp, layer=layer, driver="GPKG", append=not first[layer])
+            pyogrio.write_dataframe(gdf, tmp, layer=layer, driver="GPKG", append=not first[layer],
+                                    geometry_type="Unknown" if layer == "lots" and first[layer] else None)
             first[layer] = False
     pyogrio.write_dataframe(wards, tmp, layer="wards", driver="GPKG", append=True)
     pyogrio.write_dataframe(overlay, tmp, layer="sixplex_overlay", driver="GPKG", append=True)

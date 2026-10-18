@@ -52,22 +52,25 @@ body {
 }
 
 .landing-title {
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  font-weight: 700;
 }
 
+/* Set nearly solid, so its two lines stand about as tall as the title beside them. */
 .landing-tagline {
-  font-style: italic;
-  line-height: 1.3;
+  line-height: 1.05;
 }
 
+/* Set like the landing title: slanted and opened up. */
 .brand {
   font-weight: 600;
-  letter-spacing: -0.01em;
+  font-style: italic;
+  letter-spacing: 0.08em;
 }
 
+/* Slanted like the landing's title and tagline, so the panel's heading speaks in the same voice. */
 .panel-address {
   font-weight: 500;
+  font-style: italic;
   letter-spacing: -0.01em;
   line-height: 1.15;
 }

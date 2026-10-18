@@ -1,12 +1,15 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { drawFourplex } from './fourplexSketch'
+import { LOGO_MARK } from './logoMark'
 import { drawSkyline } from './skyline'
 
 /**
- * The landing card's backdrop: a drafting sheet in teal lines on the card's translucent beige, after
+ * The landing card's backdrop, and the result panel's: a drafting sheet in teal lines on beige, after
  * the cutting mat on jaydenchen.dev's Skills page. A quarter-unit grid, a double-ruled frame with ticks
- * on every edge and numerals along the top and bottom, registration marks at the corners, and, faint
- * behind the text, a chalk sketch of downtown Toronto standing on the bottom rule (skyline.ts; off
- * for now, see SHOW_SKYLINE).
+ * on every edge and numerals along the top and bottom, registration marks at the corners, the Suplex
+ * mark and a Fourplex Wide (fourplexSketch.ts) chalked askew into the bottom-left and bottom-right
+ * corners (off for now, see SHOW_CORNERS), and, faint behind the text, a chalk sketch of downtown
+ * Toronto standing on the bottom rule (skyline.ts; off for now, see SHOW_SKYLINE).
  * Drawn once to the card's measured size; nothing moves, so the map flight behind the card costs
  * nothing extra. Colours come from app.css (`.blueprint-*`).
  */
@@ -17,6 +20,8 @@ const OUTER = 8
 const INNER = 28
 /** The outer rule's corner radius: the card's 12 px corner, less the inset. */
 const OUTER_RX = 4
+/** The card's own corner radius, for a sheet whose outer rule is the card's edge. */
+const CARD_RX = OUTER_RX + OUTER
 /** One grid square (px); the fine grid splits it in quarters, like graph paper. */
 const UNIT = 32
 const MINOR = UNIT / 4
@@ -26,9 +31,9 @@ const TICK_MAJOR = 7
 /** The corner registration marks: the circle's radius and the cross's half-length. */
 const MARK_R = 5
 const MARK_ARM = 10
-/** The skyline's chalk: one width for every line, drawn in two passes that a slow noise bends by up
- *  to CHALK_WOBBLE px each, like a hand going over the line twice; then a fine grain rubs specks of
- *  it away (alpha = GAIN × noise − CUT). */
+/** The chalk: one width for every line, drawn in two passes that a slow noise bends (by up to
+ *  CHALK_WOBBLE px each on the skyline), like a hand going over the line twice; then a fine grain
+ *  rubs specks of it away (alpha = GAIN × noise − CUT). */
 const CHALK_WIDTH = 1.6
 const CHALK_BEND = 0.035
 const CHALK_WOBBLE = 4
@@ -37,6 +42,32 @@ const CHALK_GAIN = 3
 const CHALK_CUT = 1
 /** The chalk sketch of downtown Toronto, set aside for now: true puts it back. */
 const SHOW_SKYLINE = false
+/** The chalked mark and fourplex in the bottom corners, set aside for now: true puts them back. */
+const SHOW_CORNERS = false
+/** The chalked Suplex mark in the bottom-left corner: its height and its offset right and up from
+ *  the ruled area's corner (px), its tilt (degrees; negative turns it counterclockwise), the room
+ *  left round it for the tilt and the wobble, and a gentler wobble than the skyline's, since its
+ *  lines run only a few px apart. Low enough to clear the search box. */
+const LOGO_HEIGHT = 84
+const LOGO_LEFT = 26
+const LOGO_BOTTOM = 22
+const LOGO_TILT = -8
+const LOGO_ROOM = 10
+const LOGO_WOBBLE = 1.2
+/** The chalked Fourplex Wide in the bottom-right corner, matching the mark opposite: its height, its
+ *  offset left and up from the ruled area's corner (px), and its tilt, the other way from the mark's;
+ *  the room and the wobble are the mark's. */
+const FOURPLEX_HEIGHT = 84
+const FOURPLEX_RIGHT = 26
+const FOURPLEX_BOTTOM = 22
+const FOURPLEX_TILT = 5
+/** Both corner drawings are left out on a sheet narrower than this (px), where the centred examples
+ *  and disclaimer reach the corners. */
+const CORNER_MIN_SHEET = 620
+/** A filter with no region of its own reaches this far round the element it filters, for the wobble. */
+const AROUND = { x: '-5%', y: '-15%', width: '110%', height: '130%' }
+
+type Box = { x: number; y: number; width: number; height: number }
 
 const r2 = (n: number) => Math.round(n * 100) / 100
 
@@ -63,21 +94,7 @@ function ChalkSkyline({ id, x0, y0, x1, y1 }: { id: string; x0: number; y0: numb
             <path d={skyline.dimension} fill="none" />
           </g>
         </mask>
-        <filter id={`${id}-chalk`} filterUnits="userSpaceOnUse" {...ruled}>
-          {/* Two hand passes over the same lines, each bent its own way. */}
-          <feTurbulence type="fractalNoise" baseFrequency={CHALK_BEND} numOctaves={2} seed={3} result="bendA" />
-          <feDisplacementMap in="SourceGraphic" in2="bendA" scale={CHALK_WOBBLE} xChannelSelector="R" yChannelSelector="G" result="passA" />
-          <feTurbulence type="fractalNoise" baseFrequency={CHALK_BEND} numOctaves={2} seed={11} result="bendB" />
-          <feDisplacementMap in="SourceGraphic" in2="bendB" scale={CHALK_WOBBLE} xChannelSelector="R" yChannelSelector="G" result="passB" />
-          <feMerge result="sketch">
-            <feMergeNode in="passA" />
-            <feMergeNode in="passB" />
-          </feMerge>
-          {/* The grain of chalk on paper. */}
-          <feTurbulence type="fractalNoise" baseFrequency={CHALK_GRAIN} numOctaves={2} seed={7} result="grain" />
-          <feColorMatrix in="grain" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${CHALK_GAIN} 0 0 0 ${-CHALK_CUT}`} result="dust" />
-          <feComposite in="sketch" in2="dust" operator="in" />
-        </filter>
+        <ChalkFilter id={`${id}-chalk`} region={ruled} wobble={CHALK_WOBBLE} />
       </defs>
       <g filter={`url(#${id}-chalk)`}>
         <rect className="blueprint-chalk" {...ruled} mask={`url(#${id}-sky)`} />
@@ -86,12 +103,84 @@ function ChalkSkyline({ id, x0, y0, x1, y1 }: { id: string; x0: number; y0: numb
   )
 }
 
-function BlueprintDrawing({ w, h }: { w: number; h: number }) {
+/** Open strokes chalked within `region`: they go into a mask, placed by `transform` with the line
+ *  width kept at the chalk's, and the mask cuts the chalk colour the way the skyline's does. */
+function ChalkLines({ id, region, transform, paths, wobble }: { id: string; region: Box; transform: string; paths: string[]; wobble: number }) {
+  return (
+    <>
+      <defs>
+        <mask id={`${id}-lines`} maskUnits="userSpaceOnUse" {...region}>
+          <g transform={transform} fill="none" stroke="white" strokeWidth={CHALK_WIDTH} strokeLinecap="round" strokeLinejoin="round">
+            {paths.map((d) => (
+              <path key={d} d={d} vectorEffect="non-scaling-stroke" />
+            ))}
+          </g>
+        </mask>
+        <ChalkFilter id={`${id}-chalk`} region={region} wobble={wobble} />
+      </defs>
+      <g filter={`url(#${id}-chalk)`}>
+        <rect className="blueprint-chalk" {...region} mask={`url(#${id}-lines)`} />
+      </g>
+    </>
+  )
+}
+
+/** The Suplex mark chalked into the sheet's bottom-left corner, a little askew, tilted and scaled to size. */
+function ChalkLogo({ id, x0, y1 }: { id: string; x0: number; y1: number }) {
+  const scale = LOGO_HEIGHT / LOGO_MARK.height
+  const width = LOGO_MARK.width * scale
+  const left = x0 + LOGO_LEFT
+  const top = y1 - LOGO_BOTTOM - LOGO_HEIGHT
+  const region = { x: left - LOGO_ROOM, y: top - LOGO_ROOM, width: width + 2 * LOGO_ROOM, height: LOGO_HEIGHT + 2 * LOGO_ROOM }
+  const placed = `rotate(${LOGO_TILT} ${left + width / 2} ${top + LOGO_HEIGHT / 2}) translate(${left} ${top}) scale(${scale})`
+  return <ChalkLines id={`${id}-logo`} region={region} transform={placed} paths={LOGO_MARK.paths} wobble={LOGO_WOBBLE} />
+}
+
+/** The Fourplex Wide chalked into the sheet's bottom-right corner, askew the other way. */
+function ChalkFourplex({ id, x1, y1 }: { id: string; x1: number; y1: number }) {
+  const sketch = drawFourplex(FOURPLEX_HEIGHT)
+  const left = x1 - FOURPLEX_RIGHT - sketch.width
+  const top = y1 - FOURPLEX_BOTTOM - sketch.height
+  const region = { x: left - LOGO_ROOM, y: top - LOGO_ROOM, width: sketch.width + 2 * LOGO_ROOM, height: sketch.height + 2 * LOGO_ROOM }
+  const placed = `rotate(${FOURPLEX_TILT} ${left + sketch.width / 2} ${top + sketch.height / 2}) translate(${left} ${top})`
+  return <ChalkLines id={`${id}-fourplex`} region={region} transform={placed} paths={[sketch.d]} wobble={LOGO_WOBBLE} />
+}
+
+/** Chalk over whatever it filters: two hand passes over the same lines, each bent its own way by up
+ *  to `wobble` px, then, unless `grain` is false, the grain of chalk on paper. Within `region` (px),
+ *  or without one round the filtered element's own box (Landing/HandTitle.tsx, on the title's text). */
+export function ChalkFilter({ id, region, wobble, grain = true }: { id: string; region?: Box; wobble: number; grain?: boolean }) {
+  const area = region ? { filterUnits: 'userSpaceOnUse', ...region } : { filterUnits: 'objectBoundingBox', ...AROUND }
+  return (
+    <filter id={id} {...area}>
+      <feTurbulence type="fractalNoise" baseFrequency={CHALK_BEND} numOctaves={2} seed={3} result="bendA" />
+      <feDisplacementMap in="SourceGraphic" in2="bendA" scale={wobble} xChannelSelector="R" yChannelSelector="G" result="passA" />
+      <feTurbulence type="fractalNoise" baseFrequency={CHALK_BEND} numOctaves={2} seed={11} result="bendB" />
+      <feDisplacementMap in="SourceGraphic" in2="bendB" scale={wobble} xChannelSelector="R" yChannelSelector="G" result="passB" />
+      <feMerge result="sketch">
+        <feMergeNode in="passA" />
+        <feMergeNode in="passB" />
+      </feMerge>
+      {grain && (
+        <>
+          <feTurbulence type="fractalNoise" baseFrequency={CHALK_GRAIN} numOctaves={2} seed={7} result="grain" />
+          <feColorMatrix in="grain" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${CHALK_GAIN} 0 0 0 ${-CHALK_CUT}`} result="dust" />
+          <feComposite in="sketch" in2="dust" operator="in" />
+        </>
+      )}
+    </filter>
+  )
+}
+
+function BlueprintDrawing({ w, h, logo, edge }: { w: number; h: number; logo: boolean; edge: boolean }) {
   const id = `blueprint-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
-  const x0 = INNER
-  const y0 = INNER
-  const x1 = w - INNER
-  const y1 = h - INNER
+  // On the card's edge, the outer rule takes the card's corner and the band keeps its width.
+  const outer = edge ? 0 : OUTER
+  const inner = outer + INNER - OUTER
+  const x0 = inner
+  const y0 = inner
+  const x1 = w - inner
+  const y1 = h - inner
   if (x1 - x0 < UNIT || y1 - y0 < UNIT) return null
 
   // Like a real sheet, everything counts from the ruled area's bottom-left corner.
@@ -114,8 +203,8 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
   const marks = corners.map(([x, y]) => `M${x - MARK_ARM} ${y}h${2 * MARK_ARM}M${x} ${y - MARK_ARM}v${2 * MARK_ARM}`).join('')
 
   const cols = Math.floor((x1 - x0) / UNIT + 0.01)
-  const topRow = (OUTER + y0 - TICK_MAJOR) / 2
-  const bottomRow = (y1 + TICK_MAJOR + h - OUTER) / 2
+  const topRow = (outer + y0 - TICK_MAJOR) / 2
+  const bottomRow = (y1 + TICK_MAJOR + h - outer) / 2
 
   return (
     <svg width={w} height={h}>
@@ -127,11 +216,13 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
       </defs>
       <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill={`url(#${id}-grid)`} />
       <g className="blueprint-rule" fill="none">
-        <rect x={OUTER + 0.5} y={OUTER + 0.5} width={w - 2 * OUTER - 1} height={h - 2 * OUTER - 1} rx={OUTER_RX} />
+        <rect x={outer + 0.5} y={outer + 0.5} width={w - 2 * outer - 1} height={h - 2 * outer - 1} rx={edge ? CARD_RX : OUTER_RX} />
         <rect x={x0 + 0.5} y={y0 + 0.5} width={x1 - x0 - 1} height={y1 - y0 - 1} />
         <path d={ticks} />
       </g>
       {SHOW_SKYLINE && <ChalkSkyline id={id} x0={x0} y0={y0} x1={x1} y1={y1} />}
+      {SHOW_CORNERS && logo && w >= CORNER_MIN_SHEET && <ChalkLogo id={id} x0={x0} y1={y1} />}
+      {SHOW_CORNERS && w >= CORNER_MIN_SHEET && <ChalkFourplex id={id} x1={x1} y1={y1} />}
       <g className="blueprint-mark" fill="none">
         <path d={marks} />
         {corners.map(([x, y]) => (
@@ -154,8 +245,10 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
   )
 }
 
-/** The sheet, filling the card it sits in and redrawn whenever the card changes size. */
-export function Blueprint() {
+/** The sheet, filling the card it sits in and redrawn whenever the card changes size. `logo={false}`
+ *  leaves out the chalked mark, for a card whose text runs into that corner, and `edge` draws the
+ *  outer rule on the card's own edge, for a card with no border of its own (both the result panel). */
+export function Blueprint({ logo = true, edge = false }: { logo?: boolean; edge?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState<{ w: number; h: number } | null>(null)
   useEffect(() => {
@@ -170,7 +263,7 @@ export function Blueprint() {
   }, [])
   return (
     <div ref={ref} className="blueprint" aria-hidden="true">
-      {size && <BlueprintDrawing w={size.w} h={size.h} />}
+      {size && <BlueprintDrawing w={size.w} h={size.h} logo={logo} edge={edge} />}
     </div>
   )
 }

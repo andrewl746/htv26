@@ -1,4 +1,4 @@
-import { useMemo, type RefObject } from 'react'
+import { useMemo, useRef, type RefObject } from 'react'
 import { Vector3 } from 'three'
 import type { SceneLabel } from './labels'
 import { ease, progress } from './timeline'
@@ -37,16 +37,16 @@ export function LabelProjector({
   const points = useMemo(() => labels.map((l) => new Vector3(...l.position)), [labels])
   const scratch = useMemo(() => new Vector3(), [])
   // Where the camera was, when it last moved, and how far the home labels are shown (0 to 1).
-  const camera = useMemo(() => ({ position: new Vector3(), movedAt: -Infinity, shown: 0 }), [])
+  const motion = useRef({ position: new Vector3(), movedAt: -Infinity, shown: 0 })
 
   useSequenceFrame((t, { timeline }, frame, delta) => {
+    const camera = motion.current
     const now = frame.clock.elapsedTime
     if (frame.camera.position.distanceToSquared(camera.position) > STILL_MOVE_M ** 2) {
       camera.position.copy(frame.camera.position)
       camera.movedAt = now
     }
-    const still = now - camera.movedAt >= STILL_AFTER_S
-    camera.shown = still
+    camera.shown = now - camera.movedAt >= STILL_AFTER_S
       ? Math.min(1, camera.shown + delta / SHOW_FADE_S)
       : Math.max(0, camera.shown - delta / HIDE_FADE_S)
 

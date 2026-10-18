@@ -26,7 +26,13 @@ const JULIET = { height: 1.07, rail: 0.04, picket: 0.018, spacing: 0.11, bottom:
 const GUARD = { rail: 0.045, picket: 0.02, spacing: 0.11, bottom: 0.1 }
 const COPING = { height: 0.05, overhang: 0.03 }
 const STAIR = { rise: 0.18, tread: 0.04, nosing: 0.03, stringer: 0.04, stringerDepth: 0.25 }
-const LIFT = { post: 0.07, platform: 0.08, guard: 1.07 }
+/** A stair guard's rail height above the nosings (OBC 9.8.8.3 asks at least 0.9). */
+const STAIR_GUARD_M = 0.92
+/**
+ * The platform lift: a platform with light solid side panels in a dark frame and a gate at the
+ * front, and the dark drive mast on one side, standing above the porch.
+ */
+const LIFT = { platform: 0.08, panel: 1.07, panelT: 0.04, post: 0.06, mast: { across: 0.16, along: 0.4, above: 1.15 } }
 const DOWNSPOUT_M = 0.08
 const PIT = { wall: 0.2, curb: 0.15, floor: 0.15, lid: 0.12 }
 
@@ -153,6 +159,40 @@ class LevelParts {
       .rotateY(Math.atan2(dv, du))
       .translate(p[0] - this.width / 2, 0, this.length / 2 - p[1])
     this.add(key, g)
+  }
+
+  /** A straight bar from (p, zp) to (q, zq) in plan and height: `thick` across, `deep` upright. */
+  bar(key: MaterialKey, p: [number, number], q: [number, number], zp: number, zq: number, thick: number, deep: number): void {
+    const [du, dv] = [q[0] - p[0], q[1] - p[1]]
+    const run = Math.hypot(du, dv)
+    const len = Math.hypot(run, zq - zp)
+    if (run < 1e-3 || len < 1e-3) return
+    const g = new BoxGeometry(len, deep, thick)
+      .rotateZ(Math.atan2(zq - zp, run))
+      .translate(run / 2, (zp + zq) / 2 - this.base, 0)
+      .rotateY(Math.atan2(dv, du))
+      .translate(p[0] - this.width / 2, 0, this.length / 2 - p[1])
+    this.add(key, g)
+  }
+
+  /** A picket guard along a plan polyline, standing on z (keynote 06). */
+  guard(points: [number, number][], z: number, height: number): void {
+    const top = z + height
+    points.forEach((p, i) => {
+      this.box('metal', p[0] - GUARD.rail / 2, p[0] + GUARD.rail / 2, p[1] - GUARD.rail / 2, p[1] + GUARD.rail / 2, z, top)
+      const q = points[i + 1]
+      if (!q) return
+      this.along('metal', p, q, top - GUARD.rail, top, GUARD.rail)
+      this.along('metal', p, q, z + GUARD.bottom, z + GUARD.bottom + GUARD.rail, GUARD.rail)
+      const len = Math.hypot(q[0] - p[0], q[1] - p[1])
+      const count = Math.max(1, Math.floor(len / GUARD.spacing))
+      for (let k = 1; k < count; k++) {
+        const t = k / count
+        const at: [number, number] = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
+        const h = GUARD.picket / 2
+        this.box('metal', at[0] - h, at[0] + h, at[1] - h, at[1] + h, z + GUARD.bottom, top - GUARD.rail)
+      }
+    })
   }
 
   merged(order: number): BuiltPart[] {
@@ -300,23 +340,7 @@ export function buildFacade(model: FacadeModel, design: Design): BuiltFacade {
   }
 
   for (const g of model.guards) {
-    const parts = levels[bandOf(g.z + 0.01)]
-    const top = g.z + g.height
-    g.points.forEach((p, i) => {
-      parts.box('metal', p[0] - GUARD.rail / 2, p[0] + GUARD.rail / 2, p[1] - GUARD.rail / 2, p[1] + GUARD.rail / 2, g.z, top)
-      const q = g.points[i + 1]
-      if (!q) return
-      parts.along('metal', p, q, top - GUARD.rail, top, GUARD.rail)
-      parts.along('metal', p, q, g.z + GUARD.bottom, g.z + GUARD.bottom + GUARD.rail, GUARD.rail)
-      const len = Math.hypot(q[0] - p[0], q[1] - p[1])
-      const count = Math.max(1, Math.floor(len / GUARD.spacing))
-      for (let k = 1; k < count; k++) {
-        const t = k / count
-        const at: [number, number] = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
-        const h = GUARD.picket / 2
-        parts.box('metal', at[0] - h, at[0] + h, at[1] - h, at[1] + h, g.z + GUARD.bottom, top - GUARD.rail)
-      }
-    })
+    levels[bandOf(g.z + 0.01)].guard(g.points, g.z, g.height)
   }
 
   for (const st of model.stairs) {
@@ -345,23 +369,54 @@ export function buildFacade(model: FacadeModel, design: Design): BuiltFacade {
         parts.along('galv', at((run * (i - 1)) / steps, s), at((run * i) / steps, s), top - STAIR.stringerDepth, top, STAIR.stringer)
       }
     }
+    // A guard up each side, its rails parallel to the nosings, from the first tread to the top.
+    const first = rise / steps
+    const base = (t: number) => lo[2] + first + ((rise - first) * t) / run
+    const rail = GUARD.rail
+    const pickets = Math.max(1, Math.floor(run / GUARD.spacing))
+    for (const s of [-half, half]) {
+      const [p, q] = [at(0, s), at(run, s)]
+      parts.bar('metal', p, q, base(0) + STAIR_GUARD_M - rail / 2, base(run) + STAIR_GUARD_M - rail / 2, rail, rail)
+      parts.bar('metal', p, q, base(0) + GUARD.bottom + rail / 2, base(run) + GUARD.bottom + rail / 2, rail, rail)
+      // Posts at the foot (on the ground) and the head (on the landing).
+      for (const [t, foot] of [[0, lo[2]], [run, hi[2]]]) {
+        const a = at(t, s)
+        parts.box('metal', a[0] - rail / 2, a[0] + rail / 2, a[1] - rail / 2, a[1] + rail / 2, foot, base(t) + STAIR_GUARD_M)
+      }
+      for (let k = 1; k < pickets; k++) {
+        const t = (run * k) / pickets
+        const a = at(t, s)
+        const h = GUARD.picket / 2
+        parts.box('metal', a[0] - h, a[0] + h, a[1] - h, a[1] + h, base(t) + GUARD.bottom, base(t) + STAIR_GUARD_M - rail)
+      }
+    }
   }
 
   for (const lift of model.lifts) {
     const parts = levels[bandOf(lift.z0 + 0.01)]
-    parts.box('galv', lift.u0, lift.u1, lift.v0, lift.v1, lift.z0, lift.z0 + LIFT.platform)
-    const top = lift.z1 + LIFT.guard
-    const p = LIFT.post
-    for (const [u, v] of [
-      [lift.u0, lift.v0],
-      [lift.u1 - p, lift.v0],
-      [lift.u0, lift.v1 - p],
-      [lift.u1 - p, lift.v1 - p],
-    ]) {
-      parts.box('metal', u, u + p, v, v + p, lift.z0, top)
+    const { u0, u1, v0, v1, z0, z1 } = lift
+    const deck = z0 + LIFT.platform
+    const top = deck + LIFT.panel
+    parts.box('galv', u0, u1, v0, v1, z0, deck)
+    // The gate at the front, where it is entered at grade.
+    parts.guard([[u0, v0], [u1, v0]], deck, LIFT.panel)
+    // Solid panels, capped with a rail, on the sides that are neither the gate nor the porch.
+    const exit = lift.exit ?? 'rear'
+    const panels = (['left', 'right', 'rear'] as const).filter((side) => side !== exit)
+    const t = LIFT.panelT
+    for (const side of panels) {
+      const [a0, a1, b0, b1] =
+        side === 'left' ? [u0, u0 + t, v0, v1] : side === 'right' ? [u1 - t, u1, v0, v1] : [u0, u1, v1 - t, v1]
+      parts.box('slab', a0, a1, b0, b1, deck, top - GUARD.rail)
+      parts.box('metal', a0 - 0.005, a1 + 0.005, b0, b1, top - GUARD.rail, top)
     }
-    parts.box('metal', lift.u0, lift.u1, lift.v0, lift.v0 + p, top - p, top)
-    parts.box('metal', lift.u0, lift.u1, lift.v1 - p, lift.v1, top - p, top)
+    const p = LIFT.post
+    for (const [u, v] of [[u0, v1 - p], [u1 - p, v1 - p]]) parts.box('metal', u, u + p, v, v + p, z0, top)
+    // The drive mast beside the platform, rising above the porch.
+    const m = LIFT.mast
+    const mid = (v0 + v1) / 2
+    const [m0, m1] = panels.includes('left') ? [u0 - m.across, u0] : [u1, u1 + m.across]
+    parts.box('metal', m0, m1, mid - m.along / 2, mid + m.along / 2, z0, z1 + m.above)
   }
 
   for (const ds of model.downspouts) {

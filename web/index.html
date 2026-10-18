@@ -4,13 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Suplex</title>
-    <!-- Newsreader, the UI serif (styles/typography.css); the system serif fallback keeps the offline demo working. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&display=swap"
-    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- The fonts load locally from public/fonts/ (styles/typography.css), so the offline demo keeps them. -->
+    <link rel="preload" href="/fonts/HelveticaNowDisplay-Medium.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="/fonts/Milligram-Macro-Bold-trial.ttf" as="font" type="font/ttf" crossorigin />
   </head>
   <body>
     <div id="root"></div>

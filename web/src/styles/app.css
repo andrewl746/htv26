@@ -23,6 +23,24 @@ button {
   outline-offset: 2px;
 }
 
+/* The drafting sheet's teal (Landing/Blueprint.tsx), shared by every box drawn in its style: the
+   fine grid, the whole-unit grid, a card's edge, and the rules, ticks and outlines. */
+:root {
+  --blueprint-minor: color-mix(in srgb, var(--suplex-accent) 10%, transparent);
+  --blueprint-major: color-mix(in srgb, var(--suplex-accent) 20%, transparent);
+  --blueprint-edge: color-mix(in srgb, var(--suplex-accent) 20%, transparent);
+  --blueprint-rule: color-mix(in srgb, var(--suplex-accent) 45%, transparent);
+  /* The sheet's graph paper in CSS, for a box too short for the ruled frame (.topbar). */
+  --graph-paper:
+    linear-gradient(to right, var(--blueprint-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--blueprint-major) 1px, transparent 1px),
+    linear-gradient(to right, var(--blueprint-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--blueprint-minor) 1px, transparent 1px);
+  --graph-paper-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px;
+  /* The palette's muted ink, kept so a see-through box can darken its own from it (.panel). */
+  --page-ink-muted: var(--suplex-ink-muted);
+}
+
 .app {
   position: relative;
   height: 100%;
@@ -68,16 +86,23 @@ button {
     visibility 0s 300ms;
 }
 
+/* A translucent drafting sheet (Landing/Blueprint.tsx) on the panel beige: at 70% the ink stays 8.8:1
+   or better even over the darkest towers behind it. No overflow clip here: the search dropdown hangs
+   out below the card, so the drawing clips itself. The bottom padding keeps the text a little above
+   the bottom rule; the sheet's chalk skyline (Landing/skyline.ts) sits faint behind it. */
 .landing-card {
+  position: relative;
+  isolation: isolate;
   box-sizing: border-box;
   width: min(640px, 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-8) var(--space-8) var(--space-6);
+  gap: calc(var(--space-4) + var(--space-1));
+  padding: calc(var(--space-8) + var(--space-3) + var(--space-2)) var(--space-8) calc(var(--space-8) + var(--space-6));
+  border: 1px solid color-mix(in srgb, var(--suplex-accent) 20%, transparent);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--suplex-surface) 86%, transparent);
+  background: color-mix(in srgb, var(--suplex-surface) 70%, transparent);
   backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
   pointer-events: auto;
@@ -87,16 +112,88 @@ button {
   pointer-events: none;
 }
 
+@media (prefers-reduced-transparency: reduce) {
+  .landing-card {
+    background: var(--suplex-surface);
+    backdrop-filter: none;
+  }
+}
+
+.blueprint {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.blueprint svg {
+  display: block;
+}
+
+/* Teal lines, laddered like the mat it follows: the fine grid faintest, the rules strongest. */
+.blueprint-minor {
+  stroke: var(--blueprint-minor);
+}
+
+.blueprint-major {
+  stroke: var(--blueprint-major);
+}
+
+.blueprint-rule {
+  stroke: var(--blueprint-rule);
+}
+
+.blueprint-mark {
+  stroke: color-mix(in srgb, var(--suplex-accent) 35%, transparent);
+}
+
+.blueprint-numeral {
+  fill: color-mix(in srgb, var(--suplex-accent) 65%, transparent);
+  font-family: var(--font-ui);
+  font-size: 9px;
+}
+
+/* The skyline's chalk: the palette's deep teal, dark enough to read against the pale sheet while the
+   grain keeps it behind the text. */
+.blueprint-chalk {
+  fill: color-mix(in srgb, var(--palette-charcoal) 58%, transparent);
+}
+
+/* The title and the tagline side by side, centred over the search box, the tagline's last line on the
+   title's baseline; in a shade darker than the sheet mark's deep teal (assets/title.webp). */
+.landing-head {
+  display: flex;
+  align-items: last baseline;
+  justify-content: center;
+  gap: calc(var(--space-4) + var(--space-1));
+  width: 100%;
+  color: color-mix(in srgb, var(--palette-charcoal) 75%, black);
+}
+
+/* The wordmark, upright as in the mock-up, darker still, and gone over twice by hand
+   (Landing/HandTitle.tsx). */
 .landing-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  color: color-mix(in srgb, var(--palette-charcoal) 60%, black);
+  font-family: var(--font-brand);
+  font-size: calc(var(--text-2xl) * 1.8);
   line-height: 1;
 }
 
+/* Holds the title's filter: out of the card's flow and its gaps, but not display: none, which would
+   switch the filter off. */
+.hand-title-defs {
+  position: absolute;
+  overflow: hidden;
+}
+
+/* Two lines (split in Landing.tsx, so the box hugs the longer one), set flush right against the title. */
 .landing-tagline {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-lg);
+  margin: 0;
+  font-size: calc(var(--text-xl) - 3px);
+  text-align: right;
 }
 
 .examples {
@@ -109,18 +206,53 @@ button {
   color: var(--suplex-ink-muted);
 }
 
+/* Light text on the accent (about 6.6:1); the hover swaps to the highlight with the deep teal
+   (about 6.5:1; the accent itself is only 4.3:1 there). */
 .chip {
-  padding: var(--space-1) var(--space-3);
+  padding: calc(var(--space-2) + 2px) calc(var(--space-4) + var(--space-1));
   border: 0;
   border-radius: 999px;
-  background: var(--suplex-highlight);
-  color: var(--suplex-ink);
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
 .chip:hover {
-  background: var(--suplex-accent);
-  color: var(--suplex-accent-ink);
+  background: var(--suplex-highlight);
+  color: var(--palette-charcoal);
+}
+
+/* The see-through card drops the muted ink under 4.5:1 over the darkest map; full ink keeps it. */
+.landing-card .examples,
+.landing-card .disclaimer {
+  color: var(--suplex-ink);
+}
+
+/* The examples spread wider under the search, a step up in size. */
+.landing-card .examples {
+  position: relative;
+  gap: var(--space-4);
+  font-size: var(--text-md);
+}
+
+/* "Try:" hangs off to the left, out of the row, so the two examples centre on their own. */
+.landing-card .examples > span {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  margin-right: var(--space-4);
+  transform: translateY(-50%);
+}
+
+/* The two examples stand further apart than "Try:" does from the first. */
+.landing-card .chip + .chip {
+  margin-left: var(--space-4);
+}
+
+/* A step smaller than elsewhere, so the disclaimer sits back from the search. */
+.landing-card .disclaimer {
+  font-size: calc(var(--text-sm) - 1px);
 }
 
 /* ---------- Search (J2) ---------- */
@@ -129,12 +261,14 @@ button {
   position: relative;
 }
 
+/* 16 of the drafting sheet's 32 px units, so the box's ruler ends on a full tick at both sides. */
 .search-hero {
-  width: min(560px, 100%);
+  width: min(512px, 100%);
 }
 
+/* 11 units, for the same reason. */
 .search-compact {
-  width: 340px;
+  width: 352px;
 }
 
 .search-input {
@@ -142,19 +276,42 @@ button {
   width: 100%;
   border: 1px solid var(--suplex-line-strong);
   border-radius: var(--radius);
-  background: var(--suplex-surface);
   color: var(--suplex-ink);
   font: inherit;
 }
 
+/* Every box you type or pick in is a ruler, like the landing's: ticks hang from the top edge only,
+   every 8 px, longer every 16 and 32 px, in the drafting sheet's teal. Shorter ticks on the
+   smaller boxes. */
+.search-input,
+.lang-picker select {
+  --ruler-long: 7px;
+  --ruler-mid: 5px;
+  --ruler-short: 3px;
+  background-color: var(--suplex-surface);
+  background-image:
+    repeating-linear-gradient(to right, var(--blueprint-rule) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to right, var(--blueprint-rule) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(to right, var(--blueprint-rule) 0 1px, transparent 1px 8px);
+  background-repeat: no-repeat;
+  background-size:
+    100% var(--ruler-long),
+    100% var(--ruler-mid),
+    100% var(--ruler-short);
+}
+
 .search-hero .search-input {
+  --ruler-long: 10px;
+  --ruler-mid: 7px;
+  --ruler-short: 4px;
   padding: var(--space-4) var(--space-6);
   font-size: var(--text-lg);
   box-shadow: var(--shadow);
 }
 
+/* A little more room on top, so the ticks clear the text. */
 .search-compact .search-input {
-  padding: var(--space-2) var(--space-3);
+  padding: calc(var(--space-2) + 2px) var(--space-3) var(--space-2);
   border-radius: var(--radius-sm);
 }
 
@@ -169,7 +326,7 @@ button {
   left: 0;
   right: 0;
   overflow: hidden;
-  border: 1px solid var(--suplex-line);
+  border: 1px solid var(--blueprint-edge);
   border-radius: var(--radius-sm);
   background: var(--suplex-surface);
   box-shadow: var(--shadow);
@@ -252,22 +409,38 @@ button {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2);
+  /* A strip of the landing card's drafting sheet: its graph paper and its teal edge, on the same
+     see-through beige (the input and the chip stay solid). */
+  border: 1px solid var(--blueprint-edge);
   border-radius: var(--radius);
-  background: var(--suplex-surface);
+  background-color: color-mix(in srgb, var(--suplex-surface) 70%, transparent);
+  background-image: var(--graph-paper);
+  background-size: var(--graph-paper-size);
+  backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
 }
 
+/* The landing title's deep teal. */
 .brand {
   padding: var(--space-1) var(--space-2);
   border: 0;
   background: none;
-  font-family: var(--font-display);
+  color: var(--palette-charcoal);
+  font-family: var(--font-brand);
   font-size: var(--text-lg);
   font-weight: 700;
   cursor: pointer;
 }
 
+/* The landing card's drafting sheet (Landing/Blueprint.tsx) on the same see-through beige: 70% over
+   an 8 px blur of the 3D scene, which draws every frame, so the blur is redone with each one. With
+   black behind it the muted ink would drop to about 3.4:1, so here it is mixed halfway to the ink
+   (about 5:1 at worst); the tabs, flags and cards keep their own solid fills. No border: the sheet's
+   outer rule is the panel's edge. The padding puts the content inside the inner rule (20 px in),
+   except on the right, where it runs to the edge so the scrollbar goes down the band between the two
+   rules. */
 .panel {
+  --suplex-ink-muted: color-mix(in srgb, var(--page-ink-muted) 50%, var(--suplex-ink));
   position: absolute;
   z-index: 2;
   top: var(--space-4);
@@ -275,30 +448,105 @@ button {
   bottom: var(--space-4);
   box-sizing: border-box;
   width: calc(var(--panel-width) - var(--space-4));
-  overflow-y: auto;
-  padding: var(--space-6);
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0 20px 20px;
   border-radius: var(--radius);
-  background: var(--suplex-surface);
+  background: color-mix(in srgb, var(--suplex-surface) 70%, transparent);
+  backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .topbar,
+  .panel {
+    background-color: var(--suplex-surface);
+    backdrop-filter: none;
+  }
+}
+
+/* Scrolls under the inner rule. The right padding clears the 20 px band, less the scrollbar that runs
+   down it (--scrollbar, measured in ResultPanel.tsx), then matches the left; the gutter is kept even
+   while nothing scrolls, so the content never shifts. */
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-6) calc(20px + var(--space-4) - var(--scrollbar, 0px)) var(--space-6) var(--space-4);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--blueprint-rule) transparent;
 }
 
 .panel-header {
   display: grid;
   gap: var(--space-1);
-  margin-bottom: var(--space-6);
 }
 
+/* The landing title's deep teal (about 4.7:1 with black behind the see-through panel). */
 .panel-address {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-xl);
   line-height: 1.15;
+  color: var(--palette-charcoal);
 }
 
-.panel-ward,
-.panel-size {
+/* Lettered above the address like the section titles. */
+.panel-ward {
+  order: -1;
   margin: 0;
-  color: var(--suplex-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--suplex-accent);
+}
+
+/* The lot's size as a drawing dimensions it: width × depth on tick-ended lines, the area boxed. */
+.panel-size {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
+
+.dimension {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dimension::before,
+.dimension::after {
+  content: '';
+  flex: 1;
+  min-width: 12px;
+  height: 7px;
+  background: linear-gradient(var(--blueprint-rule), var(--blueprint-rule)) center / 100% 1px no-repeat;
+}
+
+.dimension::before {
+  border-left: 1px solid var(--blueprint-rule);
+}
+
+.dimension::after {
+  border-right: 1px solid var(--blueprint-rule);
+}
+
+.panel-size-times {
+  color: var(--suplex-accent);
+}
+
+.panel-size-area {
+  padding: 0 var(--space-2);
+  border: 1px solid var(--blueprint-rule);
+  border-radius: 2px;
+  white-space: nowrap;
 }
 
 .panel-reason {
@@ -354,11 +602,13 @@ button {
   gap: var(--space-2);
 }
 
+/* The side padding is a step under the top's, so the longest name ("Fourplex Narrow", 109 px) fits
+   on one line in the panel's 162 px column with 7 px to spare. */
 .design-tab {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-2);
   border: 1px solid var(--suplex-line-strong);
   border-radius: var(--radius-sm);
   background: var(--suplex-surface);
@@ -383,6 +633,7 @@ button {
 .design-tab-name {
   font-weight: 600;
   font-size: var(--text-sm);
+  white-space: nowrap;
 }
 
 .design-tab-result {
@@ -514,13 +765,33 @@ button {
   margin-top: var(--space-6);
 }
 
+/* A rule between the panel's sections, like the footer's: the side margins undo .panel-body's 16 px
+   on each side, so it runs from one of the sheet's inner rules to the other. It holds the room above
+   and below, so whatever follows it drops its own top margin. */
+.section-rule {
+  margin: var(--space-8) calc(-1 * var(--space-4));
+  border: 0;
+  border-top: 1px solid var(--blueprint-rule);
+}
+
+.panel-body .section-rule + * {
+  margin-top: 0;
+}
+
+/* The rule above next steps stands in for their own top rule (nextSteps.css). */
+.panel-body .next-steps {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Lettered on the sheet in its teal, like a drawing's notes (about 6.6:1 on the panel). */
 .section-title {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-3);
   font-size: var(--text-xs);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--suplex-ink-muted);
+  color: var(--suplex-accent);
 }
 
 .panel-muted {
@@ -533,8 +804,9 @@ button {
   justify-self: start;
   display: inline-block;
   padding: 2px var(--space-2);
-  border: 1px solid var(--suplex-line-strong);
+  border: 1px solid var(--blueprint-rule);
   border-radius: 999px;
+  background: var(--suplex-surface);
   font-size: var(--text-xs);
   line-height: 1.4;
 }
@@ -564,7 +836,7 @@ button {
 
 .checklist-row th,
 .checklist-row td {
-  padding: var(--space-2) 0 0;
+  padding: var(--space-3) 0 0;
   vertical-align: top;
 }
 
@@ -609,7 +881,7 @@ td.checklist-none {
 }
 
 .checklist-sub td {
-  padding: 0 0 var(--space-2) 26px;
+  padding: 0 0 var(--space-3) 26px;
   border-bottom: 1px solid var(--suplex-line);
   font-size: var(--text-xs);
   color: var(--suplex-ink-muted);
@@ -625,22 +897,22 @@ td.checklist-none {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
+/* A ruler, like the search boxes (its background is set with theirs). */
 .lang-picker select {
-  padding: var(--space-1) var(--space-2);
+  padding: calc(var(--space-1) + 2px) var(--space-2) var(--space-1);
   border: 1px solid var(--suplex-line-strong);
   border-radius: var(--radius-sm);
-  background: var(--suplex-surface);
   color: var(--suplex-ink);
   font: inherit;
   font-size: var(--text-sm);
 }
 
 .explain-text {
-  margin: 0 0 var(--space-2);
-  line-height: 1.55;
+  margin: 0 0 var(--space-3);
+  line-height: 1.6;
 }
 
 .explain-number {
@@ -665,7 +937,7 @@ td.checklist-none {
 /* Flags: the four that need extra review, then the rest; the site exception as a muted note. */
 .flags {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -742,13 +1014,20 @@ a.flag-label {
   font-size: var(--text-sm);
 }
 
-/* "See your ward" stays at the bottom of the panel while it scrolls. */
+/* "See your ward" and the disclaimer stay under the scrolling content, like a drawing's title block:
+   a rule across the sheet from one inner rule to the other (the margin skips the right band), the
+   button and the line below it. */
 .panel-footer {
-  position: sticky;
-  bottom: calc(-1 * var(--space-6));
-  margin: var(--space-6) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
-  padding: var(--space-6) var(--space-6) var(--space-6);
-  background: linear-gradient(to bottom, transparent, var(--suplex-surface) var(--space-6));
+  display: grid;
+  gap: var(--space-2);
+  margin-right: 20px;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-top: 1px solid var(--blueprint-rule);
+}
+
+.panel-footer .disclaimer {
+  font-size: var(--text-xs);
+  text-align: center;
 }
 
 .button-primary {
@@ -794,7 +1073,7 @@ a.flag-label {
 .data-badge {
   bottom: var(--space-4);
   padding: 2px var(--space-3);
-  border: 1px solid var(--suplex-line-strong);
+  border: 1px solid var(--blueprint-rule);
   background: var(--suplex-surface);
   color: var(--suplex-ink);
 }
@@ -818,6 +1097,9 @@ a.flag-label {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   border-radius: 999px;
+  /* The drafting sheet's teal edge, drawn inside so the label keeps its size. */
+  outline: 1px solid var(--blueprint-edge);
+  outline-offset: -1px;
   background: var(--suplex-surface);
   box-shadow: var(--shadow);
   font-size: var(--text-xs);

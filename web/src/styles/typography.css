@@ -1,15 +1,38 @@
 /*
- * One serif family for the whole UI: Newsreader, drawn for reading on screen, with an optical-size
- * axis so the large headings get finer details than the small text. It overrides the font and size
- * tokens of contracts/design-tokens.css for /web only, the way palette.css does for colour, until
- * Andrew moves the same values into that shared file so the briefing page matches.
+ * Two families: Helvetica Now Display (Medium) for all text, headings included, and Milligram Macro
+ * (Bold) for the name "Suplex" only. The Milligram file is a trial whose digits are all replaced by a
+ * "TRIAL ONLY" mark, so it must never set anything that can hold a number. They override the font and
+ * size tokens of contracts/design-tokens.css for /web only, the way palette.css does for colour.
  *
- * The stack falls back to serifs that ship with the OS, so the offline demo still looks serif.
- * Sizes step up from the sans-serif scale: a serif at the same pixel size looks smaller.
+ * The files are licensed (Monotype's, and a Milligram trial), so they live in the git-ignored
+ * public/fonts/ and are copied in by hand on each machine; they load locally, so the offline demo
+ * keeps them. Without them the stack falls back to Helvetica or Arial. The sizes stay where they were
+ * under the earlier serif, so nothing in the panels reflows.
  */
+
+/* One Medium file: normal text uses it as is, and bold text is thickened by the browser. */
+@font-face {
+  font-family: 'Helvetica Now Display';
+  src: url('/fonts/HelveticaNowDisplay-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Already bold, so it answers every weight and is never thickened further. */
+@font-face {
+  font-family: 'Milligram Macro';
+  src: url('/fonts/Milligram-Macro-Bold-trial.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --font-ui: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-ui: 'Helvetica Now Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-display: var(--font-ui);
+  /* The wordmark only (.landing-title, .brand): letters, never digits. */
+  --font-brand: 'Milligram Macro', var(--font-ui);
 
   --text-xs: 13px;
   --text-sm: 15px;
@@ -22,28 +45,32 @@
 body {
   line-height: 1.5;
   font-optical-sizing: auto;
-  /* Lining, even-width figures: addresses, ward numbers and counts line up in the panel. */
-  font-variant-numeric: lining-nums tabular-nums;
+  /* Lining figures. Not tabular: Helvetica Now's tabular set also widens . , : and - to a digit's
+     width, which spaces out every sentence ("Try :", "12 . 5 m"). */
+  font-variant-numeric: lining-nums;
   text-rendering: optimizeLegibility;
 }
 
 .landing-title {
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
+/* Set nearly solid, so its two lines stand about as tall as the title beside them. */
 .landing-tagline {
-  font-style: italic;
-  line-height: 1.3;
+  line-height: 1.05;
 }
 
+/* Set like the landing title: slanted and opened up. */
 .brand {
   font-weight: 600;
-  letter-spacing: -0.01em;
+  font-style: italic;
+  letter-spacing: 0.08em;
 }
 
+/* Slanted like the landing's title and tagline, so the panel's heading speaks in the same voice. */
 .panel-address {
   font-weight: 500;
+  font-style: italic;
   letter-spacing: -0.01em;
   line-height: 1.15;
 }

@@ -276,6 +276,23 @@ function openingDetail(parts: LevelParts, face: FaceName, b: Block, o: Opening, 
   }
 }
 
+/** Each model's facade, built once a session: it depends on the design alone, not on the lot. */
+const built = new Map<FacadeModel, BuiltFacade>()
+
+/**
+ * The facade of a design, built the first time it is asked for (WarmUp builds every design's
+ * while the landing page is idle, so an address never waits for it). Disposing its geometry
+ * frees only the GPU copy; drawn again, it uploads again.
+ */
+export function facadeOf(model: FacadeModel, design: Design): BuiltFacade {
+  let facade = built.get(model)
+  if (!facade) {
+    facade = buildFacade(model, design)
+    built.set(model, facade)
+  }
+  return facade
+}
+
 export function buildFacade(model: FacadeModel, design: Design): BuiltFacade {
   const { datums: d, width, length } = model
   const sorted = [...design.levels].sort((a, b) => a.level - b.level)

@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 
 /**
- * The landing card's backdrop: a drafting sheet in pale lines on the card's deep teal, after the
- * cutting mat on jaydenchen.dev's Skills page. A quarter-unit grid, a double-ruled frame with ticks
+ * The landing card's backdrop: a drafting sheet in teal lines on the card's translucent beige, after
+ * the cutting mat on jaydenchen.dev's Skills page. A quarter-unit grid, a double-ruled frame with ticks
  * on every edge and numerals along the top and bottom, registration marks at the corners and one
  * dimension line along the foot. Drawn once to the card's measured size; nothing moves, so the map
  * flight behind the card costs nothing extra. Colours come from app.css (`.blueprint-*`).

@@ -68,10 +68,10 @@ button {
     visibility 0s 300ms;
 }
 
-/* A translucent blueprint sheet (Landing/Blueprint.tsx) in the palette's deep teal: 78% keeps the pale
-   text at 5.3:1 or better over the lightest map. No overflow clip here: the search dropdown hangs out
-   below the card, so the drawing clips itself. The extra bottom padding leaves the sheet's dimension
-   line a clear strip under the disclaimer. */
+/* A translucent drafting sheet (Landing/Blueprint.tsx) on the panel beige: at 70% the ink stays 8.8:1
+   or better even over the darkest towers behind it. No overflow clip here: the search dropdown hangs
+   out below the card, so the drawing clips itself. The extra bottom padding leaves the sheet's
+   dimension line a clear strip under the disclaimer. */
 .landing-card {
   position: relative;
   isolation: isolate;
@@ -82,10 +82,9 @@ button {
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-8) var(--space-8) calc(var(--space-8) + var(--space-4));
-  border: 1px solid color-mix(in srgb, var(--suplex-accent-ink) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--suplex-accent) 20%, transparent);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--palette-charcoal) 78%, transparent);
-  color: var(--suplex-accent-ink);
+  background: color-mix(in srgb, var(--suplex-surface) 70%, transparent);
   backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
   pointer-events: auto;
@@ -97,7 +96,7 @@ button {
 
 @media (prefers-reduced-transparency: reduce) {
   .landing-card {
-    background: var(--palette-charcoal);
+    background: var(--suplex-surface);
     backdrop-filter: none;
   }
 }
@@ -115,32 +114,27 @@ button {
   display: block;
 }
 
-/* The pale-line ladder of the mat it follows: the fine grid faintest, the rules strongest. */
+/* Teal lines, laddered like the mat it follows: the fine grid faintest, the rules strongest. */
 .blueprint-minor {
-  stroke: color-mix(in srgb, var(--suplex-accent-ink) 8%, transparent);
+  stroke: color-mix(in srgb, var(--suplex-accent) 10%, transparent);
 }
 
 .blueprint-major {
-  stroke: color-mix(in srgb, var(--suplex-accent-ink) 16%, transparent);
+  stroke: color-mix(in srgb, var(--suplex-accent) 20%, transparent);
 }
 
 .blueprint-rule {
-  stroke: color-mix(in srgb, var(--suplex-accent-ink) 40%, transparent);
+  stroke: color-mix(in srgb, var(--suplex-accent) 45%, transparent);
 }
 
 .blueprint-mark {
-  stroke: color-mix(in srgb, var(--suplex-accent-ink) 30%, transparent);
+  stroke: color-mix(in srgb, var(--suplex-accent) 35%, transparent);
 }
 
 .blueprint-numeral {
-  fill: color-mix(in srgb, var(--suplex-accent-ink) 50%, transparent);
+  fill: color-mix(in srgb, var(--suplex-accent) 65%, transparent);
   font-family: var(--font-ui);
   font-size: 9px;
-}
-
-/* The teal focus ring would vanish on the teal sheet; lime keeps 3:1 or better. */
-.landing-card :focus-visible {
-  outline-color: var(--suplex-highlight);
 }
 
 .landing-title {
@@ -179,14 +173,9 @@ button {
   color: var(--suplex-accent-ink);
 }
 
-/* On the teal sheet the muted ink would be unreadable and a teal hover would match the card. */
+/* The see-through card drops the muted ink under 4.5:1 over the darkest map; full ink keeps it. */
 .landing-card .examples,
 .landing-card .disclaimer {
-  color: var(--suplex-accent-ink);
-}
-
-.landing-card .chip:hover {
-  background: var(--suplex-surface);
   color: var(--suplex-ink);
 }
 
@@ -239,8 +228,6 @@ button {
   border: 1px solid var(--suplex-line);
   border-radius: var(--radius-sm);
   background: var(--suplex-surface);
-  /* Its own ink: on the landing page it sits inside the teal card's pale text. */
-  color: var(--suplex-ink);
   box-shadow: var(--shadow);
 }
 

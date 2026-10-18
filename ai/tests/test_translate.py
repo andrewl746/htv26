@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator
 
-from ai.config import contract, load_settings
+from ai.config import PROMPTS_DIR, contract, load_json, load_settings
 from ai.gemini import GeminiError
 from ai.main import app, get_generate, get_settings
 from ai.tests.fakes import fake_translate
@@ -92,8 +92,16 @@ def test_translation_is_cached_per_language(client):
     second = briefing(client)
     assert second["cached"] is True
     assert fake.calls == ["BriefingDraft", "Translation"]
-    briefing(client, "es")
-    assert fake.calls == ["BriefingDraft", "Translation", "Translation"]  # English reused, Spanish is new
+    assert briefing(client, "en")["cached"] is True
+    assert fake.calls == ["BriefingDraft", "Translation"]  # English reused, French cached
+
+
+def test_a_language_without_a_label_is_served_in_english(client):
+    # The request schemas still accept the eight languages of contracts v0.1; only English and French are offered.
+    fake = use(FakeGemini())
+    body = briefing(client, "pt")
+    assert body["translation_unavailable"] is True and body["lang"] == "pt"
+    assert fake.calls == ["BriefingDraft"]  # no translation is attempted
 
 
 def drop_placeholder(english):
@@ -122,13 +130,13 @@ def test_a_bad_translation_is_rejected_twice_then_english_is_served(client, sett
 
 
 def test_numeric_month_is_allowed_in_translations_only(client):
-    def chinese(english):
-        return {k: v.replace("May 2023", "2023年5月") for k, v in french(english).items()}
+    def numeric_month(english):
+        return {k: v.replace("May 2023", "05/2023") for k, v in french(english).items()}
 
-    use(FakeGemini(chinese))
-    body = briefing(client, "zh-Hans")
+    use(FakeGemini(numeric_month))
+    body = briefing(client, "fr")
     assert body["translation_unavailable"] is False
-    assert "2023年5月" in next(s for s in body["sections"] if s["id"] == "permits")["template_text"]
+    assert "05/2023" in next(s for s in body["sections"] if s["id"] == "permits")["template_text"]
 
 
 def test_english_never_gets_the_month_allowance(client):
@@ -185,8 +193,32 @@ def test_the_glossary_rules_reach_the_prompt(client):
 
 
 def test_duplex_is_forbidden_in_every_language(client):
-    use(FakeGemini(lambda english: {k: f"PT {v}".replace("multiplexes", "duplexes") for k, v in english.items()}))
-    assert briefing(client, "pt")["translation_unavailable"] is True
+    use(FakeGemini(lambda english: {k: v.replace("multiplexes", "duplexes") for k, v in french(english).items()}))
+    assert briefing(client, "fr")["translation_unavailable"] is True
+
+
+def test_french_numbers_carry_french_labels(client):
+    use(FakeGemini())
+    labels = {key: n["label"] for key, n in briefing(client, "fr")["numbers"].items()}
+    assert labels["did_permits"] == "Permis de multiplex délivrés depuis mai 2023"
+    english = {key: n["label"] for key, n in briefing(client, "en")["numbers"].items()}
+    assert english["did_permits"] == "Multiplex permits issued since May 2023"
+
+
+def test_numbers_labels_have_french_for_every_key():
+    copy = load_json(PROMPTS_DIR / "numbers.json")
+    assert set(copy["labels_fr"]) == set(copy["labels"])
+    assert set(copy["top_rule_count_fr"]) == set(copy["top_rule_count"])
+
+
+def test_french_has_a_label_for_everything_the_page_shows():
+    labels = contract("copy/labels.json")
+    assert set(labels["languages"]) == {"en", "fr"}
+    for block in ("ui", "briefing_page"):
+        missing = set(labels["fr"][block]) - set(labels[block])
+        assert not missing, f"fr.{block} has keys English does not: {missing}"
+    assert len(labels["fr"]["briefing_page"]["methodology"]) == len(labels["briefing_page"]["methodology"])
+    assert all(item.get("label_fr") for item in contract("copy/not_checked.json"))
 
 
 def test_every_language_has_a_review_status():
@@ -218,3 +250,31 @@ def test_french_explanation(client):
     assert not list(EXPLAIN_SCHEMA.iter_errors(body))
     assert body["translation_unavailable"] is False and body["template_text"].startswith("FR ")
     assert "7,62" in body["text"] and body["disclaimer"].startswith("FR ")
+
+
+def test_explanation_wording_reaches_only_the_explanation_prompt(client):
+    prompts = []
+
+    def capture(prompt, schema, *, model=None):
+        prompts.append((schema.__name__, prompt))
+        return FakeGemini()(prompt, schema, model=model)
+
+    use(capture)
+    briefing(client, "fr")
+    client.post("/explain", json={**EXPLAIN, "lang": "fr"})
+    translations = [p for name, p in prompts if name == "Translation"]
+    assert "trop serré pour trancher" not in translations[0]  # the briefing's glossary (and cache key) is unchanged
+    assert "trop serré pour trancher" in translations[1]
+
+
+@pytest.mark.parametrize("phrase", ["ne rentre pas", "une maison attachée", "une propriété détachée"])
+def test_awkward_explanation_wording_is_rejected(client, phrase):
+    use(FakeGemini(lambda english: {k: f"{v} {phrase}" for k, v in french(english).items()}))
+    body = client.post("/explain", json={**EXPLAIN, "lang": "fr"}).json()
+    assert body["translation_unavailable"] is True
+
+
+def test_the_briefing_glossary_is_the_reviewed_one():
+    from ai.translate import glossary
+    assert glossary("fr", "briefing") == glossary("fr")
+    assert "attachée" in glossary("fr", "explain")["forbidden"]

@@ -4,7 +4,13 @@ from __future__ import annotations
 import pytest
 
 from ai.config import contract
-from ai.numbers import allowed_numbers, build_check_numbers, format_number, pick_design, render
+from ai.numbers import (
+    allowed_numbers,
+    build_check_numbers,
+    format_number,
+    pick_design,
+    render,
+)
 
 REQUEST = contract("fixtures/explain.request.json")
 RESPONSE = contract("fixtures/explain.response.json")

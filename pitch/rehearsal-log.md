@@ -19,6 +19,15 @@ How to run one: start a timer, follow [`demo-script.md`](demo-script.md) end to 
 
 **Runs under 4:00:** _ of 10 · **Random address passed:** ☐ · **Offline passed:** ☐
 
+## Technical pre-flight (not a timed run)
+
+`node ai/stage_check.mjs` makes every request the demo makes, the way the browser makes them, and checks each answer: autocomplete keystroke by keystroke for the three addresses, `/check` against `demo.md`'s expected results, all 24 explanations (4 designs × English and French) and both Ward 04 briefings served from the cache, the locked headline (3,992 / 83), the trend, the map layers and `/b/04`. Run it on the demo laptop after unzipping the caches, and again just before going on stage.
+
+| When | Setup | Result |
+|---|---|---|
+| 2026-10-18, about 00:05 | Simone's laptop: API on the citywide data with the demo cache, AI service with **no Gemini key** | all OK; every request under 2 s; trend live from Tiger Data |
+| 2026-10-18, about 00:10 | API on the demo cache **only** (empty data folder), Tiger Data unreachable, no Gemini key | all OK; every request under 2 s. Note for Andrew: in cache-only mode the trend is the recorded response, so it still says `source: tigerdata` and the page shows no "Cached data" badge (data mode labels it "cache" correctly) |
+
 ## Sponsor walkthroughs (30 s each)
 
 | Walkthrough | Presenter | Time | Passed |
@@ -28,17 +37,11 @@ How to run one: start a timer, follow [`demo-script.md`](demo-script.md) end to 
 
 ## Hour 30: translation check (Andrew's rule)
 
-For each language still marked "Machine translation, not yet reviewed" (`reviewed: false` in `contracts/copy/labels.json`): if anyone has flagged wording in it and no speaker has reviewed it, **drop that one language** (remove its code from `AI_LANGS` in the demo laptop's `.env`). Keep the feature and every other language.
+Suplex now offers English and French only (`AI_LANGS=en,fr`), both reviewed, so the check is French alone.
 
 | Language | Reviewed? | Wording flagged? | Keep or drop |
 |---|---|---|---|
 | French | yes (Andrew) | fixed | keep |
-| Simplified Chinese | | | |
-| Traditional Chinese | | | |
-| Spanish | | | |
-| Tagalog | | | |
-| Tamil | | question 1 drops "if anything" | |
-| Portuguese | | | |
 
 After the Hour-24 regeneration, read the **French** Ward 04 briefing once more: it is the one translated on stage.
 

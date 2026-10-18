@@ -1,4 +1,15 @@
-import { BoxGeometry, BufferGeometry, Color, ExtrudeGeometry, Float32BufferAttribute, Vector3, type Object3D } from 'three'
+import {
+  Box3,
+  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  ExtrudeGeometry,
+  Float32BufferAttribute,
+  Sphere,
+  Vector3,
+  type Object3D,
+} from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
 import { SLOT_ATTRIBUTE } from './cutaway'
@@ -191,24 +202,105 @@ export interface MergedStreet {
   shared: { slot: PartSlot; geometry: BufferGeometry }[]
 }
 
-/** One geometry per wall colour and one per other slot, for the whole street (after the ripple). */
-export function mergeStreet(built: BuiltBuilding[]): MergedStreet {
-  const placed = (g: BufferGeometry, b: BuiltBuilding) => g.clone().translate(b.x, 0, b.z)
-  const merge = (geometries: BufferGeometry[]) => {
-    const out = geometries.length ? mergeGeometries(geometries) : null
-    geometries.forEach((g) => g.dispose())
-    return out
-  }
-  const of = (slot: PartSlot, keep: (b: BuiltBuilding) => boolean) =>
-    built.flatMap((b) => (keep(b) ? b.parts.filter((p) => p.slot === slot).map((p) => placed(p.geometry, b)) : []))
-  return {
-    walls: NEIGHBOUR_TOKENS.map((_, i) => merge(of('wall', (b) => b.colorIndex === i))),
-    shared: SHARED_SLOTS.flatMap((slot) => {
-      const geometry = merge(of(slot, () => true))
-      return geometry ? [{ slot, geometry }] : []
-    }),
-  }
+export function disposeMerged(merged: MergedStreet): void {
+  for (const g of [...merged.walls, ...merged.shared.map((p) => p.geometry)]) g?.dispose()
 }
+
+/**
+ * One geometry per wall colour and one per other slot, for the whole street (after the ripple).
+ * A generator that yields after each building part, so the merge runs in short slices between frames
+ * while the street grows: done at once, a full street took one frame of about 0.2 s on the demo
+ * laptop. Each part is copied straight into the merged arrays at its building's place, without
+ * cloning and moving it first. Returns null, and the street stays as it grew, if a slot's parts
+ * have different attributes (mergeGeometries would refuse them too).
+ */
+export function* mergeStreet(built: BuiltBuilding[]): Generator<void, MergedStreet | null> {
+  const of = (slot: PartSlot, keep: (b: BuiltBuilding) => boolean): Placed[] =>
+    built.flatMap((b) => (keep(b) ? b.parts.filter((p) => p.slot === slot).map((p) => ({ geometry: p.geometry, x: b.x, z: b.z })) : []))
+  const merged: MergedStreet = { walls: [], shared: [] }
+  for (let i = 0; i < NEIGHBOUR_TOKENS.length; i++) {
+    const geometry = yield* mergePlaced(of('wall', (b) => b.colorIndex === i))
+    if (geometry === 'mismatch') return abandon(merged)
+    merged.walls.push(geometry)
+  }
+  for (const slot of SHARED_SLOTS) {
+    const geometry = yield* mergePlaced(of(slot, () => true))
+    if (geometry === 'mismatch') return abandon(merged)
+    if (geometry) merged.shared.push({ slot, geometry })
+  }
+  return merged
+}
+
+function abandon(merged: MergedStreet): null {
+  disposeMerged(merged)
+  return null
+}
+
+/** A building part and where its building stands. */
+interface Placed {
+  geometry: BufferGeometry
+  x: number
+  z: number
+}
+
+/**
+ * The parts moved to their places and merged into one geometry, its bounds already set, so its
+ * first frame does not compute them; null without parts. Yields after each part.
+ */
+function* mergePlaced(parts: Placed[]): Generator<void, BufferGeometry | null | 'mismatch'> {
+  if (parts.length === 0) return null
+  const first = parts[0].geometry
+  const names = Object.keys(first.attributes)
+  const indexed = first.index !== null
+  let vertices = 0
+  let indices = 0
+  for (const { geometry } of parts) {
+    if ((geometry.index !== null) !== indexed || Object.keys(geometry.attributes).length !== names.length) return 'mismatch'
+    for (const name of names) {
+      const [a, f] = [geometry.attributes[name], first.attributes[name]]
+      if (!(a instanceof BufferAttribute) || !(f instanceof BufferAttribute)) return 'mismatch'
+      if (a.itemSize !== f.itemSize || a.normalized !== f.normalized || a.array.constructor !== f.array.constructor) return 'mismatch'
+    }
+    vertices += geometry.attributes.position.count
+    indices += geometry.index?.count ?? 0
+  }
+
+  const out = names.map((name) => {
+    const f = first.attributes[name] as BufferAttribute
+    const array = new (f.array.constructor as new (length: number) => typeof f.array)(vertices * f.itemSize)
+    return { name, array, itemSize: f.itemSize, normalized: f.normalized }
+  })
+  const position = out.find((o) => o.name === 'position')!.array
+  const index = indexed ? new Uint32Array(indices) : null
+  const box = new Box3()
+  let v = 0
+  let k = 0
+  for (const { geometry, x, z } of parts) {
+    const count = geometry.attributes.position.count
+    for (const o of out) o.array.set((geometry.attributes[o.name] as BufferAttribute).array, v * o.itemSize)
+    for (let i = v * 3; i < (v + count) * 3; i += 3) {
+      position[i] += x
+      position[i + 2] += z
+      box.expandByPoint(scratchPoint.set(position[i], position[i + 1], position[i + 2]))
+    }
+    if (index && geometry.index) {
+      const source = geometry.index.array
+      for (let j = 0; j < source.length; j++) index[k + j] = source[j] + v
+      k += source.length
+    }
+    v += count
+    yield
+  }
+
+  const geometry = new BufferGeometry()
+  for (const o of out) geometry.setAttribute(o.name, new BufferAttribute(o.array, o.itemSize, o.normalized))
+  if (index) geometry.setIndex(new BufferAttribute(index, 1))
+  geometry.boundingBox = box
+  geometry.boundingSphere = box.getBoundingSphere(new Sphere())
+  return geometry
+}
+
+const scratchPoint = new Vector3()
 
 /**
  * UVs in metres for a box, like the extruded walls have, so a bay or a chimney wears its brick at

@@ -51,7 +51,9 @@ def run(fake, *args):
 def test_fills_every_language_then_serves_them_with_gemini_unreachable(settings):
     fake = FakeGemini()
     assert run(fake, "--langs", "all", "--address-id", "fixture-1") == 0
-    assert fake.calls == 1 + 7 + 4  # English briefing, seven translations, four explanations
+    # English briefing, its French, four explanations, and one French for them: the fake writes the same English
+    # for every design, and a translation is keyed by its English text
+    assert fake.calls == 1 + 1 + 4 + 1
 
     def unreachable(prompt, schema, *, model=None):
         raise AssertionError("Gemini must not be called once the cache is full")
@@ -61,9 +63,13 @@ def test_fills_every_language_then_serves_them_with_gemini_unreachable(settings)
     try:
         client = TestClient(app)
         request = contract("fixtures/briefing.request.json")
+        check = contract("fixtures/check.borderline.json")
         for lang in settings.langs:
             body = client.post("/briefing", json={**request, "lang": lang}).json()
             assert body["cached"] is True and body["translation_unavailable"] is False, lang
+            for design in check["designs"]:
+                body = client.post("/explain", json={"check": check, "design_id": design["design_id"], "lang": lang}).json()
+                assert body["cached"] is True and body["translation_unavailable"] is False, (lang, design["design_id"])
     finally:
         app.dependency_overrides.clear()
 
@@ -75,11 +81,11 @@ def test_second_run_makes_no_requests(settings):
 
 
 def test_stops_on_a_gemini_failure_and_resumes(settings, capsys):
-    assert run(FakeGemini(fail_after=3), "--langs", "all") == 2
+    assert run(FakeGemini(fail_after=3), "--langs", "all", "--address-id", "fixture-1") == 2
     assert "Stopped" in capsys.readouterr().out
     resumed = FakeGemini()
-    assert run(resumed, "--langs", "all") == 0
-    assert resumed.calls == 8 - 3  # only what the first run had not cached
+    assert run(resumed, "--langs", "all", "--address-id", "fixture-1") == 0
+    assert resumed.calls == 7 - 3  # only what the first run had not cached
 
 
 def test_refresh_regenerates_english_once(settings):
@@ -90,10 +96,10 @@ def test_refresh_regenerates_english_once(settings):
 
 
 def test_addresses_only_refreshes_explanations_without_the_ward(settings):
-    run(FakeGemini(), "--langs", "en", "--address-id", "fixture-1")
+    run(FakeGemini(), "--langs", "en,fr", "--address-id", "fixture-1")
     fresh = FakeGemini()
     assert run(fresh, "--addresses-only", "--refresh", "--address-id", "fixture-1") == 0
-    assert fresh.calls == 4  # the four designs' explanations; no ward briefing request
+    assert fresh.calls == 4  # the four English explanations; their French is keyed by the same text; no ward briefing
 
 
 def test_addresses_only_needs_an_address(settings):

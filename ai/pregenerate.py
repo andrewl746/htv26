@@ -100,12 +100,12 @@ def run(args: argparse.Namespace, settings: Settings, paced: Paced) -> int:
                   "run the same command later to resume.")
         return paced.failed is not None
 
-    if args.addresses_only:
-        langs = []  # explanations only: don't spend requests on the ward briefing
-    else:
+    # --addresses-only: explanations only, so no requests are spent on the ward briefing
+    briefing_langs = [] if args.addresses_only else langs
+    if briefing_langs:
         print(f"Ward {args.ward} briefing, model {settings.gemini_model}, {len(langs)} language(s)")
         ward, trend = ward_data(settings, args.ward, args.fixture)
-    for lang in langs:
+    for lang in briefing_langs:
         # refresh regenerates the English once; translations are keyed by the English text, so they follow.
         result = briefing({"ward": ward, "trend": trend, "lang": lang}, settings, cache, paced,
                           refresh=args.refresh and lang == "en")
@@ -114,14 +114,16 @@ def run(args: argparse.Namespace, settings: Settings, paced: Paced) -> int:
         report(f"briefing {lang}", result)
 
     for address_id in args.address_id:
-        print(f"Address {address_id}: explanations for every design, English")
+        print(f"Address {address_id}: explanations for every design, {len(langs)} language(s)")
         check = check_data(settings, address_id, args.fixture)
         for design in check["designs"]:
-            result = explain({"check": check, "design_id": design["design_id"], "lang": "en"}, settings, cache, paced,
-                             refresh=args.refresh)
-            if stopped():
-                return 2
-            report(f"explain {design['design_id']}", result)
+            for lang in langs:
+                # As for the briefing: refresh the English; the translations are keyed by it and follow.
+                result = explain({"check": check, "design_id": design["design_id"], "lang": lang}, settings, cache,
+                                 paced, refresh=args.refresh and lang == "en")
+                if stopped():
+                    return 2
+                report(f"explain {design['design_id']} {lang}", result)
 
     print(f"\nDone: {paced.calls} Gemini request(s) this run.")
     return 0

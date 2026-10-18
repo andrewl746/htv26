@@ -12,7 +12,14 @@ from ai.config import Settings, contract, prompt_file
 from ai.gemini import generate_json
 from ai.generate import Generate, check_template, generate_validated
 from ai.models import ExplainDraft
-from ai.numbers import allowed_numbers, build_check_numbers, design_name, pick_design, render, used
+from ai.numbers import (
+    allowed_numbers,
+    build_check_numbers,
+    design_name,
+    pick_design,
+    render,
+    used,
+)
 from ai.templates import explain_template
 from ai.translate import translate
 
@@ -127,12 +134,16 @@ def explain(
             text_template, disclaimer, text_lang = strings["template_text"], strings["disclaimer"], lang
             cached = cached and translation_cached
 
+    # Labels in the shown language; the English map above is the one Gemini and the cache keys see.
+    _, shown_numbers = build_check_numbers(
+        check, design_id, web_url=settings.suplex_web_url, ai_url=settings.suplex_ai_url, lang=text_lang
+    )
     return {
         "lang": lang,
         "design_id": design_id,
         "template_text": text_template,
         "text": render(text_template, numbers, text_lang),
-        "numbers": used(text_template, numbers),
+        "numbers": used(text_template, shown_numbers),
         "validated": True,
         "source": source,
         "model": model,

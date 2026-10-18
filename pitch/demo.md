@@ -23,11 +23,13 @@ Criteria (MASTERSPEC 8.4): one that fits with no flags, on a street with neighbo
 ## After choosing
 
 - **Andrew (A11):** the demo cache for 326 Quebec Ave, 281 Armadale Ave, 155 Vine Ave and Ward 04: `python -m api.cache_demo`.
-- **Simone, before the lock:** the `gemini-3.5-flash-lite` cache for Ward 04 in all eight languages is filled from the real batch; explanations for the three addresses too.
+- **Simone, before the lock:** the `gemini-3.5-flash-lite` cache for Ward 04 in all eight languages (since cut to English and French; see the last item) is filled from the real batch; explanations for the three addresses too.
 - **Simone, after the Hour-24 lock (10 p.m.):** the one `gemini-3.8-flash` pass is exactly 20 requests, its whole daily budget: Ward 04 in eight languages (8) plus the three addresses' explanations (12). Run it in stage order so a failure leaves the most important part done:
   1. `python -m ai.pregenerate --ward 04 --langs en,fr --model gemini-3.8-flash --refresh` (2)
   2. `python -m ai.pregenerate --ward 04 --langs all --model gemini-3.8-flash` (the other six, 6; English is reused from step 1)
   3. `python -m ai.pregenerate --ward 04 --addresses-only --address-id 7986858 --address-id 7955411 --model gemini-3.8-flash --refresh` (326 Quebec Ave and 281 Armadale Ave, 8)
   4. `python -m ai.pregenerate --ward 04 --addresses-only --address-id 9085619 --model gemini-3.8-flash --refresh` (155 Vine Ave, 4)
+- **Simone, after the 3.8 pass: English and French only.** Suplex now offers two languages (`AI_LANGS=en,fr`). The three addresses' explanations are cached in French too: 12 translations of the `gemini-3.8-flash` English with `gemini-3.5-flash-lite`, 0 rejections, all served from the cache with no Gemini key:
+  `python -m ai.pregenerate --ward 04 --addresses-only --langs en,fr --address-id 7986858 --address-id 7955411 --address-id 9085619` (12)
 
   `--addresses-only` skips the ward briefing, so steps 3 and 4 spend nothing on it: 2 + 6 + 8 + 4 = 20. A validator retry costs one more request, so the last step may fall short; `pregenerate.py` stops cleanly at the limit, anything not redone stays on the validated flash-lite cache, and Gemini's quota resets at midnight Pacific (3 a.m. in Toronto). Then re-read the French Ward 04 briefing.

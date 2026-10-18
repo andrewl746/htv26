@@ -7,6 +7,7 @@ import { Scene } from './components/Lot3D/Scene'
 import { PlanTab } from './components/Plan/PlanTab'
 import { ResultPanel } from './components/ResultPanel/ResultPanel'
 import { Search } from './components/Search/Search'
+import { MultiplexSearchEntry } from './components/WardMap/MultiplexSearchEntry'
 import { WardStage } from './components/WardStage/WardStage'
 import { labels } from './copy'
 import { PANEL_WIDTH_PX } from './layout'
@@ -49,6 +50,7 @@ export default function App() {
         </GraphicsBoundary>
       )}
       <DataBadges />
+      <MultiplexSearchEntry showButton={view === 'landing'} />
     </main>
   )
 }

@@ -309,6 +309,45 @@ button {
   margin: 0;
 }
 
+/* A lot where no design could be checked: a banner, not four "Not checked" tabs. */
+.not-supported {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 2px solid var(--suplex-line-strong);
+  border-left-width: 8px;
+  border-radius: var(--radius);
+  background: var(--suplex-highlight);
+  color: var(--suplex-ink);
+}
+
+.not-supported-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.not-supported-head .result-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.not-supported-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.2;
+}
+
+.not-supported-reason,
+.not-supported-note {
+  margin: 0;
+}
+
+.not-supported-note {
+  font-size: var(--text-sm);
+}
+
 .design-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;

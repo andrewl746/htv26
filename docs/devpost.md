@@ -1,8 +1,8 @@
 # Devpost draft
 
-Status: full draft (S10), 2026-10-17. Paste each section into the matching Devpost field. Before submitting:
+Status: final (S10), 2026-10-18. Paste each section into the matching Devpost field. Before submitting:
 
-- Fill every `[LOCKED: …]` from `ward_summary.json` at the `headline-locked` tag (Hour 24). Never use fixture numbers.
+- Add the demo video link once it's recorded.
 
 **Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
 - Every other fact comes from [`/pitch/facts.md`](../pitch/facts.md); if a sentence isn't backed there, cut it.
@@ -13,7 +13,7 @@ Status: full draft (S10), 2026-10-17. Paste each section into the matching Devpo
 
 **Tagline:** *Before you build, before you vote.* (alternatives in `/pitch/hook.md`)
 
-**Links:** [github.com/andrewl746/htv26](https://github.com/andrewl746/htv26) · demo video `[link]` · example briefing `[LOCKED: public URL of /b/04]`
+**Links:** [github.com/andrewl746/htv26](https://github.com/andrewl746/htv26) · demo video `[link]` · example briefing: the `/b/04` screenshot in the gallery (the briefing runs on the team's laptop; there is no public host)
 
 ---
 
@@ -27,7 +27,7 @@ With Toronto's municipal election on October 26, 2026, and 69% of GTA residents 
 
 - **Check any address.** Type a Toronto address and the street builds itself in 3D while the City's design rises on the lot. A rules engine, not an AI, tests all four free designs against the lot's shape and Zoning By-law 569-2013 and gives each one a result: **Fits**, **Too close to call**, **Doesn't fit**, or **Not checked**. Each result shows the rule, the margin and the by-law section (for example, the Fourplex Narrow needs a lot at least 7.6 m wide once its side yards are included), plus what we don't check and multiplex permits nearby.
 - **Permission vs. reality.** "See your ward" zooms out to a ward map: lots where a free design may fit ("could") next to multiplex permits issued since May 2023 ("did"). In Ward 04, 3,992 house lots may fit a free design, and 83 multiplex permits have been issued since May 2023. Each ward shows only its own numbers: no rankings, no addresses on the map, no list or export of lots.
-- **Ward briefing.** A one-page, plain-language briefing for any ward, written by Gemini from the engine's numbers only. Every number links to its source, it translates into eight languages, and it ends with three neutral questions a resident could ask candidates.
+- **Ward briefing.** A one-page, plain-language briefing for any ward, written by Gemini from the engine's numbers only. Every number links to its source, it reads in English or French, and it ends with three neutral questions a resident could ask candidates.
 
 Every result says **"Screening only, not a permit or legal advice."**
 
@@ -67,10 +67,10 @@ Gemini writes the plain-language explanation for each address check and the ward
 
 1. **Placeholders, not numbers.** The model sees the engine's facts as named placeholders with labels (`{{could_lots}}`: "house lots where at least one free design may fit"), never the values, and returns structured JSON. Our code fills in each value and links it to its source.
 2. **A validator checks every draft before anyone sees it.** It rejects any digit that didn't come from the engine and any placeholder that doesn't exist. A rejected draft is regenerated once with the reason; if it fails again, a plain template written in the same tone is shown instead.
-3. **Translation into eight languages** (English, French, Simplified and Traditional Chinese, Spanish, Tagalog, Tamil, Portuguese) is a second Gemini pass over the checked English, and every translated string is validated again: a translation that drops or changes a number is rejected.
+3. **Translation into French** is a second Gemini pass over the checked English, and every translated string is validated again: a translation that drops or changes a number is rejected.
 4. **Caching and pre-generation** keep the demo inside the free tier and working offline.
 
-The validator caught 4 drafts during the event. One real example: both Chinese translations were rejected because they wrote "May 2023" as "2023年5月", adding a digit we hadn't supplied. We then allowed that one month number in translations only.
+The validator caught 4 drafts during the event. One real example, from when we were testing more languages: both Chinese translations were rejected because they wrote "May 2023" as "2023年5月", adding a digit we hadn't supplied. We then allowed that one month number in translations only.
 
 ## How we used Tiger Data
 
@@ -91,7 +91,7 @@ The "did" half of the headline is the permits the City has actually issued. We l
 
 ## What we learned
 
-`[Team: two or three honest sentences, written after the event.]`
+Most of the work was in the data, not the model: deriving streets from the gaps between parcels and matching the City's permit count took longer than the whole AI layer. Keeping an AI honest is mostly engineering around it: placeholders instead of digits, a validator, and a cache whose keys had to survive JavaScript writing 22.0 as 22. And "too close to call" turned out to be one of our most useful answers, because the City's lot lines aren't survey-accurate and saying so is more honest than a confident yes or no.
 
 ## Limitations
 

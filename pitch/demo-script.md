@@ -1,6 +1,6 @@
 # Demo script (4 minutes)
 
-Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …]` from the Hour-24 batch run; every other number is in [`facts.md`](facts.md). Rehearse with a timer and log each run in [`rehearsal-log.md`](rehearsal-log.md).
+Status: final (S10), 2026-10-18. Timings from MASTERSPEC 2.8. The Ward 04 numbers are from the Hour-24 batch (`headline-locked`); every other number is in [`facts.md`](facts.md). Rehearse with a timer and log each run in [`rehearsal-log.md`](rehearsal-log.md).
 
 **Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
 
@@ -10,14 +10,14 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 ---
 
-## 0:00–0:30 · Hook (speaker: `[name]`)
+## 0:00–0:30 · Hook (speaker: Andrew)
 
 > "Since 2023, every house lot in Toronto has been allowed four homes. This month, the City gave away free blueprints. But nobody can tell you whether they fit on your street, or whether the policy is working.
 > Type any address and watch the City's design rise on that lot in 3D. Then zoom out: in your ward, 3,992 lots could fit a free design, but only 83 multiplex permits have been issued since 2023."
 
 *If a judge looks sceptical about the numbers:* "Both come from City open data, and every number in the app links to its source."
 
-## 0:30–1:30 · Address check (driver: `[name]`)
+## 0:30–1:30 · Address check (driver: Jayden)
 
 1. **Offer the keyboard:** "Want to try your street, or a family member's?" (Never press for a home address; if they decline, type 326 Quebec Ave.)
 2. As the street builds: "These are the real neighbouring buildings from the City's 3D data. The old house is replaced by an illustrative new build."
@@ -42,7 +42,7 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 1. Click **Get the ward briefing** (opens `/b/04`).
 2. "Gemini writes this from the engine's numbers. Every number is a link." Click one number and show its source (the ward map or the City dataset).
-3. Switch the language picker to French (or the language a judge speaks; all eight are cached). "Translated in one click; the numbers are checked again after translation."
+3. Switch the language picker to French (cached, and the page's own buttons and labels switch with it). "Translated in one click; the numbers are checked again after translation."
 4. "Three neutral questions for candidates, the same in every ward."
 
 ## 3:20–4:00 · How it works and limits (Simone)
@@ -60,8 +60,8 @@ End on the one-liner: *"Before you build, before you vote."*
 
 1. **(0:00)** Briefing page, English: "Gemini writes from placeholders, never digits."
 2. **(0:08)** Click a number: it opens its source.
-3. **(0:14)** Switch to Simplified Chinese: "A second Gemini pass translates; every number is re-validated."
-4. **(0:20)** Open `ai/logs/rejections.jsonl`: "Here the validator rejected a Chinese draft that wrote '2023年5月', a digit we hadn't supplied. It's regenerated or replaced by a template. Nothing unvalidated reaches a user."
+3. **(0:14)** Switch to French: "A second Gemini pass translates; every number is re-validated."
+4. **(0:20)** Open `ai/logs/rejections.jsonl`: "While we were testing more languages, the validator rejected a Chinese draft that wrote '2023年5月', a digit we hadn't supplied. It's regenerated or replaced by a template. Nothing unvalidated reaches a user."
 
 ### Tiger Data (Yuvi)
 

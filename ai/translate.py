@@ -35,14 +35,15 @@ def language_name(lang: str) -> str:
     return contract("copy/labels.json")["languages"][lang]["english"]
 
 
-def glossary(lang: str) -> dict:
-    """Reviewed wording for one language: the 'all' entries plus that language's (ai/prompts/translate_glossary.json)."""
+def glossary(lang: str, endpoint: str | None = None) -> dict:
+    """Reviewed wording for one language: the 'all' entries plus that language's (ai/prompts/translate_glossary.json),
+    plus its "<lang>:<endpoint>" entries for one endpoint only (so explanation wording leaves the briefing's key alone)."""
     data = load_json(PROMPTS_DIR / "translate_glossary.json")
-    shared, own = data.get("all", {}), data.get(lang, {})
+    parts = [data.get("all", {}), data.get(lang, {}), data.get(f"{lang}:{endpoint}", {}) if endpoint else {}]
     return {
-        "rules": [*shared.get("rules", []), *own.get("rules", [])],
-        "forbidden": [*shared.get("forbidden", []), *own.get("forbidden", [])],
-        "fixed": dict(own.get("fixed", {})),
+        "rules": [rule for part in parts for rule in part.get("rules", [])],
+        "forbidden": [word for part in parts for word in part.get("forbidden", [])],
+        "fixed": {k: v for part in parts[1:] for k, v in part.get("fixed", {}).items()},
     }
 
 
@@ -82,7 +83,9 @@ def translate(
     refresh: bool = False,
 ) -> tuple[dict[str, str] | None, bool]:
     """Returns (translated strings, cached) or (None, False) when English must be served instead."""
-    terms = glossary(lang)
+    if lang not in contract("copy/labels.json")["languages"]:
+        return None, False  # a language the request schema allows but Suplex no longer offers
+    terms = glossary(lang, endpoint)
     key = cache_key({
         "endpoint": "translate", "english": english, "lang": lang, "prompt": prompt_file("translate.md"),
         "rules": RULES_VERSION, "glossary": terms,

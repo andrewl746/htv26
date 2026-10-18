@@ -2,7 +2,7 @@
 
 *Before you build, before you vote.* A Hack the Valley 11 project for the Hack the Valley × School of Cities challenge.
 
-Suplex checks any Toronto address against the City's four free pre-approved multiplex designs and shows the result in 3D, compares the lots in your ward where a design may fit ("could") with the multiplex permits actually issued since May 2023 ("did"), and writes a plain-language ward briefing in eight languages.
+Suplex checks any Toronto address against the City's four free pre-approved multiplex designs and shows the result in 3D, compares the lots in your ward where a design may fit ("could") with the multiplex permits actually issued since May 2023 ("did"), and writes a plain-language ward briefing in English and French.
 
 **Screening only, not a permit or legal advice.** Counts of lots where a design may fit are upper bounds.
 
@@ -53,7 +53,7 @@ All City of Toronto Open Data unless noted: [Address Points](https://open.toront
 
 ## Credits
 
-The permit rule follows the [Toronto Multiplex Tracker](https://malcolmkennedy.com/to-multiplex-map/) ([GitHub](https://github.com/zuzubak/to-multiplex-map)). Built by `[team names]` at Hack the Valley 11.
+The permit rule follows the [Toronto Multiplex Tracker](https://malcolmkennedy.com/to-multiplex-map/) ([GitHub](https://github.com/zuzubak/to-multiplex-map)). Built by Andrew ([@andrewl746](https://github.com/andrewl746)), Jayden ([@sandmanfan11](https://github.com/sandmanfan11)), Simone ([@simoneetam](https://github.com/simoneetam)) and Yuvi ([@imyuvijain](https://github.com/imyuvijain)) at Hack the Valley 11.
 
 ## Limitations
 

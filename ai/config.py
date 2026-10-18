@@ -16,7 +16,7 @@ CONTRACTS_DIR = REPO_DIR / "contracts"
 COPY_DIR = CONTRACTS_DIR / "copy"
 PROMPTS_DIR = AI_DIR / "prompts"
 
-DEFAULT_LANGS = "en,fr,zh-Hans,zh-Hant,es,tl,ta,pt"
+DEFAULT_LANGS = "en,fr"
 
 # Literals the validator always accepts (MASTERSPEC 7.3). Everything else on the allow-list comes
 # from designs.json and engine_config.json, so it follows the contracts.

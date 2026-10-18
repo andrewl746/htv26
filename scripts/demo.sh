@@ -59,6 +59,8 @@ if [ -f .env ]; then
   done < .env
 fi
 export SUPLEX_DATA_DIR="$DATA_DIR" SUPLEX_AI_URL="$AI_URL" SUPLEX_API_URL="$API_URL"
+# The app links in the AI explanations and briefings; part of the AI cache keys, so it matches the pre-generated cache.
+export SUPLEX_WEB_URL="$WEB_URL"
 if [ "$DEMO_CACHE" = 1 ]; then export SUPLEX_DEMO_CACHE=1; else unset SUPLEX_DEMO_CACHE; fi
 if [ -f "$GPKG" ]; then
   export SUPLEX_GPKG="$GPKG"
@@ -94,8 +96,8 @@ trap cleanup EXIT
 trap 'exit 130' INT TERM
 
 echo; echo "== starting the API, the AI service and vite preview (logs in $LOG_DIR)"
-"$PYTHON" -m uvicorn api.main:app --host 127.0.0.1 --port 8000 >"$LOG_DIR/api.log" 2>&1 & PIDS+=($!)
-"$PYTHON" -m uvicorn ai.main:app --host 127.0.0.1 --port 8001 >"$LOG_DIR/ai.log" 2>&1 & PIDS+=($!)
+"$PYTHON" -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --no-access-log >"$LOG_DIR/api.log" 2>&1 & PIDS+=($!)
+"$PYTHON" -m uvicorn ai.main:app --host 127.0.0.1 --port 8001 --no-access-log >"$LOG_DIR/ai.log" 2>&1 & PIDS+=($!)
 (cd web && exec node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 4173 --strictPort) \
   >"$LOG_DIR/web.log" 2>&1 & PIDS+=($!)
 

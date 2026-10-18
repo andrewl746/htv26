@@ -8,6 +8,7 @@ import { Flags } from './Flags'
 import { Header } from './Header'
 import { NextSteps } from './NextSteps'
 import { NotChecked } from './NotChecked'
+import { NotSupportedBanner } from './NotSupportedBanner'
 import { PermitsNearby } from './PermitsNearby'
 import { PANEL_ID, tabId } from './tabs'
 
@@ -53,20 +54,28 @@ export function ResultPanel({ extra }: { extra?: ReactNode }) {
   }
 
   const design = check.designs.find((d) => d.design_id === designId) ?? null
+  // No design could be checked on this lot: say so up top instead of four "Not checked" tabs.
+  const unsupported = check.lot.reason !== null && check.designs.every((d) => d.result === 'not_checked')
 
   return (
     <aside className="panel">
-      <Header check={check} />
-      <DesignTabs designs={check.designs} selected={designId} onSelect={setDesign} />
-      <div
-        id={PANEL_ID}
-        role="tabpanel"
-        aria-labelledby={designId ? tabId(designId) : undefined}
-        className="design-tabpanel"
-      >
-        {design && <Checklist design={design} />}
-        {designId && <Explanation check={check} designId={designId} />}
-      </div>
+      <Header check={check} hideReason={unsupported} />
+      {unsupported && check.lot.reason ? (
+        <NotSupportedBanner reason={check.lot.reason} />
+      ) : (
+        <>
+          <DesignTabs designs={check.designs} selected={designId} onSelect={setDesign} />
+          <div
+            id={PANEL_ID}
+            role="tabpanel"
+            aria-labelledby={designId ? tabId(designId) : undefined}
+            className="design-tabpanel"
+          >
+            {design && <Checklist design={design} />}
+            {designId && <Explanation check={check} designId={designId} />}
+          </div>
+        </>
+      )}
       {extra}
       <Flags flags={check.lot.flags} />
       <PermitsNearby permits={check.permits_nearby} />

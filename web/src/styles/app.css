@@ -140,7 +140,7 @@ button {
 /* The skyline's chalk: the palette's deep teal, dark enough to read against the pale sheet while the
    grain keeps it behind the text. */
 .blueprint-chalk {
-  fill: color-mix(in srgb, var(--palette-charcoal) 70%, transparent);
+  fill: color-mix(in srgb, var(--palette-charcoal) 58%, transparent);
 }
 
 .landing-title {
@@ -210,28 +210,21 @@ button {
   font: inherit;
 }
 
-/* The landing search box is a ruler: ticks down from the top edge and up from the bottom one, every
-   8 px, longer every 16 and 32 px, in the drafting sheet's teal. */
+/* The landing search box is a ruler: ticks hang from the top edge only, every 8 px, longer every
+   16 and 32 px, in the drafting sheet's teal. */
 .search-hero .search-input {
   --ruler-tick: color-mix(in srgb, var(--suplex-accent) 45%, transparent);
   --ruler-unit: repeating-linear-gradient(to right, var(--ruler-tick) 0 1px, transparent 1px 32px);
   --ruler-half: repeating-linear-gradient(to right, var(--ruler-tick) 0 1px, transparent 1px 16px);
   --ruler-eighth: repeating-linear-gradient(to right, var(--ruler-tick) 0 1px, transparent 1px 8px);
   padding: var(--space-4) var(--space-6);
-  background-image:
-    var(--ruler-unit), var(--ruler-half), var(--ruler-eighth), var(--ruler-unit), var(--ruler-half), var(--ruler-eighth);
+  background-image: var(--ruler-unit), var(--ruler-half), var(--ruler-eighth);
   background-repeat: no-repeat;
   background-position:
     left top,
     left top,
-    left top,
-    left bottom,
-    left bottom,
-    left bottom;
+    left top;
   background-size:
-    100% 10px,
-    100% 7px,
-    100% 4px,
     100% 10px,
     100% 7px,
     100% 4px;

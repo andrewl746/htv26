@@ -95,6 +95,13 @@ export const mxBrowseCopy = {
     map: 'Map',
   },
 
+  /** The button on the main page and the way back from the search page. */
+  entry: {
+    open: 'Search for Suplex',
+    back: 'Back to Suplex',
+    region: 'Search for permitted multiplexes',
+  },
+
   aria: {
     page: 'Search for permitted multiplexes',
     filters: 'Filter permitted multiplexes',

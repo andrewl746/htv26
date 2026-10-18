@@ -17,6 +17,7 @@ import {
   parseBrowseParams,
   SORT_KEYS,
   STATUSES,
+  PARAM,
   STRUCTURES,
   totalUnits,
   WORKS,
@@ -221,7 +222,12 @@ export function MultiplexBrowser() {
   // ----- the address bar -----
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const url = window.location.pathname + browseToParams(state, near) + window.location.hash
+      // Parameters that are not the search's own (the app's `search=multiplexes`) stay as they are.
+      const params = new URLSearchParams(browseToParams(state, near))
+      const own = new Set<string>(Object.values(PARAM))
+      for (const [key, value] of new URLSearchParams(window.location.search)) if (!own.has(key)) params.set(key, value)
+      const text = params.toString().replaceAll('%2C', ',')
+      const url = window.location.pathname + (text ? `?${text}` : '') + window.location.hash
       try {
         window.history.replaceState(null, '', url)
       } catch {

@@ -18,6 +18,7 @@ import { failSlab } from './failSlabs'
 import { FailSlices } from './FailSlices'
 import { Frontage } from './Frontage'
 import { Garden } from './Garden'
+import { Yards, YardWarmUp } from './Yards'
 import { Ground } from './Ground'
 import { openRing, toScene, vertexMean } from './geometry'
 import { LabelProjector } from './LabelProjector'
@@ -239,6 +240,7 @@ export function Scene({
           <Ground radius={groundRadius * GROUND_SCALE} drawn={drawn} />
 
           <WarmUp />
+          {drawn && <YardWarmUp />}
 
           {check && (
             <>
@@ -248,13 +250,10 @@ export function Scene({
               )}
               {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={streetTrees} />}
               {drawn && !ELEVATION_VIEW && street && (
-                <Garden
-                  key={`garden-${lotKey}-${designId ?? ''}`}
-                  lot={check.lot.polygon_local}
-                  design={result}
-                  buildings={check.context.buildings}
-                  street={street}
-                />
+                <Garden key={`garden-${lotKey}-${designId ?? ''}`} lot={check.lot.polygon_local} design={result} street={street} />
+              )}
+              {drawn && !ELEVATION_VIEW && street && (
+                <Yards key={`yards-${lotKey}`} buildings={streetBuildings} street={street} lot={check.lot.polygon_local} />
               )}
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
               <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} street={street} />

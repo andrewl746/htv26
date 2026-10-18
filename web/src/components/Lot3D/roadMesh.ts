@@ -287,12 +287,17 @@ export function onRoad(points: LocalPoint[], roads: RoadPiece[], margin: number)
   })
 }
 
-/** Each road segment as a rectangle (paths aside), for what must keep off the roads. */
+/**
+ * Each road segment as a rectangle, sidewalks included (paths aside), for what must keep off the
+ * roads. Placed roads come in pieces at most PIECE_M long, so each rectangle's box hugs the road
+ * even where it runs on a slant.
+ */
 export function roadRects(roads: RoadPiece[]): LocalPoint[][] {
   const out: LocalPoint[][] = []
   for (const r of roads) {
     if (r.kind === 'path') continue
-    const half = corridorWidth(r) / 2
+    const walk = SIDEWALK[r.kind]
+    const half = corridorWidth(r) / 2 + (walk ? walk.gap + walk.width : 0)
     for (let i = 0; i < r.line.length - 1; i++) {
       const [p, q] = [r.line[i], r.line[i + 1]]
       const n = left(unit(sub(q, p)))

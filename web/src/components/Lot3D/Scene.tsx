@@ -165,7 +165,7 @@ export function Scene({
       street,
       controller.signal,
       (planned) => setCity(planned),
-      (roads) => setCity((c) => (c?.lotKey === check.lot.lot_id ? { ...c, roads } : c)),
+      (roads, yards) => setCity((c) => (c?.lotKey === check.lot.lot_id ? { ...c, roads, yards } : c)),
       !OFF.has('roads'),
     )
     return () => controller.abort()

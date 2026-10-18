@@ -1,15 +1,19 @@
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
 import { openRing, seededRandom, signedArea, vertexMean } from './geometry'
+import type { RoadClass } from './osmMap'
 import { roadRects, type RoadPiece } from './roadMesh'
-import { inFrame, RIGHT_OF_WAY_M, ROAD_CENTRE_M, towardStreet, type StreetFrame } from './streetFrame'
+import { fromFrame, inFrame, RIGHT_OF_WAY_M, ROAD_CENTRE_M, towardStreet, type StreetFrame } from './streetFrame'
 import { BED, FENCE, PATIO, SHED, type YardKit, type YardFrame } from './yardKit'
 
 // A back yard behind every house that has room for one (drawn look), so the whole street looks
-// lived in, not just the lot being checked. A yard runs from the house's back wall to the block's
-// rear lot line (taken at the checked lot's depth, from the street the house faces), across the
-// house and half of each gap beside it, and stops short of any other building, of the checked lot
-// and of the map's roads, lanes and driveways. Garages and sheds in the City's massing, apartment blocks and houses with no room behind
-// them get none. Decoration only: nothing here is read as data.
+// lived in, not just the lot being checked. A yard is square to its own house, behind it as seen
+// from the street it faces (the nearest street on the map; without the map, the lot's street and
+// the blocks parallel to it). On the lot's street and those blocks it runs back to the block's rear
+// lot line (taken at the checked lot's depth); elsewhere it is YARD.defaultDepthM deep. It spans
+// the house and half of each gap beside it, stops halfway to a house behind, and short of any other
+// building, of the checked lot and of the roads with their sidewalks, lanes and driveways, the lot's
+// own street included. Garages and sheds in the City's massing, apartment blocks and houses with no
+// room behind them get none. Decoration only: nothing here is read as data.
 
 const YARD = {
   /** Smaller or lower than this, a "house" in the massing is a garage or a shed. */
@@ -18,9 +22,9 @@ const YARD = {
   minWidthM: 3,
   minDepthM: 3,
   maxDepthM: 25,
-  /** A house not square to the street (on a cross street): a yard this deep, if nothing is in the way. */
+  /** Off the lot's street and the blocks parallel to it: a yard this deep, if nothing is in the way. */
   defaultDepthM: 10,
-  /** How square to the street a house must be to measure its yard to the block's rear line. */
+  /** How square to the lot's street a house must face to measure its yard to the block's rear line. */
   squareCos: 0.7,
   /** Into the gap beside the house, at most. */
   sideM: 1.5,
@@ -30,8 +34,16 @@ const YARD = {
   fenceAlongHouseM: 2,
   /** Houses further than this from the lot are in the fog. */
   withinM: 260,
+  /** A house faces the nearest street within this; past it, the lot's street decides. */
+  streetWithinM: 60,
 }
 const GRID_CELL_M = 30
+/** The streets a house can face: not lanes, driveways, parking aisles, paths or motorways. */
+const FACED: ReadonlySet<RoadClass> = new Set(['trunk', 'primary', 'secondary', 'tertiary', 'minor'])
+/** Past a block's depth by this, a house is on the next block (as towardStreet has it). */
+const NEXT_STREET_MARGIN_M = 3
+/** The lot's own street as obstacles: pieces this long. */
+const FRONTAGE_PIECE_M = 6
 
 export interface PlannedYard {
   frame: YardFrame
@@ -55,21 +67,71 @@ function shapeOf(building: ContextBuilding): Shape {
   return { building, ring, centre, radius: Math.max(...ring.map(([x, y]) => Math.hypot(x - centre[0], y - centre[1]))) }
 }
 
-export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot: LocalPoint[], roads: RoadPiece[] = []): PlannedYard[] {
+/** The four ways a house can face: along its longest wall, either way, and square to it, either way. */
+function waysOut(ring: LocalPoint[]): LocalPoint[] {
+  let way: LocalPoint = [1, 0]
+  let longest = 0
+  for (let i = 0; i < ring.length; i++) {
+    const [a, b] = [ring[i], ring[(i + 1) % ring.length]]
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+    if (len > longest) [longest, way] = [len, [(b[0] - a[0]) / len, (b[1] - a[1]) / len]]
+  }
+  return [way, [-way[1], way[0]], [-way[0], -way[1]], [way[1], -way[0]]]
+}
+
+const dot = (a: LocalPoint, b: LocalPoint) => a[0] * b[0] + a[1] * b[1]
+
+function closest(p: LocalPoint, a: LocalPoint, b: LocalPoint): LocalPoint {
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy || 1)))
+  return [a[0] + dx * t, a[1] + dy * t]
+}
+
+export function planYards(
+  buildings: ContextBuilding[],
+  street: StreetFrame,
+  lot: LocalPoint[],
+  roads: RoadPiece[] = [],
+  /** How far the lot's own street runs each way (roadReach), as Frontage.tsx draws it. */
+  reach: { back: number; ahead: number } | null = null,
+): PlannedYard[] {
   const shapes = buildings.map(shapeOf)
+  const hasYard = ({ building, ring }: Shape) =>
+    !building.on_lot &&
+    building.kind === 'house' &&
+    building.avg_height_m >= YARD.minHeightM &&
+    Math.abs(signedArea(ring)) >= YARD.minFootprintM2
   const around = (ring: LocalPoint[]) => {
     const centre = vertexMean(ring)
-    return { ring, centre, radius: Math.max(...ring.map(([x, y]) => Math.hypot(x - centre[0], y - centre[1]))) }
+    let radius = 0
+    for (const [x, y] of ring) radius = Math.max(radius, Math.hypot(x - centre[0], y - centre[1]))
+    return { ring, centre, radius }
   }
-  // Other buildings, the checked lot, and the map's roads, lanes and driveways.
-  type Obstacle = { ring: LocalPoint[]; centre: LocalPoint; radius: number; self?: ContextBuilding }
+  // The streets a house can face (in pieces), and the lot's own street: its centreline among them,
+  // and sidewalk to sidewalk as an obstacle (the map's copy of it is left out where this one runs).
+  type Segment = [LocalPoint, LocalPoint]
+  const streets: Segment[] = roads
+    .filter((r) => FACED.has(r.kind))
+    .flatMap((r) => r.line.slice(1).map((q, i): Segment => [r.line[i], q]))
+  const frontage: LocalPoint[][] = []
+  if (reach) {
+    const [from, run] = [-reach.back, reach.back + reach.ahead]
+    const count = Math.max(1, Math.ceil(run / FRONTAGE_PIECE_M))
+    for (let i = 0; i < count; i++) {
+      const [a, b] = [from + (run * i) / count, from + (run * (i + 1)) / count]
+      frontage.push([fromFrame(street, a, 0), fromFrame(street, b, 0), fromFrame(street, b, RIGHT_OF_WAY_M), fromFrame(street, a, RIGHT_OF_WAY_M)])
+      streets.push([fromFrame(street, a, ROAD_CENTRE_M), fromFrame(street, b, ROAD_CENTRE_M)])
+    }
+  }
+  // Other buildings, the checked lot, and the roads with their sidewalks, lanes and driveways.
+  type Obstacle = { ring: LocalPoint[]; centre: LocalPoint; radius: number; self?: ContextBuilding; house?: boolean }
   const obstacles: Obstacle[] = [
-    ...shapes.map((s) => ({ ring: s.ring, centre: s.centre, radius: s.radius, self: s.building })),
+    ...shapes.map((s) => ({ ring: s.ring, centre: s.centre, radius: s.radius, self: s.building, house: hasYard(s) })),
     around(openRing(lot)),
     ...roadRects(roads).map(around),
+    ...frontage.map(around),
   ]
   // Filed in a grid, so a house meets only the obstacles round it.
-  const cells = new Map<string, Obstacle[]>()
   const cellsOver = (centre: LocalPoint, r: number) => {
     const keys: string[] = []
     for (let cx = Math.floor((centre[0] - r) / GRID_CELL_M); cx <= Math.floor((centre[0] + r) / GRID_CELL_M); cx++) {
@@ -77,23 +139,47 @@ export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot
     }
     return keys
   }
-  for (const ob of obstacles) {
-    for (const key of cellsOver(ob.centre, ob.radius)) {
-      const cell = cells.get(key)
-      if (cell) cell.push(ob)
-      else cells.set(key, [ob])
+  const file = <T>(grid: Map<string, T[]>, item: T, centre: LocalPoint, r: number) => {
+    for (const key of cellsOver(centre, r)) {
+      const cell = grid.get(key)
+      if (cell) cell.push(item)
+      else grid.set(key, [item])
     }
+  }
+  const cells = new Map<string, Obstacle[]>()
+  for (const ob of obstacles) file(cells, ob, ob.centre, ob.radius)
+
+  // The streets filed the same way, so a house meets the ones near it.
+  const streetCells = new Map<string, Segment[]>()
+  for (const [a, b] of streets) {
+    const centre: LocalPoint = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    file(streetCells, [a, b], centre, Math.hypot(b[0] - a[0], b[1] - a[1]) / 2)
+  }
+  /** The way to the nearest street within YARD.streetWithinM, or null. */
+  const towardNearest = (centre: LocalPoint): LocalPoint | null => {
+    let [best, way] = [YARD.streetWithinM, null as LocalPoint | null]
+    const nearby = new Set(cellsOver(centre, YARD.streetWithinM).flatMap((key) => streetCells.get(key) ?? []))
+    for (const [a, b] of nearby) {
+      const p = closest(centre, a, b)
+      const d = Math.hypot(p[0] - centre[0], p[1] - centre[1])
+      if (d < best && d > 1e-6) [best, way] = [d, [(p[0] - centre[0]) / d, (p[1] - centre[1]) / d]]
+    }
+    return way
   }
 
   const yards: PlannedYard[] = []
-  for (const { building, ring, centre, radius } of shapes) {
-    if (building.on_lot || building.kind !== 'house' || building.avg_height_m < YARD.minHeightM) continue
-    if (Math.abs(signedArea(ring)) < YARD.minFootprintM2) continue
+  for (const shape of shapes) {
+    const { building, ring, centre, radius } = shape
+    if (!hasYard(shape)) continue
     const distance = Math.hypot(...centre)
     if (distance > YARD.withinM) continue
 
-    // The yard's frame: toHouse is the way the house faces; across is its left-hand normal.
-    const facing = towardStreet(street, centre)
+    // The yard's frame: facing is the way the house faces, square to its walls, toward its street
+    // (the nearest on the map; without the map, as the lot's street has it); across is its
+    // left-hand normal.
+    const lotWay = towardStreet(street, centre)
+    const want = (roads.length ? towardNearest(centre) : null) ?? lotWay
+    const facing = waysOut(ring).reduce((best, way) => (dot(way, want) > dot(best, want) ? way : best))
     const back: LocalPoint = [-facing[0], -facing[1]]
     const across: LocalPoint = [-facing[1], facing[0]]
     const project = ([x, y]: LocalPoint) => {
@@ -104,11 +190,13 @@ export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot
     const [s0, s1] = [Math.min(...house.map((p) => p.s)), Math.max(...house.map((p) => p.s))]
     const [h0, h1] = [Math.min(...house.map((p) => p.t)), Math.max(...house.map((p) => p.t))]
 
-    // How deep: to the block's rear lot line when the house is square to the street.
-    const k = back[0] * street.toward[0] + back[1] * street.toward[1]
+    // How deep: on the lot's street and the blocks either side of it, facing the way the lot's
+    // street has it, to the block's rear lot line; elsewhere a default.
+    const k = dot(back, street.toward)
+    const o = inFrame(street, centre).o
+    const blocks = 2 * street.lotDepthM + NEXT_STREET_MARGIN_M
     let depth = YARD.defaultDepthM
-    if (Math.abs(k) > YARD.squareCos) {
-      const o = inFrame(street, centre).o
+    if (dot(facing, lotWay) > YARD.squareCos && o > -blocks && o < RIGHT_OF_WAY_M + blocks) {
       const rearLine = o < ROAD_CENTRE_M ? -street.lotDepthM : RIGHT_OF_WAY_M + street.lotDepthM
       depth = (rearLine - (o + h1 * k)) / k - 0.05
     }
@@ -117,14 +205,21 @@ export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot
     let [left, right] = [s0 - YARD.sideM, s1 + YARD.sideM]
     if (t1 - t0 < YARD.minDepthM) continue
 
-    // Nearby buildings (and the lot): halfway into the gap beside the house, short of anything behind.
-    const reach = radius + YARD.maxDepthM + YARD.sideM
-    const candidates = new Set(cellsOver(centre, reach).flatMap((key) => cells.get(key) ?? []))
+    // Nearby buildings (and the lot and roads): halfway into the gap beside the house, halfway to a
+    // house behind, short of anything else behind.
+    const within = radius + YARD.maxDepthM + YARD.sideM
+    const candidates = new Set(cellsOver(centre, within).flatMap((key) => cells.get(key) ?? []))
     const near = [...candidates]
-      .filter((ob) => ob.self !== building && Math.hypot(ob.centre[0] - centre[0], ob.centre[1] - centre[1]) < reach + ob.radius)
+      .filter((ob) => ob.self !== building && Math.hypot(ob.centre[0] - centre[0], ob.centre[1] - centre[1]) < within + ob.radius)
       .map((ob) => {
         const pts = ob.ring.map(project)
-        return { s0: Math.min(...pts.map((p) => p.s)), s1: Math.max(...pts.map((p) => p.s)), t0: Math.min(...pts.map((p) => p.t)), t1: Math.max(...pts.map((p) => p.t)) }
+        return {
+          s0: Math.min(...pts.map((p) => p.s)),
+          s1: Math.max(...pts.map((p) => p.s)),
+          t0: Math.min(...pts.map((p) => p.t)),
+          t1: Math.max(...pts.map((p) => p.t)),
+          house: ob.house === true,
+        }
       })
     for (const ob of near) {
       // Beside the house or its yard: the side stops halfway across the gap.
@@ -136,7 +231,8 @@ export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot
     for (const ob of near) {
       if (ob.s1 <= left || ob.s0 >= right || ob.t1 <= t0 || ob.t0 >= t1) continue
       if (ob.t0 > t0 + YARD.minDepthM) {
-        t1 = Math.min(t1, ob.t0 - YARD.clearM)
+        // A house behind has its own yard coming the other way: the two meet halfway.
+        t1 = Math.min(t1, ob.house ? (h1 + ob.t0) / 2 : ob.t0 - YARD.clearM)
       } else if (ob.s1 < (s0 + s1) / 2) {
         left = Math.max(left, ob.s1 + YARD.clearM)
       } else if (ob.s0 > (s0 + s1) / 2) {

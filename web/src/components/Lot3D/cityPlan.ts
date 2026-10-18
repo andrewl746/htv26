@@ -59,9 +59,20 @@ async function roadsFrom(map: MapFeatures, check: CheckResponse, street: StreetF
   return { pieces: placed.roads, layers: roadLayers(placed.roads, map, placed.shift, buildings, radiusM) }
 }
 
+/** Every house's yard, clear of the roads (and of the lot's own street); none without a frontage. */
+function yardsFor(check: CheckResponse, street: StreetFrame | null, buildings: ContextBuilding[], roads: RoadPiece[]): CityYards {
+  const frontage = frontageOf(check, street)
+  const yards = frontage ? planYards(buildings, frontage.street, check.lot.polygon_local, roads, frontage.reach) : []
+  const pieces = new Pieces(true)
+  const plants: Plant[] = []
+  for (const yard of yards) furnishYard(new YardKit(yard.frame, pieces, plants, yard.distance), yard.width, yard.depth, yard.seed)
+  return { geometry: pieces.empty ? null : pieces.geometry(), plants }
+}
+
 /**
  * Plans the city for a lot: `ready` once it can be shown (with the map, or without it after
- * MAP_WAIT_MS), `late` with the roads if the map came after that. Abort to drop both.
+ * MAP_WAIT_MS), `late` with the roads and the yards planned again clear of them if the map came
+ * after that. Abort to drop both.
  */
 export async function planCity(
   check: CheckResponse,
@@ -69,7 +80,7 @@ export async function planCity(
   street: StreetFrame | null,
   signal: AbortSignal,
   ready: (city: City) => void,
-  late: (roads: CityRoads) => void,
+  late: (roads: CityRoads, yards: CityYards) => void,
   withMap: boolean,
 ): Promise<void> {
   const radiusM = groundRadiusM(check.context.radius_m)
@@ -90,13 +101,9 @@ export async function planCity(
   await nextTask()
   const layers = map && placed ? roadLayers(placed.roads, map, placed.shift, buildings, radiusM) : null
   await nextTask()
-  const yards = street ? planYards(buildings, street, check.lot.polygon_local, placed?.roads ?? []) : []
-  const pieces = new Pieces(true)
-  const plants: Plant[] = []
-  for (const yard of yards) furnishYard(new YardKit(yard.frame, pieces, plants, yard.distance), yard.width, yard.depth, yard.seed)
-  const geometry = pieces.empty ? null : pieces.geometry()
+  const yards = yardsFor(check, street, buildings, placed?.roads ?? [])
   if (signal.aborted) {
-    geometry?.dispose()
+    yards.geometry?.dispose()
     Object.values(layers ?? {}).forEach((g) => g?.dispose())
     return
   }
@@ -104,16 +111,20 @@ export async function planCity(
     lotKey: check.lot.lot_id,
     roads: placed && layers ? { pieces: placed.roads, layers } : null,
     extension,
-    yards: { geometry, plants },
+    yards,
   })
 
   if (first !== 'late') return
   const lateMap = await loading
   if (!lateMap || signal.aborted) return
   const roads = await roadsFrom(lateMap, check, street, buildings)
+  await nextTask()
+  // Planned without the roads, the yards would run over them: planned again, clear of them.
+  const lateYards = yardsFor(check, street, buildings, roads.pieces)
   if (signal.aborted) {
     Object.values(roads.layers).forEach((g) => g?.dispose())
+    lateYards.geometry?.dispose()
     return
   }
-  late(roads)
+  late(roads, lateYards)
 }

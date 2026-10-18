@@ -11,7 +11,9 @@ import { placementFrame, pointOn, type PlacementFrame } from './floors'
 // Some rules are not about the footprint's edges, and a too-close-to-call footprint can sit just
 // inside its yards, so the engine returns no slice. Then the slab comes from the rule itself: the
 // side strips for lot width, the rear for lot depth or building length, the part above the height
-// limit for height, and the whole building for coverage, homes allowed or a detached lot.
+// limit for height, and the whole building for coverage, homes allowed or a detached lot. The
+// engine's slices are drawn only when the rule the label names is about the edges (lot width or
+// depth), so the slab always shows the rule its label names.
 
 export type SlabKind = 'no_fit' | 'borderline'
 
@@ -40,7 +42,9 @@ export function failSlab(result: DesignResult, design: Design): FailSlab | null 
   const slices = result.fail_slices_local.map(openRing).filter((ring) => ring.length >= 3)
   const rule = kind === 'no_fit' ? failingRule(result, slices.length > 0) : borderlineRule(result, slices.length > 0)
   const top = design.height_m
-  if (slices.length) return { kind, rule, polygons: slices.map(counterClockwise), bottom: 0, top }
+  if (slices.length && rule && EDGE_RULES.includes(rule.rule_id)) {
+    return { kind, rule, polygons: slices.map(counterClockwise), bottom: 0, top }
+  }
   return { kind, rule, ...fromRule(rule, placementFrame(placement), kind, top) }
 }
 

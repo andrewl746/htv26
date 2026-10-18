@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { BoxGeometry, MeshStandardMaterial, PlaneGeometry, type BufferGeometry, type Group } from 'three'
-import type { LocalPoint } from '@contracts/types'
+import type { ContextBuilding, LocalPoint } from '@contracts/types'
+import { openRing } from './geometry'
 import { asphaltTexture, sidewalkTexture } from './textures'
 import { ease, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 
 // A15: the street in front of the lot, along its frontage: sidewalk, grass boulevard, curb and road,
 // and the same again on the far side. A typical Toronto local street; the lot line is where the
-// sidewalk begins. It unrolls outward from the lot with the ripple. Flat layers sit between the
-// ground (0) and the lot's own layers, under the contact shadows.
+// sidewalk begins. It runs straight each way until its centreline would meet a building (where the
+// real street ends or bends) or reaches MAX_REACH_M, and unrolls outward from the lot with the
+// ripple. Flat layers sit between the ground (0) and the lot's own layers, under the contact shadows.
+const MAX_REACH_M = 120
+const MIN_REACH_M = 12
+const REACH_STEP_M = 2
 const STREET = {
-  lengthM: 240,
   sidewalkM: 1.8,
   boulevardM: 1.6,
   curbM: 0.15,
@@ -50,15 +54,38 @@ function layers(): Layer[] {
   return out
 }
 
-/** A flat strip along x, centred on z, with UVs in metres. */
-function strip(length: number, width: number, z: number, y: number): BufferGeometry {
-  const g = new PlaneGeometry(length, width).rotateX(-Math.PI / 2).translate(0, y, z)
+/** Ray-casting point-in-polygon test. */
+function inside([x, y]: LocalPoint, ring: LocalPoint[]): boolean {
+  let hit = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit
+  }
+  return hit
+}
+
+/** How far the road's centreline runs from the frontage's middle in direction d before meeting a building. */
+function reach(mid: LocalPoint, d: LocalPoint, n: LocalPoint, rings: LocalPoint[][]): number {
+  const out = STREET.gapM + STREET.sidewalkM + STREET.boulevardM + STREET.curbM + STREET.roadM / 2
+  const centre: LocalPoint = [mid[0] + n[0] * out, mid[1] + n[1] * out]
+  for (let t = REACH_STEP_M; t <= MAX_REACH_M; t += REACH_STEP_M) {
+    const point: LocalPoint = [centre[0] + d[0] * t, centre[1] + d[1] * t]
+    if (rings.some((ring) => inside(point, ring))) return Math.max(MIN_REACH_M, t - REACH_STEP_M)
+  }
+  return MAX_REACH_M
+}
+
+/** A flat strip along x from x0 to x1, centred on z, with UVs in metres. */
+function strip(x0: number, x1: number, width: number, z: number, y: number): BufferGeometry {
+  const length = x1 - x0
+  const g = new PlaneGeometry(length, width).rotateX(-Math.PI / 2).translate((x0 + x1) / 2, y, z)
   const uv = g.getAttribute('uv')
   for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * length, uv.getY(i) * width)
   return g
 }
 
-export function Frontage({ edge }: { edge: [LocalPoint, LocalPoint] }) {
+export function Frontage({ edge, buildings }: { edge: [LocalPoint, LocalPoint]; buildings: ContextBuilding[] }) {
   // Along the frontage, turned so its right-hand normal points away from the lot: the group's +z.
   const frame = useMemo(() => {
     const [p, q] = edge
@@ -68,8 +95,11 @@ export function Frontage({ edge }: { edge: [LocalPoint, LocalPoint] }) {
     d = [d[0] / len, d[1] / len]
     // The lot's centroid is the origin, so the outward normal points away from it.
     if (d[1] * mid[0] - d[0] * mid[1] < 0) d = [-d[0], -d[1]]
-    return { mid, angle: Math.atan2(d[1], d[0]) }
-  }, [edge])
+    const n: LocalPoint = [d[1], -d[0]]
+    const rings = buildings.filter((b) => !b.on_lot).map((b) => openRing(b.footprint_local))
+    const back: LocalPoint = [-d[0], -d[1]]
+    return { mid, angle: Math.atan2(d[1], d[0]), x0: -reach(mid, back, n, rings), x1: reach(mid, d, n, rings) }
+  }, [edge, buildings])
 
   const resources = useMemo(() => {
     const asphalt = asphaltTexture(COLOUR.asphalt, ASPHALT_TILE_M)
@@ -84,12 +114,16 @@ export function Frontage({ edge }: { edge: [LocalPoint, LocalPoint] }) {
       const z = l.from + l.width / 2
       const geometry =
         l.kind === 'curb'
-          ? new BoxGeometry(STREET.lengthM, STREET.curbHeightM, l.width).translate(0, STREET.curbHeightM / 2, z)
-          : strip(STREET.lengthM, l.width, z, Y[l.kind])
+          ? new BoxGeometry(frame.x1 - frame.x0, STREET.curbHeightM, l.width).translate(
+              (frame.x0 + frame.x1) / 2,
+              STREET.curbHeightM / 2,
+              z,
+            )
+          : strip(frame.x0, frame.x1, l.width, z, Y[l.kind])
       return { kind: l.kind, geometry }
     })
     return { materials, geometries, textures: [asphalt.map, asphalt.bump, walk.map, walk.bump] }
-  }, [])
+  }, [frame])
   useEffect(
     () => () => {
       resources.geometries.forEach((g) => g.geometry.dispose())

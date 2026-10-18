@@ -181,6 +181,23 @@ function clipOpening(o: Opening, face: FaceName, b: Block, z0: number, z1: numbe
   return s1 - s0 >= MIN_OPENING_M && h1 - h0 >= MIN_OPENING_M ? { s0, s1, h0, h1 } : null
 }
 
+type Interval = [number, number]
+
+/** The parts of a span that none of the covers reach. */
+function uncovered(span: Interval, covers: Interval[]): Interval[] {
+  let out: Interval[] = [span]
+  for (const [c0, c1] of covers) {
+    out = out.flatMap(([a, b]): Interval[] => {
+      if (c1 <= a || c0 >= b) return [[a, b]]
+      const pieces: Interval[] = []
+      if (c0 > a) pieces.push([a, c0])
+      if (c1 < b) pieces.push([c1, b])
+      return pieces
+    })
+  }
+  return out.filter(([a, b]) => b - a > 0.01)
+}
+
 function overlaps(a: Hole, b: Hole): boolean {
   return a.s0 < b.s1 && b.s0 < a.s1 && a.h0 < b.h1 && b.h0 < a.h1
 }
@@ -359,31 +376,33 @@ export function buildFacade(model: FacadeModel, design: Design): BuiltFacade {
   const basementIndex = bands.findIndex((b) => b.level.level < 0)
   if (basementIndex >= 0) {
     const parts = levels[basementIndex]
-    const basementBlocks = model.blocks.filter((b) => b.z0 < d.grade)
+    // Rectangles a pit's edge can lean on: the basement's walls and the other pits (an L-shaped
+    // walkout is drawn as touching rectangles, which must read as one pit).
+    const neighbours = [...model.blocks.filter((b) => b.z0 < d.grade), ...model.walkouts]
+    const curb = d.grade + PIT.curb
+    const t = PIT.wall
     for (const w of model.walkouts) {
-      const curb = d.grade + PIT.curb
+      const others = neighbours.filter((n) => n !== w)
       parts.box('concrete', w.u0, w.u1, w.v0, w.v1, w.z - PIT.floor, w.z)
-      // A retaining wall on each side that is not the basement's own wall.
-      const against = {
-        front: basementBlocks.some((b) => Math.abs(b.v1 - w.v0) < 0.05 && b.u0 < w.u1 && w.u0 < b.u1),
-        rear: basementBlocks.some((b) => Math.abs(b.v0 - w.v1) < 0.05 && b.u0 < w.u1 && w.u0 < b.u1),
-        left: basementBlocks.some((b) => Math.abs(b.u1 - w.u0) < 0.05 && b.v0 < w.v1 && w.v0 < b.v1),
-        right: basementBlocks.some((b) => Math.abs(b.u0 - w.u1) < 0.05 && b.v0 < w.v1 && w.v0 < b.v1),
+      // A retaining wall along each stretch of each edge that no neighbour closes.
+      const open = (shared: (n: (typeof others)[number]) => boolean, along: (n: (typeof others)[number]) => Interval, span: Interval) =>
+        uncovered(span, others.filter(shared).map(along))
+      for (const [a, b] of open((n) => Math.abs(n.v1 - w.v0) < 0.05, (n) => [n.u0, n.u1], [w.u0, w.u1])) {
+        parts.box('concrete', a, b, w.v0, w.v0 + t, w.z, curb)
       }
-      const t = PIT.wall
-      if (!against.front) parts.box('concrete', w.u0, w.u1, w.v0, w.v0 + t, w.z, curb)
-      if (!against.rear) parts.box('concrete', w.u0, w.u1, w.v1 - t, w.v1, w.z, curb)
-      if (!against.left) parts.box('concrete', w.u0, w.u0 + t, w.v0, w.v1, w.z, curb)
-      if (!against.right) parts.box('concrete', w.u1 - t, w.u1, w.v0, w.v1, w.z, curb)
-      const inner = {
-        u0: w.u0 + (against.left ? 0 : t),
-        u1: w.u1 - (against.right ? 0 : t),
-        v0: w.v0 + (against.front ? 0 : t),
-        v1: w.v1 - (against.rear ? 0 : t),
+      for (const [a, b] of open((n) => Math.abs(n.v0 - w.v1) < 0.05, (n) => [n.u0, n.u1], [w.u0, w.u1])) {
+        parts.box('concrete', a, b, w.v1 - t, w.v1, w.z, curb)
       }
-      const lid = new PlaneGeometry(inner.u1 - inner.u0, inner.v1 - inner.v0)
+      for (const [a, b] of open((n) => Math.abs(n.u1 - w.u0) < 0.05, (n) => [n.v0, n.v1], [w.v0, w.v1])) {
+        parts.box('concrete', w.u0, w.u0 + t, a, b, w.z, curb)
+      }
+      for (const [a, b] of open((n) => Math.abs(n.u0 - w.u1) < 0.05, (n) => [n.v0, n.v1], [w.v0, w.v1])) {
+        parts.box('concrete', w.u1 - t, w.u1, a, b, w.z, curb)
+      }
+      // The lid spans the whole pit; the walls' tops stand just above it.
+      const lid = new PlaneGeometry(w.u1 - w.u0, w.v1 - w.v0)
         .rotateX(-Math.PI / 2)
-        .translate((inner.u0 + inner.u1) / 2 - width / 2, d.grade + PIT.lid - parts.base, length / 2 - (inner.v0 + inner.v1) / 2)
+        .translate((w.u0 + w.u1) / 2 - width / 2, d.grade + PIT.lid - parts.base, length / 2 - (w.v0 + w.v1) / 2)
       parts.add('mask', lid)
     }
   }

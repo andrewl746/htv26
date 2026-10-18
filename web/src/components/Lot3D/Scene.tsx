@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, Stats } from '@react-three/drei'
 import { ACESFilmicToneMapping, NeutralToneMapping } from 'three'
@@ -10,7 +10,7 @@ import { tokenHex } from '../../styles/tokens'
 import { buildingTop } from './buildings'
 import { Camera, type FixedPose } from './Camera'
 import { CutawayFocus } from './CutawayFocus'
-import { ELEVATION_VIEW, OFF, STRESS_BUILDINGS, stressed } from './debug'
+import { DebugBridge, ELEVATION_VIEW, OFF, STRESS_BUILDINGS, stressed } from './debug'
 import { Effects } from './Effects'
 import { ClassicDesign } from './ClassicDesign'
 import { DrawnDesign } from './DrawnDesign'
@@ -26,7 +26,6 @@ import { Lot } from './Lot'
 import { FACADES } from './models'
 import { OldHouse } from './OldHouse'
 import { Pin } from './Pin'
-import { PixelRatio } from './PixelRatio'
 import { QualityMonitor } from './QualityMonitor'
 import { SceneLabels } from './SceneLabels'
 import { SettleWatch, ShadowFreeze } from './Settle'
@@ -48,13 +47,15 @@ const FOG_FAR_M = 320
 /** Dev elevation view: how far in front of the design the camera stands. */
 const ELEVATION_DISTANCE_M = 70
 /**
- * A15: under this frame rate the drawn look steps down, for good: first to one pixel per CSS
- * pixel (a high-DPI laptop screen draws 2.25 times the pixels), then without ambient occlusion
- * and shadows.
+ * A15: under this frame rate the drawn look steps down, for good: on a high-DPI screen first to
+ * one pixel per CSS pixel, then without ambient occlusion and shadows. Nothing is unmounted or
+ * switched in a way that changes the shaders, so a step down never stalls on recompiling them.
  */
 const MIN_FPS = 45
 type Quality = 'high' | 'fewer-pixels' | 'low'
-const STEP_DOWN: Record<Quality, Quality> = { high: 'fewer-pixels', 'fewer-pixels': 'low', low: 'low' }
+function stepDown(quality: Quality): Quality {
+  return quality === 'high' && window.devicePixelRatio > 1 ? 'fewer-pixels' : 'low'
+}
 /** Contact shadows: just above every flat layer on the ground, over the lot and its neighbours. */
 const CONTACT = { y: 0.09, scaleM: 90, farM: 12, blur: 2.2, opacity: 0.45, resolution: 1024 }
 /** The drawn look renders at most this many pixels per CSS pixel: the ambient occlusion is per pixel. */
@@ -89,6 +90,8 @@ export function Scene({
   const [quality, setQuality] = useState<Quality>('high')
   const drawn = LOOK === 'drawn'
   const rich = drawn && quality !== 'low'
+  // Dev only (debug.ts): step down by hand.
+  const stepQuality = useCallback(() => setQuality(stepDown), [])
   // Once the sequence rests, the drawn look stops redrawing its shadows every frame.
   const [settled, setSettled] = useState(false)
   const result = check?.designs.find((d) => d.design_id === designId) ?? null
@@ -164,10 +167,10 @@ export function Scene({
       <Canvas
         frameloop={visible ? 'always' : 'never'}
         shadows="percentage"
-        dpr={[1, drawn ? DRAWN_MAX_DPR : 2]}
+        dpr={[1, drawn ? (quality === 'high' ? DRAWN_MAX_DPR : 1) : 2]}
         gl={{ antialias: true, toneMapping: drawn ? ACESFilmicToneMapping : NeutralToneMapping }}
       >
-        {drawn && <PixelRatio max={quality === 'high' ? DRAWN_MAX_DPR : 1} />}
+        {import.meta.env.DEV && <DebugBridge stepDown={stepQuality} />}
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
           <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
           {ELEVATION_VIEW && <color attach="background" args={['white']} />}
@@ -180,8 +183,9 @@ export function Scene({
           />
           <CutawayFocus targets={targets} />
           {drawn && <SettleWatch onChange={setSettled} />}
-          {drawn && <ShadowFreeze frozen={settled && check !== null} />}
-          {drawn && check && <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={() => setQuality((q) => STEP_DOWN[q])} />}
+          {/* At low quality the shadows are off, so their map need not be redrawn either. */}
+          {drawn && <ShadowFreeze frozen={(settled && check !== null) || !rich} />}
+          {drawn && check && <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={stepQuality} />}
           {drawn ? <Studio shadows={rich} /> : <Lighting />}
 
           <mesh rotation={FLAT} receiveShadow>
@@ -195,7 +199,7 @@ export function Scene({
             <>
               {!ELEVATION_VIEW && <Street key={`street-${lotKey}`} buildings={check.context.buildings} />}
               {drawn && !ELEVATION_VIEW && check.lot.frontage_edge_local && (
-                <Frontage key={`frontage-${lotKey}`} edge={check.lot.frontage_edge_local} />
+                <Frontage key={`frontage-${lotKey}`} edge={check.lot.frontage_edge_local} buildings={check.context.buildings} />
               )}
               {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={check.context.trees} />}
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
@@ -225,7 +229,7 @@ export function Scene({
           )}
           <LabelProjector labels={labels} elements={labelElements} />
         </Sequence>
-        {rich && !OFF.has('ao') && <Effects />}
+        {drawn && !OFF.has('ao') && <Effects ao={rich} />}
         {SHOW_STATS && <Stats />}
       </Canvas>
       {!ELEVATION_VIEW && <SceneLabels labels={labels} elements={labelElements} />}

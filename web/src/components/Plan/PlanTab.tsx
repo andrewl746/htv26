@@ -37,8 +37,8 @@ export function PlanTab() {
   return (
     <div className="plan-tab">
       <div className="topbar">
-        <button type="button" className="brand" onClick={() => showLanding()}>
-          Suplex
+        <button type="button" className="brand" aria-label="Suplex" onClick={() => showLanding()}>
+          <span className="brand-mark" />
         </button>
         <Search variant="compact" />
         {/* Without WebGL the plan view is the address check. */}

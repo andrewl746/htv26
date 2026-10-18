@@ -62,8 +62,8 @@ function LotChrome({ leaving }: { leaving: boolean }) {
   return (
     <div className={leaving ? 'lot-chrome lot-chrome-leaving' : 'lot-chrome'}>
       <div className="topbar">
-        <button type="button" className="brand" onClick={() => showLanding()}>
-          Suplex
+        <button type="button" className="brand" aria-label="Suplex" onClick={() => showLanding()}>
+          <span className="brand-mark" />
         </button>
         <Search variant="compact" />
         <button type="button" className="plan-switch" onClick={() => showPlan()}>

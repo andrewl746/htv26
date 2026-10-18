@@ -27,13 +27,14 @@ export function formatNumber(value: number, wholeOnly = false): string {
   return (wholeOnly ? whole : number).format(value)
 }
 
-/** A rule row's value with its unit: "7.62 m", "45%", "4 homes"; words such as "detached" as they are. */
+/** A rule row's value with its unit: "7.62 m", "45%", "4 homes"; words such as "detached" as they are.
+ *  A no-break space keeps the unit with its number when the checklist's columns wrap. */
 export function formatValue(value: number | string | null, unit: RuleRow['unit']): string {
   if (value === null) return ''
   if (typeof value === 'string') return value
   const n = formatNumber(value)
   if (unit === 'pct') return `${n}${labels.units.pct}`
-  return unit ? `${n} ${labels.units[unit]}` : n
+  return unit ? `${n} ${labels.units[unit]}` : n
 }
 
 /** A signed margin: "+0.02 m", "−1.5 m", "0 m". */

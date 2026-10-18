@@ -87,6 +87,7 @@ try {
     }
     Set-RunEnv "SUPLEX_DATA_DIR" $DataDir
     Set-RunEnv "SUPLEX_AI_URL" $AiUrl                  # the API's briefing links and /explain hand-off
+    Set-RunEnv "SUPLEX_WEB_URL" $WebUrl                # the app links in the AI explanations and briefings (part of the AI cache keys)
     Set-RunEnv "SUPLEX_API_URL" $ApiUrl                # where the AI service reads wards and checks
     Set-RunEnv "SUPLEX_DEMO_CACHE" $(if ($DemoCache) { "1" } else { "" })
     if (Test-Path $GpkgPath) {

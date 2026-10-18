@@ -59,6 +59,8 @@ if [ -f .env ]; then
   done < .env
 fi
 export SUPLEX_DATA_DIR="$DATA_DIR" SUPLEX_AI_URL="$AI_URL" SUPLEX_API_URL="$API_URL"
+# The app links in the AI explanations and briefings; part of the AI cache keys, so it matches the pre-generated cache.
+export SUPLEX_WEB_URL="$WEB_URL"
 if [ "$DEMO_CACHE" = 1 ]; then export SUPLEX_DEMO_CACHE=1; else unset SUPLEX_DEMO_CACHE; fi
 if [ -f "$GPKG" ]; then
   export SUPLEX_GPKG="$GPKG"

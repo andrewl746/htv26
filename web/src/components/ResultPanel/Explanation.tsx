@@ -10,7 +10,7 @@ import { useApp } from '../../state/store'
 // after the result is on screen, behind a skeleton. The AI only phrases the engine's numbers: it
 // writes {{placeholders}} and the service fills them, so here each number carries its label.
 
-const LANGS = Object.keys(labels.languages) as Lang[]
+const LANGS = Object.keys(labels.languages) as (keyof typeof labels.languages)[]
 
 /** Answers for this session, so switching tabs back and forth never asks twice. */
 const answers = new Map<string, ExplainResponse>()

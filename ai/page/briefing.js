@@ -41,8 +41,12 @@
     status.textContent = "Suplex";  // copy itself failed to load; nothing else can be shown
     return;
   }
-  const P = labels.briefing_page;
-  const UI = labels.ui;
+  // Page copy in a language: its block in labels.json (labels.fr) over the English; a missing key stays English.
+  function copyIn(lang) {
+    const own = labels[lang] || {};
+    return [{ ...labels.briefing_page, ...own.briefing_page }, { ...labels.ui, ...own.ui }];
+  }
+  let [P, UI] = copyIn(S.lang);
   status.textContent = P.loading;
 
   // Ward data: the API, or the fixtures with ?fixture=1 or when the API is down (MASTERSPEC 3.1).
@@ -82,6 +86,12 @@
 
   const textLang = briefing.translation_unavailable ? "en" : briefing.lang;
   document.documentElement.lang = textLang;
+  [P, UI] = copyIn(textLang);  // the page's own words in the language its text is shown in
+  // The API sends the trend markers in English; show them in the page's language.
+  const markerText = new Map([
+    [labels.ui.trend_marker_citywide, UI.trend_marker_citywide],
+    [labels.ui.trend_marker_designs, UI.trend_marker_designs],
+  ]);
   document.title = briefing.title;
 
   function intl(lang) {
@@ -221,7 +231,7 @@
       const nearEnd = i > series.length * 0.7;
       const label = svg("text", { class: "marker-text", x: nearEnd ? mx - 4 : mx + 4, y: M.top - 18,
                                   "text-anchor": nearEnd ? "end" : "start" });
-      label.textContent = marker.label;
+      label.textContent = markerText.get(marker.label) || marker.label;
       chart.append(label);
     }
 
@@ -280,7 +290,7 @@
     el("h2", { text: P.methodology_heading }),
     ...P.methodology.map((text) => el("p", { text: fill(text) })),
     el("h3", { text: P.not_checked_heading }),
-    el("ul", {}, ...notChecked.map((item) => el("li", { text: item.label }))),
+    el("ul", {}, ...notChecked.map((item) => el("li", { text: item[`label_${textLang}`] || item.label }))),
     el("h3", { text: P.datasets_heading }),
     el("ul", {}, ...briefing.links.datasets.map((d) => el("li", {}, el("a", { href: d.url, text: d.label })))),
   );

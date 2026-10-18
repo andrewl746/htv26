@@ -45,10 +45,10 @@ The most common reason in plain words, with its count: the house is attached (a 
 Notes: `ward_summary.json` wards.04.top_blocking_rules and attached_share_pct.
 
 ### 7 · The ward briefing
-Screenshot of `/b/04` with a number link hovered, and the language picker open (eight languages).
+Screenshot of `/b/04` with a number link hovered, and the language picker open (English and French).
 "Written by Gemini from the engine's numbers. Every number links to its source."
 
-Notes: no numbers on this slide besides "eight" languages (the AI_LANGS list).
+Notes: no numbers on this slide. Two languages, English and French (`AI_LANGS`); French is reviewed and is the one switched to on stage.
 
 ### 8 · How it works
 Three columns:

@@ -159,7 +159,8 @@ def briefing(
             for sid in SECTION_IDS
         ],
         "questions": questions,
-        "numbers": used("\n".join(texts.values()), numbers),
+        # Labels in the shown language; the English map above is the one Gemini and the cache keys see.
+        "numbers": used("\n".join(texts.values()), build_ward_numbers(ward, web_url=settings.suplex_web_url, lang=text_lang)),
         "links": {
             "ward_map": f"{settings.suplex_web_url}/?ward={ward['ward_id']}",
             "datasets": copy["datasets"],

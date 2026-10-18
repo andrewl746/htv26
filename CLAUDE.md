@@ -36,6 +36,8 @@ the schema, types.ts and the fixture together. Build against /contracts/fixtures
 - Every result shows "Screening only, not a permit or legal advice."
 - No candidate names, parties or positions anywhere. No "best ward", "worst ward" or rankings.
 - No addresses on the ward map. No list, export or download of lots, anywhere.
+  Exception (MASTERSPEC decision 20): issued multiplex permits may be listed by street name only,
+  never with a house number, with no export or download; lots that may fit are never listed.
 - Neutral wording: never "threat" or "opportunity"; say "may fit", never "will be built".
 - Counts of lots that may fit are upper bounds and are labelled that way.
 - Every rule in the engine carries its Toronto Zoning By-law 569-2013 section string.

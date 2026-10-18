@@ -1,6 +1,6 @@
 # Q&A prep
 
-Status: answers drafted (S10), 2026-10-17. Facts come from [`facts.md`](facts.md) (row numbers in brackets); `[LOCKED: …]` from `ward_summary.json` at `headline-locked`. Keep answers under 20 seconds.
+Status: final (S10), 2026-10-18. Facts come from [`facts.md`](facts.md) (row numbers in brackets); the Ward 04 and citywide numbers from `ward_summary.json` at `headline-locked`. Keep answers under 20 seconds.
 
 **Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
 
@@ -52,10 +52,10 @@ All City of Toronto open data: property boundaries, zoning, address points, buil
 The free designs are detached buildings that need side yards on both sides, so attached houses are marked "not checked" with that reason. In Ward 04, 44.2% of house lots are semis or row houses. Owners there may still add homes in other ways, such as basement or garden suites, which we don't check.
 
 **"Is the AI translation reliable?"**
-Every number in a translation is checked again and must match the English, and a native speaker reviewed `[languages reviewed]`. If a translation fails the check, we show English with a notice instead.
+We offer English and French, and a French speaker on the team reviewed the French. Every number in a translation is checked again and must match the English, and reviewed wording is enforced: a translation that uses a word we've ruled out is rejected and retried. If a translation fails the check, we show English with a notice instead.
 
 **"Do you store the addresses people type?"**
-`[Andrew: confirm what the API logs.]` The map never shows addresses, and there's no list of lots.
+No. The API saves nothing about requests. The AI service caches explanations under a hash of the result, with no address inside, and its rejection log keeps only a hash of the prompt. The server's terminal shows each request while it runs, like any web server, and that isn't saved. The map never shows addresses, and there's no list of lots.
 
 **"How is this different from the City's own tools?"**
 The City publishes the designs and the rules; Suplex applies them to every lot and puts the result next to what was permitted, in plain language, for any ward.

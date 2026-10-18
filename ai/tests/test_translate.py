@@ -250,3 +250,31 @@ def test_french_explanation(client):
     assert not list(EXPLAIN_SCHEMA.iter_errors(body))
     assert body["translation_unavailable"] is False and body["template_text"].startswith("FR ")
     assert "7,62" in body["text"] and body["disclaimer"].startswith("FR ")
+
+
+def test_explanation_wording_reaches_only_the_explanation_prompt(client):
+    prompts = []
+
+    def capture(prompt, schema, *, model=None):
+        prompts.append((schema.__name__, prompt))
+        return FakeGemini()(prompt, schema, model=model)
+
+    use(capture)
+    briefing(client, "fr")
+    client.post("/explain", json={**EXPLAIN, "lang": "fr"})
+    translations = [p for name, p in prompts if name == "Translation"]
+    assert "trop serré pour trancher" not in translations[0]  # the briefing's glossary (and cache key) is unchanged
+    assert "trop serré pour trancher" in translations[1]
+
+
+@pytest.mark.parametrize("phrase", ["ne rentre pas", "une maison attachée", "une propriété détachée"])
+def test_awkward_explanation_wording_is_rejected(client, phrase):
+    use(FakeGemini(lambda english: {k: f"{v} {phrase}" for k, v in french(english).items()}))
+    body = client.post("/explain", json={**EXPLAIN, "lang": "fr"}).json()
+    assert body["translation_unavailable"] is True
+
+
+def test_the_briefing_glossary_is_the_reviewed_one():
+    from ai.translate import glossary
+    assert glossary("fr", "briefing") == glossary("fr")
+    assert "attachée" in glossary("fr", "explain")["forbidden"]

@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import type { CheckResponse, Lang } from '@contracts/types'
 import { fill, formatNumber, pending } from '../../copy'
 import { PANEL_WIDTH_PX } from '../../layout'
@@ -7,9 +7,9 @@ import { useWardData } from './data'
 import { DesignFilterControl } from './DesignFilterControl'
 import { isDisabled, type DesignFilter } from './designs'
 import { Legend } from './Legend'
-import { circleRing, countFitsNear } from './nearYourLot'
+import { useNearYourLot } from './useNearYourLot'
 import { WardMapCanvas } from './WardMapCanvas'
-import { WardPanel, type NearYourLot } from './WardPanel'
+import { WardPanel } from './WardPanel'
 import './wardMap.css'
 
 export interface WardMapProps {
@@ -40,22 +40,7 @@ export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en'
   const panelStyle = { '--ward-panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties
 
   const loaded = load.status === 'ready' ? load.data : null
-  const origin = check?.context.origin
-  const radiusM = check?.permits_nearby.radius_m
-  const didCount = check?.permits_nearby.count
-  const originLon = origin?.lon
-  const originLat = origin?.lat
-
-  // The dashed circle: 64 corners around the lot, at the check's own radius.
-  const nearRing = useMemo(
-    () => (originLon === undefined || originLat === undefined || radiusM === undefined ? null : circleRing({ lon: originLon, lat: originLat }, radiusM)),
-    [originLon, originLat, radiusM],
-  )
-  // N counts this ward's lots in the browser from the ward file; M is the engine's own count.
-  const near = useMemo<NearYourLot | null>(() => {
-    if (!loaded || originLon === undefined || originLat === undefined || radiusM === undefined || didCount === undefined) return null
-    return { radiusM, couldCount: countFitsNear(loaded.lots.features, { lon: originLon, lat: originLat }, radiusM), didCount }
-  }, [loaded, originLon, originLat, radiusM, didCount])
+  const { nearRing, near } = useNearYourLot(check, loaded)
 
   if (load.status !== 'ready') {
     return (
@@ -80,7 +65,7 @@ export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en'
   // A ward without the sixplex overlay cannot keep a sixplex selected.
   const active: DesignFilter = isDisabled(filter, data.ward.sixplex_overlay) ? 'all' : filter
 
-  const mapLabel = nearRing && radiusM !== undefined ? `${wardCopy.map_aria} ${fill(wardCopy.near_ring_label, { radius_m: formatNumber(radiusM, true) })}.` : wardCopy.map_aria
+  const mapLabel = nearRing && near ? `${wardCopy.map_aria} ${fill(wardCopy.near_ring_label, { radius_m: formatNumber(near.radiusM, true) })}.` : wardCopy.map_aria
 
   return (
     <div className="ward-map" style={panelStyle}>

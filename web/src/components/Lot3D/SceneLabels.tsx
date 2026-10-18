@@ -26,7 +26,6 @@ export function SceneLabels({
           ].join(' ')}
           style={{ opacity: 0 }}
         >
-          {label.swatch && <span className="home-swatch" style={{ background: label.swatch }} />}
           {label.icon && <ResultIcon result={label.icon} />}
           {label.detail ? (
             <span className="scene-label-lines">

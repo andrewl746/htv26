@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react'
 import { API_BASE } from '../api/config'
 import { onCacheUsed } from '../api/demoCache'
 import { disclaimers, labels } from '../copy'
+import { useApp } from '../state/store'
 
 /**
  * Where the numbers on screen come from, when it is not the live API (MASTERSPEC 6.7): a banner on
- * the built-in sample data, and a small badge once any answer came from the demo cache.
+ * the built-in sample data, and a small badge once any answer came from the demo cache. The lot and
+ * plan views leave the badge out: their result panel shows its own "Cached result" in the header.
  */
 export function DataBadges() {
   const [cached, setCached] = useState(false)
+  const view = useApp((s) => s.view)
   useEffect(() => onCacheUsed(() => setCached(true)), [])
   if (API_BASE === null) return <p className="data-banner">{labels.ui.sample_data}</p>
-  return cached ? <p className="data-badge">{disclaimers.cached}</p> : null
+  const panelSaysSo = view === 'lot' || view === 'plan'
+  return cached && !panelSaysSo ? <p className="data-badge">{disclaimers.cached}</p> : null
 }

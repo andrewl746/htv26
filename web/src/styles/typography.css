@@ -31,7 +31,7 @@
 :root {
   --font-ui: 'Helvetica Now Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-display: var(--font-ui);
-  /* The wordmark only (.landing-title, .brand): letters, never digits. */
+  /* The wordmark only (.landing-title): letters, never digits. */
   --font-brand: 'Milligram Macro', var(--font-ui);
 
   --text-xs: 13px;
@@ -58,13 +58,6 @@ body {
 /* Set nearly solid, so its two lines stand about as tall as the title beside them. */
 .landing-tagline {
   line-height: 1.05;
-}
-
-/* Set like the landing title: slanted and opened up. */
-.brand {
-  font-weight: 600;
-  font-style: italic;
-  letter-spacing: 0.08em;
 }
 
 /* Slanted like the landing's title and tagline, so the panel's heading speaks in the same voice. */

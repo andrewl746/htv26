@@ -14,8 +14,6 @@ export interface SceneLabel {
   /** Which way the label hangs from its point. */
   align: 'center' | 'left' | 'right'
   muted: boolean
-  /** A colour dot before the text: the home's colour token. */
-  swatch: string | null
   /** A result icon before the text (the fail slab's label), so the result never rests on colour. */
   icon: Result | null
   /** A second, muted line. */
@@ -51,7 +49,6 @@ export function oldHouseLabels({
       position: toScene(at, OLD_HOUSE_LABEL_Y),
       align: 'center',
       muted: true,
-      swatch: null,
       icon: null,
       detail: null,
       appear: { step: 'oldHouse' },
@@ -85,7 +82,6 @@ export function homeLabels(placement: LocalPoint[], design: Design): SceneLabel[
       position: toScene(point, (bottom + top) / 2),
       align: side,
       muted: false,
-      swatch: `var(--suplex-home-${home.id})`,
       icon: null,
       detail: null,
       appear: { step: 'labels', index },
@@ -137,7 +133,6 @@ export function failLabel(slab: FailSlab): SceneLabel {
     position: toScene(slabAnchor(slab), slab.top + FAIL_LABEL_RISE_M),
     align: 'center',
     muted: false,
-    swatch: null,
     icon: slab.kind,
     detail: rule ? `${labels.ui.column_bylaw} ${rule.bylaw_section}` : null,
     appear: { step: 'fail' },

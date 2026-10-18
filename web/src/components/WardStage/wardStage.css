@@ -1,73 +1,33 @@
 /*
  * The ward view in the landing card's drafting style, like the 3D lot's search bar and result panel
- * (app.css .topbar, .panel): Yuvi's ward panel sits on a drafting sheet (Landing/Blueprint.tsx) drawn
- * in .ward-sheet behind it, and the filter and the legend are strips of the sheet's graph paper. All
- * scoped to .ward-stage, so Yuvi's own pages (WardMap.tsx and its dev pages) keep wardMap.css as is.
+ * (app.css .topbar, .panel). The panel (WardBrief.tsx) is the result panel's own sheet, .panel; the
+ * design picker (DesignPicker.tsx) and the legend (WardLegend.tsx) keep the places wardMap.css gives
+ * .ward-filter and .ward-legend and become strips of the sheet's graph paper. All scoped to the ward
+ * view, so Yuvi's own pages (WardMap.tsx and its dev pages) keep wardMap.css as is.
  */
 
-/* See-through beige, like the landing card and the result panel, but thinner (60% over a 4 px blur):
+/* See-through beige like the landing card and the result panel, but thinner (60% over a 4 px blur):
    the ward map behind is mostly pale streets on the beige itself, which the others' 70% and 8 px blur
    would hide, so the sheet looked solid. The muted ink is mixed halfway to the ink, as on .panel, and
-   keeps about 6:1 over the lake; the panel's text sits on the sheet, not in it, so it takes the mix
-   as well. */
-.ward-stage .ward-sheet,
+   keeps about 6:1 over the lake. */
+.ward-stage .panel,
 .ward-stage .ward-filter,
 .ward-stage .ward-legend {
   background-color: color-mix(in srgb, var(--suplex-surface) 60%, transparent);
   backdrop-filter: blur(4px);
-  box-shadow: var(--shadow);
 }
 
-.ward-stage .ward-sheet,
-.ward-stage .ward-panel,
 .ward-stage .ward-filter,
 .ward-stage .ward-legend {
   --suplex-ink-muted: color-mix(in srgb, var(--page-ink-muted) 50%, var(--suplex-ink));
-}
-
-/* Where wardMap.css puts the panel; the sheet's outer rule is its edge, so no border. */
-.ward-sheet {
-  position: absolute;
-  z-index: 2;
-  top: var(--space-4);
-  right: var(--space-4);
-  bottom: var(--space-4);
-  box-sizing: border-box;
-  width: calc(var(--ward-panel-width) - var(--space-4));
-  isolation: isolate;
-  border-radius: var(--radius);
-}
-
-/* The panel scrolls inside the sheet's inner rule, 20 px in, except on the right, where it runs to the
-   edge so the scrollbar goes down the band between the two rules; the right padding takes that
-   scrollbar's width (--scrollbar, measured in WardStage.tsx) back out, as .panel-body does. */
-.ward-stage .ward-panel {
-  top: calc(var(--space-4) + 20px);
-  bottom: calc(var(--space-4) + 20px);
-  width: calc(var(--ward-panel-width) - var(--space-4) - 20px);
-  padding: var(--space-4) calc(20px + var(--space-4) - var(--scrollbar, 0px)) var(--space-6) var(--space-4);
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--blueprint-rule) transparent;
-}
-
-.ward-stage .ward-filter,
-.ward-stage .ward-legend {
   border: 1px solid var(--blueprint-edge);
   background-image: var(--graph-paper);
   background-size: var(--graph-paper-size);
-}
-
-.ward-stage-shown .ward-sheet {
-  animation: fade-in 300ms ease-out both;
+  box-shadow: var(--shadow);
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .ward-stage .ward-sheet,
+  .ward-stage .panel,
   .ward-stage .ward-filter,
   .ward-stage .ward-legend {
     background-color: var(--suplex-surface);
@@ -75,51 +35,212 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ward-stage-shown .ward-sheet {
-    animation: none;
-  }
+/* ---------- The panel (WardBrief.tsx) ---------- */
+
+/* The pencil marks are laid over the scrolling content, so they scroll with it. */
+.ward-brief .panel-body {
+  position: relative;
 }
 
-/* ---------- Lettering ---------- */
+/* The ward's name set like the result panel's address (app.css and typography.css .panel-address);
+   "Back to your lot" beside it, or under it when the name is long. */
+.ward-brief-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-6);
+}
 
-/* The ward's name set like the result panel's address (app.css and typography.css .panel-address). */
-.ward-stage .ward-panel h2 {
+.ward-brief-name {
+  margin: 0;
   color: var(--palette-charcoal);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
   font-weight: 500;
   font-style: italic;
   letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
-/* Lettered on the sheet in its teal, like the result panel's section titles (.section-title); the
-   filter's title too, floated so it sits inside its card instead of across the top edge. The teal is
-   a fifth of the way to the ink, so it keeps 4.5:1 over the lake through the thinner sheet. */
-.ward-stage .ward-panel h3,
-.ward-stage .ward-filter legend {
-  font-family: var(--font-ui);
+/* As the 3D lot's "2D view" chip (plan.css .plan-switch), a size down. */
+.ward-brief-back {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: 999px;
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
   font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--suplex-accent) 80%, var(--suplex-ink));
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.ward-stage .ward-filter legend {
-  float: left;
+.ward-brief-back:hover {
+  background: var(--suplex-highlight);
+  color: var(--palette-charcoal);
 }
 
-/* Lining figures, not tabular: Helvetica Now's tabular set widens , and . as well ("3 , 992"). */
-.ward-stage .ward-headline p:not(.ward-note):not(.sr-only),
-.ward-stage .ward-near p,
+/* The headline numbers, large in the landing title's deep teal, their words small around them; the red
+   crayon goes under each (NumberMarks.tsx). */
+.ward-stats {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.ward-stat,
+.ward-stat-shown {
+  display: grid;
+  gap: 2px;
+}
+
+.ward-stat-lead {
+  font-size: var(--text-sm);
+  color: var(--suplex-ink-muted);
+}
+
+.ward-stat-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ward-stat-value {
+  color: var(--palette-charcoal);
+  font-size: calc(var(--text-xl) + 10px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.ward-stat-caption {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.35;
+}
+
+.ward-stat-note {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--suplex-ink-muted);
+}
+
+/* Near your lot: still dashed like the circle on the map, on a solid fill like the result panel's flags,
+   its two numbers side by side. */
+.ward-near-box {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: 2px dashed var(--suplex-accent);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+}
+
+.ward-near-box .section-title {
+  margin: 0;
+}
+
+.ward-near-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.ward-near-stat {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  margin: 0;
+}
+
+.ward-near-stat .ward-stat-caption {
+  font-size: var(--text-xs);
+}
+
+/* Only as wide as its digits, so the crayon under it is too (a grid item would stretch to the column). */
+.ward-near-value {
+  justify-self: start;
+  color: var(--palette-charcoal);
+  font-size: var(--text-xl);
+  line-height: 1.1;
+}
+
+.ward-brief-reason {
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-sm);
+}
+
+.ward-brief .ward-trend {
+  display: grid;
+  margin-top: var(--space-6);
+}
+
+/* Folded away like the result panel's "What we don't check" (.not-checked), each on a ruled row. */
+.ward-more {
+  margin-top: var(--space-6);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--blueprint-rule);
+}
+
+.ward-more + .ward-more {
+  margin-top: var(--space-3);
+}
+
+.ward-more summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ward-more > p {
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+
+.ward-more .ward-counts,
+.ward-more .ward-dates {
+  margin-top: var(--space-2);
+}
+
+/* The not-checked counts and the data dates as a schedule on a drawing: a rule under each row. Lining
+   figures, not tabular: Helvetica Now's tabular set widens , and . as well ("1 , 709"). */
+.ward-stage .ward-counts,
+.ward-stage .ward-dates {
+  gap: 0;
+  border-top: 1px solid var(--blueprint-rule);
+}
+
+.ward-stage .ward-counts li,
+.ward-stage .ward-dates div {
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--blueprint-major);
+}
+
 .ward-stage .ward-counts li span:last-child,
 .ward-stage .ward-dates dd {
   font-variant-numeric: lining-nums;
 }
 
-/* The statistics' figures underlined in pencil crayon (NumberMarks.tsx): the palette's olive, over the
-   text and multiplied into it, so a comma's tail stays dark where the line crosses it. The SVG is a
+/* The trend chart's gridlines in the sheet's teal. Clipped top and bottom: the chart's screen-reader
+   table (TrendChart.tsx) is hidden with a 1 px height, which a table takes as a minimum, so its rows,
+   one a month, hung unseen some 1,200 px below the chart and the panel scrolled on to their end. The
+   bar's hover label stays inside, in the room the heading leaves above. */
+.ward-stage .ward-trend {
+  --suplex-line: var(--blueprint-rule);
+  overflow-y: clip;
+}
+
+/* The briefing as the result panel's "See your ward" (.button-primary), a link here. */
+.ward-brief-briefing {
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* The numbers underlined in pencil crayon (NumberMarks.tsx): a red pencil, the palette has no red, over
+   the text and multiplied into it, so a comma's tail stays dark where the line crosses it. The SVG is a
    point at the content's corner; the marks draw outside it, so it never adds to the scroll. */
 .ward-marks {
+  --ward-crayon: #c8372d;
   position: absolute;
   top: 0;
   left: 0;
@@ -132,7 +253,7 @@
 
 .ward-marks path {
   fill: none;
-  stroke: var(--palette-olive);
+  stroke: var(--ward-crayon);
   stroke-linecap: round;
   stroke-dasharray: 1 2;
   animation: ward-mark-draw 420ms ease-out both;
@@ -148,79 +269,110 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ward-marks path {
-    animation: none;
-  }
+/* ---------- The design picker (DesignPicker.tsx) ---------- */
+
+/* Its title lettered like the result panel's section titles (.section-title), and floated so it sits
+   inside the card instead of across the fieldset's top edge. */
+.ward-stage .ward-filter legend {
+  float: left;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--suplex-accent) 80%, var(--suplex-ink));
 }
 
-/* ---------- Boxes and buttons ---------- */
-
-/* "Upper bound" as the result panel's badges (.badge). */
-.ward-stage .ward-chip {
-  border: 1px solid var(--blueprint-rule);
-  border-radius: 999px;
-  background: var(--suplex-surface);
-  font-weight: 600;
+.ward-stage .design-picker {
+  gap: 2px;
+  padding: var(--space-3) var(--space-2) var(--space-2);
 }
 
-/* Still dashed like the circle on the map, now on a solid fill like the result panel's flags. */
-.ward-stage .ward-panel .ward-near {
+.ward-stage .design-picker legend {
+  padding: 0 var(--space-2);
+}
+
+/* A row is a label round a hidden radio button, so the whole row picks the design and the arrow keys
+   still move between them. */
+.design-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px var(--space-3) 2px var(--space-2);
   border-radius: var(--radius-sm);
-  background: var(--suplex-surface);
+  font-size: var(--text-sm);
+  cursor: pointer;
 }
 
-/* The not-checked counts and the data dates as a schedule on a drawing: a rule under each row. */
-.ward-stage .ward-counts,
-.ward-stage .ward-dates {
-  gap: 0;
-  border-top: 1px solid var(--blueprint-rule);
+.design-option input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.ward-stage .ward-counts li,
-.ward-stage .ward-dates div {
-  padding: var(--space-1) 0;
-  border-bottom: 1px solid var(--blueprint-major);
+.design-option:hover:not([data-disabled]) {
+  background: color-mix(in srgb, var(--suplex-highlight) 60%, transparent);
 }
 
-/* The trend chart's gridlines in the sheet's teal. Clipped top and bottom: the chart's screen-reader
-   table (TrendChart.tsx) is hidden with a 1 px height, which a table takes as a minimum, so its rows,
-   one a month, hung unseen some 1,200 px below the chart and the panel scrolled on past the data
-   dates to their end. The bar's hover label stays inside, in the room the heading leaves above. */
-.ward-stage .ward-trend {
-  --suplex-line: var(--blueprint-rule);
-  overflow-y: clip;
-}
-
-/* "Back to your lot" as the 3D lot's "2D view" chip (plan.css .plan-switch). */
-.ward-stage .ward-back {
-  border: 0;
-  border-radius: 999px;
+/* The chosen design: light on the accent, like the landing's chips. */
+.design-option:has(input:checked) {
   background: var(--suplex-accent);
   color: var(--suplex-accent-ink);
 }
 
-.ward-stage .ward-back:hover {
-  background: var(--suplex-highlight);
-  color: var(--palette-charcoal);
+.design-option:has(input:focus-visible) {
+  outline: 3px solid var(--suplex-accent);
+  outline-offset: 1px;
 }
 
-/* The briefing as the result panel's "See your ward" (.button-primary). */
-.ward-stage .ward-briefing {
-  justify-self: stretch;
-  padding: var(--space-3) var(--space-4);
-  border: 0;
-  font-size: var(--text-md);
-  text-align: center;
-  box-shadow: var(--shadow);
+.design-glyph {
+  flex: none;
+  display: block;
 }
 
-.ward-stage .ward-briefing:hover {
-  background: color-mix(in srgb, var(--suplex-accent) 85%, var(--suplex-ink));
+.design-glyph path {
+  fill: none;
+  stroke: var(--palette-charcoal);
+  stroke-width: 1;
+  stroke-linejoin: round;
 }
 
-/* The map's hover label with the sheet's teal edge, like the 3D scene's labels (.scene-label). */
+.design-option:has(input:checked) .design-glyph path {
+  stroke: var(--suplex-accent-ink);
+}
+
+/* A sixplex where the ward has no overlay: faded, and saying why. */
+.design-option[data-disabled] {
+  color: var(--suplex-ink-muted);
+  cursor: not-allowed;
+}
+
+.design-option[data-disabled] .design-glyph {
+  opacity: 0.45;
+}
+
+.design-option-note {
+  font-size: var(--text-xs);
+}
+
+/* ---------- The legend (WardLegend.tsx) and the map's hover label ---------- */
+
+.ward-stage .ward-legend {
+  width: auto;
+}
+
+/* With the sheet's teal edge, like the 3D scene's labels (.scene-label). */
 .ward-stage .ward-tooltip {
   outline: 1px solid var(--blueprint-edge);
   outline-offset: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ward-marks path {
+    animation: none;
+  }
 }

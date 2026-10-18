@@ -259,6 +259,21 @@ function rgbOf(hex: string): [number, number, number] {
 const ADDRESS_LAYER = /house.?number|address/i
 const ADDRESS_SOURCE_LAYER = /^(housenumber|address)/i
 
+/** Positron's layers and the palette tokens they take, as on the app's own map (BaseMap/mapStyle.ts). */
+const THEME_PAINT: [layer: string, property: 'background-color' | 'fill-color' | 'line-color', token: string][] = [
+  ['background', 'background-color', '--suplex-surface'],
+  ['landuse_residential', 'fill-color', '--suplex-surface'],
+  ['water', 'fill-color', '--palette-grey'],
+  ['waterway', 'line-color', '--palette-grey'],
+]
+
+/** The base map in the app's palette: its land and water. Parks then take the land's colour (neutraliseBase). */
+function themeBase(map: MapLibreMap): void {
+  for (const [layer, property, token] of THEME_PAINT) {
+    if (map.getLayer(layer)) map.setPaintProperty(layer, property, tokenHex(token))
+  }
+}
+
 /**
  * Hides every base-map layer that labels house numbers or addresses. The current OpenFreeMap
  * positron style has none, so this is a guard against a style update that adds them.
@@ -531,6 +546,7 @@ export function MultiplexMap({
     map.on('style.load', () => {
       window.clearTimeout(timer)
       styleReady.current = true
+      themeBase(map)
       neutraliseBase(map)
       hideAddressLabels(map)
       setStyleTick((t) => t + 1)

@@ -4,7 +4,12 @@
     "rules": [
       "\"Multiplex\" means a building with several homes. Never translate it as a word for a set number of homes, such as duplex or triplex."
     ],
-    "forbidden": ["duplex", "dúplex", "triplex", "tríplex"]
+    "forbidden": [
+      "duplex",
+      "dúplex",
+      "triplex",
+      "tríplex"
+    ]
   },
   "fr": {
     "reviewed": "Andrew, 2026-10-17",
@@ -13,9 +18,34 @@
       "A house lot is a \"terrain\" (\"terrains résidentiels\", \"ce terrain\"). Never use \"lot\" or \"lots\".",
       "\"Residential house zones\" are \"zones résidentielles\" (R, RD, RS, RT, RM). Never call them \"unifamiliales\": they allow multiplexes."
     ],
-    "forbidden": ["circonscription", "lot", "unifamilial", "unifamiliale"],
+    "forbidden": [
+      "circonscription",
+      "lot",
+      "unifamilial",
+      "unifamiliale"
+    ],
     "fixed": {
       "heading_blocking_rule": "Pourquoi les terrains ne conviennent pas"
     }
+  },
+  "fr:explain": {
+    "rules": [
+      "\"Too close to call\" is \"trop serré pour trancher\", as in the briefing.",
+      "\"Doesn't fit\" is \"ne convient pas\". Never \"ne rentre pas\".",
+      "An attached house is a semi or row house: \"une maison jumelée ou en rangée\". A detached house is \"une maison individuelle\". Never \"attachée\" or \"détachée\".",
+      "\"This is a screening, not a permit\" is always \"Il s'agit d'une vérification préliminaire, et non d'un permis.\" Never \"dépistage\".",
+      "\"The City's zoning examiner\" is \"l'examinateur du zonage de la Ville\". Never leave the English word \"zoning\".",
+      "\"Short by 0.15 m\" is \"il manque 0,15 m\". Never \"ce qui manque de\"."
+    ],
+    "forbidden": [
+      "rentre",
+      "attaché",
+      "attachée",
+      "détaché",
+      "détachée",
+      "zoning",
+      "dépistage",
+      "ce qui manque"
+    ]
   }
 }

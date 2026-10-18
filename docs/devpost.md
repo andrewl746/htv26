@@ -1,8 +1,8 @@
 # Devpost draft
 
-Status: full draft (S10), 2026-10-17. Paste each section into the matching Devpost field. Before submitting:
+Status: final (S10), 2026-10-18. Paste each section into the matching Devpost field. Before submitting:
 
-- Fill every `[LOCKED: …]` from `ward_summary.json` at the `headline-locked` tag (Hour 24). Never use fixture numbers.
+- Add the demo video link once it's recorded.
 
 **Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
 - Every other fact comes from [`/pitch/facts.md`](../pitch/facts.md); if a sentence isn't backed there, cut it.
@@ -13,7 +13,7 @@ Status: full draft (S10), 2026-10-17. Paste each section into the matching Devpo
 
 **Tagline:** *Before you build, before you vote.* (alternatives in `/pitch/hook.md`)
 
-**Links:** [github.com/andrewl746/htv26](https://github.com/andrewl746/htv26) · demo video `[link]` · example briefing `[LOCKED: public URL of /b/04]`
+**Links:** [github.com/andrewl746/htv26](https://github.com/andrewl746/htv26) · demo video `[link]` · example briefing: the `/b/04` screenshot in the gallery (the briefing runs on the team's laptop; there is no public host)
 
 ---
 
@@ -91,7 +91,7 @@ The "did" half of the headline is the permits the City has actually issued. We l
 
 ## What we learned
 
-`[Team: two or three honest sentences, written after the event.]`
+Most of the work was in the data, not the model: deriving streets from the gaps between parcels and matching the City's permit count took longer than the whole AI layer. Keeping an AI honest is mostly engineering around it: placeholders instead of digits, a validator, and a cache whose keys had to survive JavaScript writing 22.0 as 22. And "too close to call" turned out to be one of our most useful answers, because the City's lot lines aren't survey-accurate and saying so is more honest than a confident yes or no.
 
 ## Limitations
 

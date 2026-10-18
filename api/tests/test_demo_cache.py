@@ -91,6 +91,16 @@ def test_cached_responses_are_served_with_cors_and_gzip(tmp_path: Path, cache_di
         assert r.json()["type"] == "FeatureCollection"
 
 
+def test_a_cached_trend_says_it_came_from_the_cache(tmp_path: Path, cache_dir: Path) -> None:
+    """The trend was written while Tiger Data answered, but on stage it comes from a file: the briefing page and
+    the ward panel show their "Cached data" badge only when `source` is "cache" (Simone, 2026-10-18)."""
+    trend = json.loads((FIXTURES / "trend.04.json").read_text(encoding="utf-8")) | {"source": "tigerdata"}
+    (cache_dir / "trend.04.json").write_text(json.dumps(trend), encoding="utf-8")
+    with TestClient(create_app(settings=settings(tmp_path / "renamed-away", cache_dir))) as c:
+        body = c.get("/ward/04/trend").json()
+    assert body == trend | {"source": "cache"}
+
+
 def test_a_cache_miss_goes_to_the_live_route(tmp_path: Path, cache_dir: Path) -> None:
     store = SimpleNamespace(search=lambda q, limit: [{"live": q}])
     with TestClient(create_app(store=store, settings=settings(tmp_path, cache_dir))) as c:

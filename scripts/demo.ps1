@@ -16,6 +16,7 @@ Run it from anywhere; it works from the repo root. Ctrl+C stops all three.
               GeoPackage it starts cache-only.
   AI service  uvicorn ai.main:app on 127.0.0.1:8001 (GEMINI_API_KEY from .env; without it, cached and plain
               template text only).
+              Both run with --no-access-log, so the logs below never hold a request line or a typed address.
   Web         npm run build with VITE_API_BASE=/api (without it the app serves the fixtures), then vite preview
               on 127.0.0.1:4173, which proxies /api to :8000 and /ai to :8001 (web/vite.config.ts).
 
@@ -127,9 +128,9 @@ try {
     New-Item -ItemType Directory -Force $LogDir | Out-Null
     $services = @(
         @{ Name = "API"; File = $Python; Dir = $Root; Log = "api";
-           Args = @("-m", "uvicorn", "api.main:app", "--host", "127.0.0.1", "--port", "8000") },
+           Args = @("-m", "uvicorn", "api.main:app", "--host", "127.0.0.1", "--port", "8000", "--no-access-log") },
         @{ Name = "AI service"; File = $Python; Dir = $Root; Log = "ai";
-           Args = @("-m", "uvicorn", "ai.main:app", "--host", "127.0.0.1", "--port", "8001") },
+           Args = @("-m", "uvicorn", "ai.main:app", "--host", "127.0.0.1", "--port", "8001", "--no-access-log") },
         @{ Name = "Web"; File = "node"; Dir = $web; Log = "web";
            Args = @("node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort") }
     )

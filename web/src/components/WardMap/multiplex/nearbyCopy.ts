@@ -38,7 +38,7 @@ export const mxNearCopy = {
   show_all: 'Show all {{n}}',
   capped_note: 'Showing the nearest {{n}} of {{total}}.',
 
-  caveat: 'A permit is not a finished building. Unit counts are gross.',
+  caveat: 'A permit is not a finished building. Unit counts are gross. Each dot sits at the middle of its block, so a permit near the edge of the circle may fall either side of it.',
   fetched: 'Data fetched {{date}}',
 
   loading: 'Loading permitted multiplexes',

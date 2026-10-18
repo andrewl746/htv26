@@ -30,15 +30,16 @@ import './multiplex.css'
 
 // The permitted-multiplexes map: ward shading by count under the current filters, and the permits
 // as clustered dots. A cleared permit is a solid dot, an active one a ring with a surface-coloured centre, so
-// the two never differ by colour alone. Dots are placed near the permit's street, never at an address.
+// the two never differ by colour alone. Each dot sits at the middle of its permit's block, never at an address
+// (pipeline/multiplexes.py block_points).
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron'
 /** The hosted style can hang when Wi-Fi is dead; after this the map falls back to a plain ground. */
 const STYLE_TIMEOUT_MS = 3500
 const MIN_ZOOM = 10
 /**
- * Privacy cap. Points are only about 1 m precise, so a closer view would let a reader work out
- * which house a dot sits beside. Every zoom (map, fitBounds, cluster expansion) stops here.
+ * Privacy cap. Each dot already stands for a block of at least ten addresses (pipeline/multiplexes.py),
+ * and the map stays at street scale on top of that. Every zoom (map, fitBounds, cluster expansion) stops here.
  */
 const MAX_ZOOM = 16
 const TORONTO: [number, number] = [-79.38, 43.7]

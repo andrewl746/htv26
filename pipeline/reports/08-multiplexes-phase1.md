@@ -23,6 +23,15 @@ Per permit: `id`, `street` ("Dundas St W", no number), `ward`, `units` (gross), 
 `work` (new_build or conversion), `status` (active or cleared), `issued`. Top level: fetch dates, rule, stats, caveats.
 No permit numbers, house numbers or postal codes (checked by a separate reviewer: zero hits).
 
+**Locations (Andrew's review, 2026-10-17 23:50).** The first snapshot stored each permit at its geocoded address point to
+5 decimals (about 1 m), so at the zoom-16 cap a dot marked the house. Each permit now sits at the middle of its block: the
+mean of the City's address points on the street segment (`CENTRELINE_ID`) its own address point is on. A segment with fewer
+than 10 addresses falls back to the centre of the finest grid cell (0.001, 0.002, 0.005, then 0.01 degrees) holding at least
+10, so every dot stands for at least 10 addresses. Permits that share a point are spread in a 15 m ring round it (EPSG:2952).
+On the locked data (fetched 2026-10-18 01:56 UTC, 1,556 permits): 1,380 at the middle of their block, 110, 60, 5 and 1 on the
+four grids, 188 shared points spread; the median dot is 41 m from the house. Counts near an address can move by a permit at
+the edge of the circle. `python pipeline/multiplexes.py --snapshot` reads `data/raw/address-points-4326.gpkg` for this.
+
 | | Count |
 |---|---|
 | Multiplex permits (2 to 6 units, since 2022-01-01) | 1,592 |

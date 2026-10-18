@@ -18,7 +18,7 @@ export const mxCopy = {
   fetched: 'Data fetched {{date}}',
 
   aria: {
-    map: 'Map of permitted multiplexes by ward. Each dot is placed near the permit’s street; house numbers are not shown.',
+    map: 'Map of permitted multiplexes by ward. Each dot sits at the middle of the permit’s block, never at the house; house numbers are not shown.',
     filters: 'Filter permitted multiplexes',
     popup: 'Details for one permitted multiplex',
   },
@@ -91,7 +91,7 @@ export const mxCopy = {
       'A permit is not a finished building: it shows what the City permitted, not what stands today.',
       'Unit counts are gross: units lost to demolition are not subtracted.',
       'Some permits could not be located on the map and are left out.',
-      'Each dot is placed near the permit’s street; house numbers are not shown.',
+      'Each dot sits at the middle of the permit’s block, never at the house; house numbers are not shown.',
       'Data: City of Toronto Open Data, active and cleared building permits.',
     ],
   },

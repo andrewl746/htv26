@@ -123,13 +123,16 @@
 
   // --- header and toolbar ---------------------------------------------------------------------
   const latestData = Object.values(briefing.data_dates || {}).sort().pop();
-  const header = el("header", {},
+  // The dates sit in a title block under the title, like a drawing's.
+  const cell = (term, value) => el("div", {}, el("dt", { text: term }), el("dd", {}, value));
+  const header = el("header", { class: "sheet-head" },
     el("p", { class: "brand", text: "Suplex" }),
     el("h1", { text: briefing.title }),
-    el("p", { class: "meta" },
-      el("span", { text: `${P.generated} ${formatDate(briefing.generated_at, { dateStyle: "long" })}` }),
-      latestData ? el("span", { text: `${P.data_as_of} ${formatDate(`${latestData}T12:00:00`, { dateStyle: "long" })}` }) : null,
-      el("span", { class: "badge", text: briefing.source === "gemini" ? UI.source_gemini : UI.source_template }),
+    el("dl", { class: "title-block" },
+      cell(P.generated, formatDate(briefing.generated_at, { dateStyle: "long" })),
+      latestData ? cell(P.data_as_of, formatDate(`${latestData}T12:00:00`, { dateStyle: "long" })) : null,
+      el("div", { class: "title-block-source" },
+        el("span", { class: "badge", text: briefing.source === "gemini" ? UI.source_gemini : UI.source_template })),
     ),
   );
 
@@ -186,11 +189,16 @@
   );
 
   // --- sections -------------------------------------------------------------------------------
-  const sections = briefing.sections.map((section) => {
-    const body = section.id === "questions"
+  // Each written section is a note on the sheet, numbered like a drawing's callouts; the questions
+  // run the full width under them.
+  const sections = briefing.sections.map((section, i) => {
+    const questions = section.id === "questions";
+    const body = questions
       ? el("ol", {}, ...briefing.questions.map((q) => el("li", { text: q })))
       : el("p", {}, richText(section.template_text));
-    return el("section", { class: "card", id: section.id }, el("h2", { text: section.heading }), body);
+    return el("section", { class: questions ? "note note-wide" : "note", id: section.id },
+      el("h2", {}, el("span", { class: "callout", "aria-hidden": "true", text: String(i + 1) }), section.heading),
+      body);
   });
 
   // --- trend chart: one series, so no legend; the heading names it (dataviz marks spec) --------
@@ -265,8 +273,8 @@
       el("tbody", {}, ...series.map((p) => el("tr", {},
         el("td", { text: monthName(p.month) }), el("td", { text: numberFormat.format(p.permits) })))),
     );
-    return el("section", { class: "card", id: "trend" },
-      el("h2", { text: P.trend_heading }),
+    return el("section", { class: "block", id: "trend" },
+      el("h2", { class: "section-title", text: P.trend_heading }),
       wrap,
       el("p", { class: "caption" }, UI.trend_caption, " ",
          trend.source === "cache" ? el("span", { class: "badge", text: P.trend_source_cache }) : null),
@@ -275,8 +283,8 @@
   }
 
   // --- sources and methodology ----------------------------------------------------------------
-  const sources = el("section", { class: "card sources", id: "sources" },
-    el("h2", { text: P.sources_heading }),
+  const sources = el("section", { class: "block sources", id: "sources" },
+    el("h2", { class: "section-title", text: P.sources_heading }),
     el("ol", {}, ...[...footnotes.keys()].map((key) => {
       const entry = briefing.numbers[key];
       return el("li", {}, `${entry.label}: `, el("a", { href: entry.source_url, text: entry.source_url }));
@@ -286,8 +294,8 @@
   const fill = (text) => text
     .replace("{band_m}", numberFormat.format(config.uncertainty_band_m))
     .replace("{band_pp}", numberFormat.format(config.uncertainty_band_coverage_pp));
-  const methodology = el("footer", { class: "card methodology", id: "methodology" },
-    el("h2", { text: P.methodology_heading }),
+  const methodology = el("footer", { class: "block methodology", id: "methodology" },
+    el("h2", { class: "section-title", text: P.methodology_heading }),
     ...P.methodology.map((text) => el("p", { text: fill(text) })),
     el("h3", { text: P.not_checked_heading }),
     el("ul", {}, ...notChecked.map((item) => el("li", { text: item[`label_${textLang}`] || item.label }))),
@@ -296,11 +304,16 @@
   );
 
   const hasTrend = data.trend && data.trend.series && data.trend.series.length > 0;
+  // A teal rule between each two groups, running from one inner rule of the sheet to the other.
+  const rule = () => el("hr", { class: "sheet-rule" });
   page.replaceChildren(...[
-    header, ...notices, toolbar, ...sections,
-    hasTrend ? trendChart(data.trend) : null,
+    header, ...notices, toolbar, rule(),
+    el("div", { class: "notes" }, ...sections),
     el("p", { class: "disclaimer", text: briefing.disclaimer }),
-    sources, methodology,
+    hasTrend ? rule() : null,
+    hasTrend ? trendChart(data.trend) : null,
+    rule(), sources, rule(), methodology,
   ].filter(Boolean));
+  window.suplexBlueprint?.(page);
   if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 })();

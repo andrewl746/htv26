@@ -1,4 +1,5 @@
-/* The shareable ward briefing (MASTERSPEC 7.7). Colours and type come from /static/design-tokens.css. */
+/* The shareable ward briefing (MASTERSPEC 7.7). Colours come from /static/design-tokens.css; the sheet,
+   the lettering and the type follow the web's result panel (web/src/styles/app.css, typography.css). */
 
 :root {
   color-scheme: light;
@@ -8,24 +9,63 @@
      whichever palette lands in design-tokens.css. Candidate for a shared token. */
   --trend-bar: #A27100;
   --trend-bar-hover: #7A5500;
+  /* The web's type: the licensed Helvetica Now loads only where it is installed, else Helvetica or Arial. */
+  --font-ui: "Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-ui);
+  /* The landing title's deep teal (web palette.css --palette-charcoal). */
+  --deep-teal: #174549;
+  /* The sheet's teal lines, laddered like the web's: the fine grid faintest, the rules strongest. */
+  --bp-minor: color-mix(in srgb, var(--suplex-accent) 10%, transparent);
+  --bp-major: color-mix(in srgb, var(--suplex-accent) 20%, transparent);
+  --bp-rule: color-mix(in srgb, var(--suplex-accent) 45%, transparent);
+  --bp-soft: color-mix(in srgb, var(--suplex-accent) 25%, transparent);
+  /* The ruled area's inset (blueprint.js INNER) plus the room inside it. */
+  --sheet-gap: var(--space-8);
+  --sheet-pad: calc(20px + var(--sheet-gap));
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--suplex-paper);
+  background-color: var(--suplex-paper);
+  /* Faint graph paper round the sheet, like the web's top bar. */
+  background-image:
+    linear-gradient(to right, var(--bp-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--bp-major) 1px, transparent 1px);
+  background-size: 32px 32px;
   color: var(--suplex-ink);
-  font: var(--text-md)/1.55 var(--font-ui);
+  font: 500 var(--text-md)/1.55 var(--font-ui);
+  font-variant-numeric: lining-nums;
 }
 
+/* The sheet: the whole briefing on one drafting sheet, its drawing behind the text (blueprint.js). */
 .page {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-8);
+  position: relative;
+  isolation: isolate;
+  max-width: 880px;
+  margin: var(--space-8) auto;
+  padding: var(--sheet-pad);
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
 }
+.bp {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.bp svg { display: block; }
+.bp-minor { stroke: var(--bp-minor); }
+.bp-major { stroke: var(--bp-major); }
+.bp-rule { stroke: var(--bp-rule); }
+.bp-mark { stroke: color-mix(in srgb, var(--suplex-accent) 35%, transparent); }
+.bp-numeral { fill: color-mix(in srgb, var(--suplex-accent) 65%, transparent); font: 9px var(--font-ui); }
 
-.status { color: var(--suplex-ink-muted); }
+.status { margin: 0; color: var(--suplex-ink-muted); }
 
 a { color: var(--suplex-accent); }
 a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible {
@@ -33,33 +73,52 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
   outline-offset: 2px;
 }
 
-/* Header */
-.brand {
-  margin: 0 0 var(--space-2);
-  font: 600 var(--text-sm)/1.2 var(--font-display);
-  letter-spacing: 0.04em;
+/* Lettered on the sheet in its teal, like a drawing's notes (the web's .section-title). */
+.brand, .section-title, .note h2, .title-block dt, .toolbar label, .methodology h3 {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
   text-transform: uppercase;
-  color: var(--suplex-ink-muted);
+  color: var(--suplex-accent);
 }
+
+/* Header: the name, the title slanted like the result panel's address, then a title block. */
+.brand { margin: 0 0 var(--space-2); }
 h1 {
-  margin: 0 0 var(--space-3);
-  font: 600 var(--text-xl)/1.2 var(--font-display);
+  margin: 0 0 var(--space-6);
+  max-width: 26ch;
+  font: italic 500 var(--text-xl)/1.15 var(--font-display);
+  letter-spacing: -0.01em;
+  color: var(--deep-teal);
 }
-.meta {
+.title-block {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-  margin: 0 0 var(--space-4);
-  color: var(--suplex-ink-muted);
+  margin: 0 0 var(--space-6);
+  border: 1px solid var(--bp-rule);
+  border-radius: 2px;
+  background: var(--suplex-surface);
   font-size: var(--text-sm);
 }
+.title-block > div {
+  flex: 1 1 160px;
+  padding: var(--space-2) var(--space-3);
+  border-right: 1px solid var(--bp-rule);
+}
+.title-block > div:last-child { border-right: 0; }
+.title-block dt { font-size: 11px; line-height: 1.4; }
+.title-block dd { margin: 0; }
+.title-block-source { display: flex; align-items: center; }
+
 .badge {
   display: inline-block;
   padding: 2px var(--space-2);
-  border: 1px solid var(--suplex-line);
+  border: 1px solid var(--bp-rule);
   border-radius: 999px;
   background: var(--suplex-surface);
   font-size: var(--text-xs);
+  line-height: 1.4;
   color: var(--suplex-ink-muted);
   white-space: nowrap;
 }
@@ -67,117 +126,173 @@ h1 {
 .notice {
   margin: 0 0 var(--space-4);
   padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--bp-rule);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--suplex-line);
   background: var(--suplex-surface);
   font-size: var(--text-sm);
 }
-.notice.sample { border-color: var(--suplex-permit-outline); background: #FFF6DC; }
+.notice.sample { border-left: 4px solid var(--suplex-permit-outline); }
 
 /* Toolbar */
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-  margin: 0 0 var(--space-6);
+  align-items: flex-end;
+  gap: var(--space-3);
 }
-.toolbar label { font-size: var(--text-sm); color: var(--suplex-ink-muted); }
 .lang-picker { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
 .lang-row { display: flex; align-items: center; gap: var(--space-2); }
 .badge.review.reviewed { border-color: var(--suplex-fit); color: var(--suplex-ink); }
 select, button {
   font: inherit;
   font-size: var(--text-sm);
-  min-height: 36px;
+  min-height: 38px;
   padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--suplex-line);
+  border: 1px solid var(--suplex-line-strong);
   border-radius: var(--radius-sm);
   background: var(--suplex-surface);
   color: var(--suplex-ink);
 }
 button { cursor: pointer; }
-button.primary { background: var(--suplex-accent); border-color: var(--suplex-accent); color: var(--suplex-accent-ink); }
-.toolbar a { font-size: var(--text-sm); }
-
-/* Sections */
-.card {
-  margin: 0 0 var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius);
-  background: var(--suplex-surface);
+button:hover { background: var(--suplex-highlight); }
+button.primary {
+  border-color: var(--suplex-accent);
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
+  font-weight: 600;
   box-shadow: var(--shadow);
 }
-.card h2 {
-  margin: 0 0 var(--space-2);
-  font: 600 var(--text-lg)/1.3 var(--font-display);
+button.primary:hover { background: color-mix(in srgb, var(--suplex-accent) 85%, var(--suplex-ink)); }
+.toolbar a { align-self: center; font-size: var(--text-sm); }
+
+/* A rule between groups, from one inner rule of the sheet to the other (the web's .section-rule). */
+.sheet-rule {
+  margin: var(--space-8) calc(-1 * var(--sheet-gap));
+  border: 0;
+  border-top: 1px solid var(--bp-rule);
 }
-.card p { margin: 0; }
-.card ol { margin: 0; padding-left: 1.4em; }
-.card li + li { margin-top: var(--space-2); }
+
+/* The written sections: notes on the sheet, two to a row, ruled like the result panel's checklist
+   cards (the heading, a thin line, then the text). */
+.notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.note {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--bp-rule);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+}
+.note-wide { grid-column: 1 / -1; }
+.note h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--bp-soft);
+}
+/* The callout number, circled like a drawing's detail marker. */
+.callout {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--suplex-accent);
+  border-radius: 50%;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.note p { margin: 0; }
+.note ol { margin: 0; padding-left: 1.4em; }
+.note li + li { margin-top: var(--space-2); }
+.note li::marker { color: var(--suplex-accent); font-weight: 700; }
 
 a.num {
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--deep-teal);
+  text-decoration-color: var(--bp-rule);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   white-space: nowrap;
 }
+a.num:hover { text-decoration-color: currentColor; }
 
 .disclaimer {
-  margin: var(--space-6) 0;
+  margin: var(--space-6) 0 0;
   padding: var(--space-3) var(--space-4);
-  border-left: 4px solid var(--suplex-ink);
+  border: 1px solid var(--bp-rule);
+  border-left: 4px solid var(--deep-teal);
+  border-radius: 2px;
   background: var(--suplex-surface);
   font-weight: 600;
 }
 
+.section-title { margin: 0 0 var(--space-4); }
+
 /* Trend chart */
 .chart { position: relative; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-.chart .grid { stroke: var(--suplex-line); stroke-width: 1; }
+.chart .grid { stroke: var(--bp-soft); stroke-width: 1; }
 .chart .axis-text { fill: var(--suplex-ink-muted); font: 11px var(--font-ui); font-variant-numeric: tabular-nums; }
 .chart .bar { fill: var(--trend-bar); }
 .chart .bar.active { fill: var(--trend-bar-hover); }
-.chart .marker { stroke: var(--suplex-ink-muted); stroke-width: 1; stroke-dasharray: 3 3; }
-.chart .marker-text { fill: var(--suplex-ink); font: 11px var(--font-ui); }
+.chart .marker { stroke: var(--suplex-accent); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .marker-text { fill: var(--suplex-accent); font: 700 11px var(--font-ui); }
 .chart .hit { fill: transparent; }
 .tooltip {
   position: absolute;
   pointer-events: none;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
-  background: var(--suplex-ink);
-  color: var(--suplex-surface);
+  background: var(--deep-teal);
+  color: var(--suplex-accent-ink);
   font-size: var(--text-xs);
   white-space: nowrap;
   transform: translate(-50%, calc(-100% - 8px));
 }
-.caption { margin: var(--space-2) 0 0; color: var(--suplex-ink-muted); font-size: var(--text-sm); }
+.caption { margin: var(--space-3) 0 0; color: var(--suplex-ink-muted); font-size: var(--text-sm); }
 details { margin-top: var(--space-3); font-size: var(--text-sm); }
+summary { cursor: pointer; color: var(--suplex-accent); }
 details table { border-collapse: collapse; margin-top: var(--space-2); font-variant-numeric: tabular-nums; }
-details th, details td { padding: 2px var(--space-3) 2px 0; text-align: left; border-bottom: 1px solid var(--suplex-line); }
+details th, details td { padding: 2px var(--space-3) 2px 0; text-align: left; border-bottom: 1px solid var(--bp-soft); }
 details td:last-child, details th:last-child { text-align: right; }
 
 /* Sources and methodology */
 .sources, .methodology { font-size: var(--text-sm); }
-.sources ol { padding-left: 1.6em; }
+.sources ol { margin: 0; padding-left: 1.6em; }
 .sources li { overflow-wrap: anywhere; }
+.sources li + li { margin-top: var(--space-1); }
+.methodology p { margin: 0; }
 .methodology p + p { margin-top: var(--space-2); }
-.methodology h3 { margin: var(--space-4) 0 var(--space-1); font-size: var(--text-md); }
+.methodology h3 { margin: var(--space-6) 0 var(--space-2); font-size: 11px; }
 .methodology ul { margin: 0; padding-left: 1.2em; }
 
-@media (max-width: 520px) {
-  .card { padding: var(--space-4); }
+@media (max-width: 720px) {
+  :root { --sheet-gap: var(--space-4); }
+  .page { margin: var(--space-4) var(--space-2); }
+  .notes { grid-template-columns: minmax(0, 1fr); }
   h1 { font-size: var(--text-lg); }
 }
 
-/* Print: one column, no controls, black text, each number's source as a numbered footnote. */
+/* Print: one column, no controls, no drawing, black text, each number's source as a numbered footnote. */
 @media print {
   body { background: #fff; color: #000; font-size: 11pt; }
-  .page { max-width: none; padding: 0; }
-  .toolbar, .tooltip, details, .no-print { display: none !important; }
-  .card { box-shadow: none; padding: 0; margin: 0 0 12pt; break-inside: avoid; }
-  a, a.num { color: #000; text-decoration: none; }
+  .page { max-width: none; margin: 0; padding: 0; box-shadow: none; background: #fff; }
+  .bp, .toolbar, .tooltip, details, .no-print { display: none !important; }
+  .notes { display: block; }
+  .note { padding: 0; margin: 0 0 12pt; border: 0; break-inside: avoid; }
+  .note h2 { border-color: #999; }
+  .callout { border-color: #000; }
+  .sheet-rule { margin: 12pt 0; border-color: #999; }
+  h1, .brand, .section-title, .note h2, .title-block dt, .methodology h3, a, a.num { color: #000; }
+  a, a.num { text-decoration: none; }
   a.num::after {
     content: "[" attr(data-fn) "]";
     font-size: 0.7em;
@@ -185,5 +300,5 @@ details td:last-child, details th:last-child { text-align: right; }
     font-weight: 400;
   }
   .chart .bar { fill: #555; }
-  .badge, .notice { border-color: #999; background: #fff; }
+  .badge, .notice, .title-block, .title-block > div, .disclaimer { border-color: #999; background: #fff; }
 }

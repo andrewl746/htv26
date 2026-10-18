@@ -299,3 +299,15 @@
     background-position: -100% 0;
   }
 }
+
+/* "Near your lot" (Y15): a dashed edge, the same as the dashed circle on the map, so it is never colour alone. */
+.ward-panel .ward-near {
+  padding: var(--space-3) var(--space-4);
+  border: 2px dashed var(--suplex-accent);
+  border-radius: var(--radius);
+}
+
+.ward-near p {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}

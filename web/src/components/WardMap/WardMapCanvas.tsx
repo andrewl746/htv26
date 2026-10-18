@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Feature, Polygon } from 'geojson'
 import { Map as MapLibreMap, type MapGeoJSONFeature, type MapMouseEvent } from 'maplibre-gl'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { PANEL_WIDTH_PX } from '../../layout'
-import { applyData, applyDesign, applySearched, addLayers, blankStyle, neutraliseBase } from './layers'
+import { applyData, applyDesign, applyNearRing, applySearched, addLayers, blankStyle, neutraliseBase } from './layers'
 import type { DesignFilter } from './designs'
 import type { LotProps, WardData } from './data'
 import { tooltipText } from './tooltip'
@@ -32,9 +33,11 @@ interface Props {
   searchedLotId: string | null
   onSelectLot: (lotId: string) => void
   ariaLabel: string
+  /** The "Near your lot" circle, or null when the map opened without a check. */
+  nearRing?: Feature<Polygon> | null
 }
 
-export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLabel }: Props) {
+export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLabel, nearRing = null }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const [ready, setReady] = useState(false)
@@ -42,9 +45,9 @@ export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLa
   const reduced = useReducedMotion()
 
   // The map's event handlers are made once; they read the latest props from here.
-  const live = useRef({ data, filter, searchedLotId, onSelectLot })
+  const live = useRef({ data, filter, searchedLotId, onSelectLot, nearRing })
   useEffect(() => {
-    live.current = { data, filter, searchedLotId, onSelectLot }
+    live.current = { data, filter, searchedLotId, onSelectLot, nearRing }
   })
 
   useEffect(() => {
@@ -76,9 +79,10 @@ export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLa
     // Also runs after the fallback style replaces the hosted one.
     map.on('style.load', () => {
       window.clearTimeout(timer)
-      const { data: d, filter: f, searchedLotId: s } = live.current
+      const { data: d, filter: f, searchedLotId: s, nearRing: ring } = live.current
       neutraliseBase(map)
       addLayers(map, d, f, s)
+      applyNearRing(map, ring)
       map.fitBounds(d.bounds, { padding: { top: FIT_PADDING_PX, left: FIT_PADDING_PX, bottom: FIT_PADDING_PX, right: PANEL_WIDTH_PX + FIT_PADDING_PX }, duration: 0 })
       setReady(true)
     })
@@ -127,6 +131,11 @@ export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLa
     const map = mapRef.current
     if (map && ready) applySearched(map, searchedLotId)
   }, [searchedLotId, ready])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (map && ready) applyNearRing(map, nearRing)
+  }, [nearRing, ready])
 
   // The searched lot's white outline pulses gently (a 2 s cycle); with reduced motion it holds still.
   useEffect(() => {

@@ -10,11 +10,22 @@ const NOT_CHECKED_CLASSES: LotClass[] = ['condo', 'non_residential', 'older_byla
 
 const whole = (n: number) => formatNumber(n, true)
 
+/** What "Near your lot" shows: counts only, never a list. */
+export interface NearYourLot {
+  radiusM: number
+  /** This ward's lots where a design may fit within the radius (an upper bound). */
+  couldCount: number
+  /** The engine's own permit count within the radius (`permits_nearby.count`), never recounted. */
+  didCount: number
+}
+
 interface Props {
   ward: WardResponse
   lang: Lang
   /** Permits per month for Simone's TrendChart; the chart is left out when this is null or empty. */
   trend?: TrendResponse | null
+  /** The "Near your lot" box under the headline; left out when null (the map opened without a check). */
+  near?: NearYourLot | null
   onBack?: () => void
 }
 
@@ -23,7 +34,7 @@ interface Props {
  * the most common reason lots don't fit, the attached share, the review flags, what is not
  * checked, the data dates and the way to the ward briefing. No ranking language anywhere.
  */
-export function WardPanel({ ward, lang, trend = null, onBack }: Props) {
+export function WardPanel({ ward, lang, trend = null, near = null, onBack }: Props) {
   const { headline, flags, classes } = ward
   const could = useCountUp(headline.could)
   const did = useCountUp(headline.did)
@@ -64,6 +75,14 @@ export function WardPanel({ ward, lang, trend = null, onBack }: Props) {
         </p>
         <p className="ward-note">{disclaimers.permits_label}</p>
       </section>
+
+      {near && (
+        <section className="ward-near" aria-labelledby="ward-near-heading">
+          <h3 id="ward-near-heading">{fill(wardCopy.near_heading, { radius_m: whole(near.radiusM) })}</h3>
+          <p>{fill(near.couldCount === 1 ? wardCopy.near_could_one : wardCopy.near_could, { count: whole(near.couldCount) })}</p>
+          <p>{fill(near.didCount === 1 ? wardCopy.near_did_one : wardCopy.near_did, { count: whole(near.didCount) })}</p>
+        </section>
+      )}
 
       <section>
         {topRule && <p>{fill(labels.ward_panel.blocking_rule, { rule_plain: reasons.rules_plain[topRule] })}</p>}

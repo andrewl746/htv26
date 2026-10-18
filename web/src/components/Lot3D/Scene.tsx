@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, Stats } from '@react-three/drei'
-import { ACESFilmicToneMapping, NeutralToneMapping } from 'three'
+import { ACESFilmicToneMapping, Color, NeutralToneMapping } from 'three'
 import type { CheckResponse, DesignId } from '@contracts/types'
 import engineConfig from '@contracts/engine_config.json'
 import { designById } from '../../designs'
@@ -31,11 +31,12 @@ import { Pin } from './Pin'
 import { QualityMonitor } from './QualityMonitor'
 import { SceneLabels } from './SceneLabels'
 import { SettleWatch, ShadowFreeze } from './Settle'
-import { Sky } from './Sky'
+import { Sky, type SkyLook } from './Sky'
 import { Sequence } from './Sequence'
 import { Street } from './Street'
 import { extendStreet } from './streetExtension'
 import { streetFrame } from './streetFrame'
+import { sunPosition } from './sun'
 import { Studio } from './Studio'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
@@ -51,8 +52,19 @@ const FOG_NEAR_M = 90
 const FOG_FAR_M = 320
 /** The drawn look sees further down the street, which it continues past the data (streetExtension.ts). */
 const DRAWN_FOG = { near: 150, far: 540 }
-/** The drawn look's daytime sky: haze at the horizon (also the fog) and blue overhead. */
-const SKY = { horizon: '#dfe7ec', zenith: '#8fb6dc' }
+/**
+ * The drawn look's sunny sky (Sky.tsx), in linear light. ACES turns pale blues grey, so these run
+ * past 1 to show, after the tone mapping and the grade, as a light haze at the horizon (#d6e0e9;
+ * also the fog, so the far ground fades into it), clear blue a few degrees up (#96c0ec) and deeper
+ * blue overhead (#689ee2); the sun, where the shadow light comes from, adds a warm white glow (more
+ * yellow than orange: added to a strong blue, orange light shows lilac after the tone mapping).
+ */
+const SKY: SkyLook = {
+  horizon: new Color().setRGB(0.489, 0.798, 1.551),
+  blue: new Color().setRGB(0.096, 0.426, 1.903),
+  zenith: new Color().setRGB(0.064, 0.267, 1.137),
+  sun: { direction: sunPosition(), disc: new Color().setRGB(1, 0.92, 0.78), glow: new Color().setRGB(1.1, 1, 0.45) },
+}
 /** Dev elevation view: how far in front of the design the camera stands. */
 const ELEVATION_DISTANCE_M = 70
 /**
@@ -206,7 +218,7 @@ export function Scene({
           {ELEVATION_VIEW ? (
             <color attach="background" args={['white']} />
           ) : (
-            <Sky horizon={drawn ? SKY.horizon : tokenHex('--suplex-sky-bottom')} zenith={drawn ? SKY.zenith : null} />
+<Sky backdrop={tokenHex('--suplex-sky-bottom')} look={drawn && !OFF.has('glow') ? SKY : null} />
           )}
           <Camera
             lotKey={lotKey}
@@ -219,7 +231,9 @@ export function Scene({
           {drawn && <SettleWatch onChange={setSettled} />}
           {/* At low quality the shadows are off, so their map need not be redrawn either. */}
           {drawn && <ShadowFreeze frozen={(settled && check !== null) || !rich} />}
-          {drawn && check && <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={stepQuality} />}
+          {drawn && check && !OFF.has('monitor') && (
+            <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={stepQuality} />
+          )}
           {drawn ? <Studio shadows={rich} /> : <Lighting />}
 
           <Ground radius={groundRadius * GROUND_SCALE} drawn={drawn} />

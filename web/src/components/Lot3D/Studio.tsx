@@ -12,10 +12,11 @@ import { sunPosition } from './sun'
 const ENV_RESOLUTION = 256
 const ENV_INTENSITY = 0.6
 /** The sun carries the shadows; the environment fills them without washing them out. */
-const SUN_INTENSITY = 3.4
+const SUN_INTENSITY = OFF.has('warm') ? 3.4 : 3.8
 const SHADOW = { mapSize: 2048, radius: 5, halfExtentM: 70, bias: -0.0004, normalBias: 0.04 }
 const HEMI_INTENSITY = 0.25
-const SUN_WHITE_MIX = 0.45
+/** Late afternoon: the sun token's warmth mostly kept (the classic look mixes half of it away). */
+const SUN_WHITE_MIX = OFF.has('warm') ? 0.45 : 0.25
 
 export function Studio({ shadows }: { shadows: boolean }) {
   const sun = new Color(tokenHex('--suplex-sun')).lerp(new Color('white'), SUN_WHITE_MIX)

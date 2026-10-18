@@ -39,7 +39,9 @@ export function Studio({ shadows }: { shadows: boolean }) {
         position={[x, y, z]}
         color={sun}
         intensity={SUN_INTENSITY}
-        castShadow={shadows}
+        // The light always casts, so turning shadows off never changes (and recompiles) a shader.
+        castShadow
+        shadow-intensity={shadows ? 1 : 0}
         shadow-mapSize={[SHADOW.mapSize, SHADOW.mapSize]}
         shadow-radius={SHADOW.radius}
         shadow-bias={SHADOW.bias}

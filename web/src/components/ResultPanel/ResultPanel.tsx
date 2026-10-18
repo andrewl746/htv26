@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { disclaimers, labels } from '../../copy'
 import { useApp } from '../../state/store'
 import { Checklist } from './Checklist'
@@ -14,14 +15,16 @@ import { PANEL_ID, tabId } from './tabs'
  * The address check panel (MASTERSPEC 6.4). The tab panel holds what changes with the design (the
  * checklist and the explanation of the same numbers); the lot's flags, the permits near it, what
  * we don't check and the next steps follow. "See your ward" stays at the bottom while it scrolls.
+ * The plan view shows the same panel with its legend in `extra`.
  */
-export function ResultPanel() {
+export function ResultPanel({ extra }: { extra?: ReactNode }) {
   const check = useApp((s) => s.check)
   const status = useApp((s) => s.checkStatus)
   const error = useApp((s) => s.checkError)
   const designId = useApp((s) => s.designId)
   const setDesign = useApp((s) => s.setDesign)
   const showWard = useApp((s) => s.showWard)
+  const graphics = useApp((s) => s.graphics)
 
   if (status === 'error') {
     const message =
@@ -64,16 +67,20 @@ export function ResultPanel() {
         {design && <Checklist design={design} />}
         {designId && <Explanation check={check} designId={designId} />}
       </div>
+      {extra}
       <Flags flags={check.lot.flags} />
       <PermitsNearby permits={check.permits_nearby} />
       <NotChecked items={check.not_checked} />
       <p className="disclaimer panel-section">{disclaimers.massing}</p>
       <NextSteps steps={check.next_steps} />
-      <div className="panel-footer">
-        <button type="button" className="button-primary" onClick={() => showWard()}>
-          {labels.ui.see_your_ward}
-        </button>
-      </div>
+      {/* The ward map needs WebGL. */}
+      {graphics && (
+        <div className="panel-footer">
+          <button type="button" className="button-primary" onClick={() => showWard()}>
+            {labels.ui.see_your_ward}
+          </button>
+        </div>
+      )}
     </aside>
   )
 }

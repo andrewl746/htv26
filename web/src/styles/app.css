@@ -729,6 +729,37 @@ a.flag-label {
   background: color-mix(in srgb, var(--suplex-accent) 85%, var(--suplex-ink));
 }
 
+/* ---------- Where the data comes from (6.7) ---------- */
+
+.data-banner,
+.data-badge {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.data-banner {
+  top: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  background: var(--suplex-ink);
+  color: var(--suplex-surface);
+  font-weight: 600;
+}
+
+.data-badge {
+  bottom: var(--space-4);
+  padding: 2px var(--space-3);
+  border: 1px solid var(--suplex-line-strong);
+  background: var(--suplex-surface);
+  color: var(--suplex-ink);
+}
+
 /* ---------- Labels floating in the 3D scene (6.3) ---------- */
 
 .scene-labels {

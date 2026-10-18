@@ -1,6 +1,6 @@
 // URL state (MASTERSPEC 6.1): `?a=<address_id>` reopens an address check, `?lot=<lot_id>` a lot
-// opened from the ward map that has no address, `view=plan` the plan view and `ward=04` the ward
-// view. Other parameters (`design`, `demo`, `stats`) are left as they are.
+// opened from the ward map that has no address, `view=plan` (or `view=2d`) the plan view and
+// `ward=04` the ward view. Other parameters (`design`, `demo`, `stats`) are left as they are.
 
 function params(): URLSearchParams {
   return new URLSearchParams(window.location.search)
@@ -42,8 +42,10 @@ export function setLotInUrl(lotId: string): void {
   })
 }
 
+/** `view=plan`, or `view=2d` as MASTERSPEC 6.1 names it. */
 export function planFromUrl(): boolean {
-  return params().get('view') === 'plan'
+  const view = params().get('view')
+  return view === 'plan' || view === '2d'
 }
 
 export function setViewInUrl(view: 'plan' | null): void {

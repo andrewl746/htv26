@@ -15,6 +15,15 @@ export const pending = {
   load_error: labels.ui.load_error,
 }
 
+/**
+ * Strings contracts/copy does not have yet. Simone owns contracts/copy and has been asked to add
+ * them to labels.json `ui`; delete each entry here once it lands there.
+ */
+export const missing = {
+  /** The banner while the app runs on /contracts/fixtures (no VITE_API_BASE). */
+  sample_data: 'Sample data: made-up addresses and lots for testing, not real Toronto results.',
+}
+
 /** Fills the {{key}} placeholders used throughout contracts/copy. */
 export function fill(template: string, values: Record<string, string | number>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key: string) => (key in values ? String(values[key]) : match))

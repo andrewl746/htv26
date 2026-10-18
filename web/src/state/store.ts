@@ -4,6 +4,7 @@ import { check as fetchCheck, type CheckQuery } from '../api/client'
 import { ApiError, type ApiErrorCode } from '../api/errors'
 import { loadWard as fetchWard } from '../api/ward'
 import type { WardData } from '../components/WardMap/data'
+import { HAS_WEBGL } from '../graphics'
 import { defaultDesign } from '../designs'
 import { setAddressInUrl, setLotInUrl, setViewInUrl, setWardInUrl } from './url'
 
@@ -35,6 +36,11 @@ interface AppState {
   wardStatus: CheckStatus
   /** The language of the explanation, and of the ward briefing it links to. */
   lang: Lang
+  /**
+   * False without WebGL, or once the 3D scene or a map has crashed: the app then shows each
+   * address check on the plan view, with no maps (MASTERSPEC 6.7).
+   */
+  graphics: boolean
   /** `fly` from the landing page starts the flight; anywhere else the check opens directly. */
   openAddress: (addressId: string, options?: { updateUrl?: boolean; fly?: boolean }) => void
   /** A lot clicked on the ward map opens its address check, as if it had been searched (MASTERSPEC 6.5). */
@@ -61,6 +67,8 @@ interface AppState {
   backToLot: () => void
   setDesign: (designId: DesignId) => void
   setLang: (lang: Lang) => void
+  /** The 3D scene or a map failed: carry on without them. */
+  graphicsFailed: () => void
 }
 
 let inflight: AbortController | null = null
@@ -85,15 +93,17 @@ function prefetchWard(wardId: string): void {
 /** Starts a check unless the same one is already open; `fly` from the landing page starts the flight. */
 function openCheck(query: CheckQuery, fly: boolean): void {
   const key = 'address_id' in query ? `a:${query.address_id}` : `lot:${query.lot_id}`
-  const { checkKey, checkStatus, view } = useApp.getState()
+  const { checkKey, checkStatus, view, graphics } = useApp.getState()
+  // Without the 3D scene an address check opens on the plan view.
+  const lotView = graphics ? 'lot' : 'plan'
   if (key === checkKey && checkStatus !== 'error') {
-    if (view !== 'flying') useApp.setState({ view: 'lot' })
+    if (view !== 'flying') useApp.setState({ view: lotView })
     return
   }
   inflight?.abort()
   const request = (inflight = new AbortController())
   useApp.setState({
-    view: fly && view === 'landing' ? 'flying' : 'lot',
+    view: fly && view === 'landing' && graphics ? 'flying' : lotView,
     handoff: false,
     checkKey: key,
     checkStatus: 'loading',
@@ -125,6 +135,7 @@ export const useApp = create<AppState>()((set, get) => ({
   wardData: null,
   wardStatus: 'idle',
   lang: 'en',
+  graphics: HAS_WEBGL,
 
   openAddress(addressId, { updateUrl = true, fly = false } = {}) {
     if (updateUrl) setAddressInUrl(addressId)
@@ -187,15 +198,15 @@ export const useApp = create<AppState>()((set, get) => ({
   },
 
   showLot({ updateUrl = true } = {}) {
-    if (!get().checkKey) return
+    if (!get().checkKey || !get().graphics) return
     if (updateUrl) setViewInUrl(null)
     set({ view: 'lot' })
   },
 
   showWard({ updateUrl = true, wardId } = {}) {
-    const { check, view } = get()
+    const { check, view, graphics } = get()
     const ward = wardId ?? check?.lot.ward_id ?? get().wardId
-    if (!ward) return
+    if (!ward || !graphics) return
     if (updateUrl) setWardInUrl(ward)
     window.clearTimeout(prefetchTimer)
     get().loadWard(ward)
@@ -216,5 +227,11 @@ export const useApp = create<AppState>()((set, get) => ({
 
   setLang(lang) {
     set({ lang })
+  },
+
+  graphicsFailed() {
+    const { view, checkKey } = get()
+    if (view === 'landing') set({ graphics: false, handoff: false })
+    else set({ graphics: false, handoff: false, view: checkKey ? 'plan' : 'landing' })
   },
 }))

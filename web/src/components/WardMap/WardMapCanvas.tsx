@@ -34,10 +34,10 @@ interface Props {
   onSelectLot: (lotId: string) => void
   ariaLabel: string
   /** The "Near your lot" circle, or null when the map opened without a check. */
-  nearRing: Feature<Polygon> | null
+  nearRing?: Feature<Polygon> | null
 }
 
-export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLabel, nearRing }: Props) {
+export function WardMapCanvas({ data, filter, searchedLotId, onSelectLot, ariaLabel, nearRing = null }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const [ready, setReady] = useState(false)

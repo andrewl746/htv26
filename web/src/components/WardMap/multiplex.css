@@ -397,6 +397,87 @@
   font-size: var(--text-xs);
 }
 
+/* Top-left column: the near-me search above the filter panel. Half the map at most, so the legend never covers it. */
+.mx-top {
+  position: absolute;
+  z-index: 2;
+  top: var(--space-4);
+  left: var(--space-4);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(340px, calc(100% - 2 * var(--space-4) - 48px));
+  max-height: calc(50% - 2 * var(--space-4));
+}
+
+.mx-top .mx-panel {
+  position: static;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: none;
+  width: auto;
+}
+
+/* Nearby card: a side card on wide screens, a bottom sheet on phones. It carries its own screening line. */
+.mx-near-card {
+  position: absolute;
+  z-index: 3;
+  right: var(--space-4);
+  top: calc(var(--space-4) + 84px);
+  box-sizing: border-box;
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+  font-size: var(--text-sm);
+}
+
+.mx-near-card {
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100% - 2 * var(--space-4)));
+  max-height: calc(100% - 84px - 2 * var(--space-4));
+}
+
+.mx-near-card-head {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-1) var(--space-1) 0;
+}
+
+.mx-near-close,
+.mx-near-reopen {
+  border: 1px solid var(--suplex-accent);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  color: var(--suplex-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mx-near-close {
+  padding: var(--space-1) var(--space-3);
+}
+
+.mx-near-reopen {
+  flex: none;
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--shadow);
+}
+
+.mx-near-card-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.mx-near-close:focus-visible,
+.mx-near-reopen:focus-visible {
+  outline: 3px solid var(--suplex-accent);
+  outline-offset: 2px;
+}
+
 /* Phone width: the filters collapse behind a button and the legend takes the lower part. */
 @media (max-width: 640px) {
   .mx-panel {
@@ -417,6 +498,20 @@
 
   .mx-legend {
     max-height: 35%;
+  }
+
+  /* Bottom sheet. The card carries the screening line, so the legend steps aside while it is open. */
+  .mx-near-card {
+    top: auto;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    left: var(--space-4);
+    width: auto;
+    max-height: 45%;
+  }
+
+  .mx-map[data-near-open='true'] .mx-legend {
+    display: none;
   }
 }
 

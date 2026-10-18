@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   LngLatBounds,
   Map as MapLibreMap,
@@ -14,11 +14,15 @@ import { tokenHex } from '../../styles/tokens'
 import { blankStyle, neutraliseBase } from './layers'
 import { MultiplexFilterPanel } from './MultiplexFilterPanel'
 import { MultiplexLegend } from './MultiplexLegend'
+import { MultiplexSearch, type PickedPlace } from './MultiplexSearch'
+import { NearbyMultiplexes } from './NearbyMultiplexes'
 import { mxCopy } from './multiplex/copy'
 import { useMultiplexData } from './multiplex/data'
 import { applyFilters, wardCounts } from './multiplex/filters'
+import { circlePolygon, DEFAULT_RADIUS_M } from './multiplex/nearby'
 import { popupContent } from './multiplex/popup'
 import { rampClasses, type RampClass } from './multiplex/ramp'
+import { mxSearchCopy } from './multiplex/searchCopy'
 import { DEFAULT_FILTERS, type MultiplexCollection, type MultiplexFilters, type MultiplexProps, type WardCount, type WardShapeCollection } from './multiplex/types'
 import './mapSetup'
 import './multiplex.css'
@@ -59,6 +63,21 @@ const WARD_LINE_PX = 0.8
 const WARD_HOVER_PX = 2.5
 /** A fill that draws nothing but still answers hover and click. */
 const HIT_ONLY = 'rgba(255, 255, 255, 0.01)'
+/** The search circle: a light accent fill, a dashed outline, and a pin (a ring round a dot, no label). */
+const NEAR_FILL_OPACITY = 0.1
+const NEAR_LINE_PX = 2
+const NEAR_DASH: number[] = [2, 2]
+const NEAR_PIN_RADIUS_PX = 6
+const NEAR_PIN_EDGE_PX = 3
+/** Room the fitted circle leaves for the cards: wide screens keep the right side, phones the top and bottom. */
+const NARROW_PX = 640
+const WIDE_PX = 900
+const FIT_SIDE_CARD_PX = 380
+const FIT_TOP_PHONE_PX = 200
+const FIT_BOTTOM_PHONE_SHARE = 0.5
+/** Never let padding take more than this share of an axis, or the circle cannot be fitted at all. */
+const FIT_MAX_PAD_SHARE = 0.6
+const FIT_EASE_MS = 900
 
 const WARDS = 'mx-wards'
 const PERMITS = 'mx-permits'
@@ -70,6 +89,11 @@ const CLUSTER_COUNT = 'mx-cluster-count'
 const DOT_EDGE = 'mx-dot-edge'
 const DOT = 'mx-dot'
 const DOT_HOLE = 'mx-dot-hole'
+const NEAR = 'mx-near'
+const NEAR_FILL = 'mx-near-fill'
+const NEAR_LINE = 'mx-near-line'
+const NEAR_PIN_RING = 'mx-near-pin-ring'
+const NEAR_PIN = 'mx-near-pin'
 const PERMIT_LAYERS = [CLUSTERS, CLUSTER_COUNT, DOT_EDGE, DOT, DOT_HOLE]
 const CLICKABLE = [CLUSTERS, DOT_EDGE]
 
@@ -82,7 +106,87 @@ interface Tip {
 interface Props {
   /** A ward was clicked (not a dot or a cluster); `ward` is "01".."25". */
   onSelectWard?: (ward: string) => void
+  /** Open the near-me view on this point (the dev harness reads it from ?near=lon,lat). */
+  initialNear?: { lon: number; lat: number }
 }
+
+type Near = { lon: number; lat: number }
+
+const EMPTY_NEAR: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
+
+/** The circle and its centre pin as one collection. */
+function nearCollection(near: Near): GeoJSON.FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: [
+      circlePolygon(near, DEFAULT_RADIUS_M),
+      { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [near.lon, near.lat] } },
+    ],
+  }
+}
+
+/** Adds the search circle and pin under the permit dots, or hands the existing source the new circle. */
+function showNear(map: MapLibreMap, near: Near | null): void {
+  const data = near ? nearCollection(near) : EMPTY_NEAR
+  const source = map.getSource(NEAR) as GeoJSONSource | undefined
+  if (source) {
+    source.setData(data)
+    return
+  }
+  if (!near) return
+  const accent = tokenHex('--suplex-accent')
+  const surface = tokenHex('--suplex-surface')
+  const polygon: ExpressionSpecification = ['==', ['geometry-type'], 'Polygon']
+  const point: ExpressionSpecification = ['==', ['geometry-type'], 'Point']
+  const beforePermits = map.getLayer(CLUSTERS) ? CLUSTERS : undefined
+  map.addSource(NEAR, { type: 'geojson', data })
+  map.addLayer({ id: NEAR_FILL, type: 'fill', source: NEAR, filter: polygon, paint: { 'fill-color': accent, 'fill-opacity': NEAR_FILL_OPACITY } }, beforePermits)
+  map.addLayer(
+    { id: NEAR_LINE, type: 'line', source: NEAR, filter: polygon, paint: { 'line-color': accent, 'line-width': NEAR_LINE_PX, 'line-dasharray': NEAR_DASH } },
+    beforePermits,
+  )
+  // The pin sits above the dots: an accent ring round a surface centre, so it never reads as a permit.
+  map.addLayer({
+    id: NEAR_PIN_RING,
+    type: 'circle',
+    source: NEAR,
+    filter: point,
+    paint: { 'circle-color': accent, 'circle-radius': NEAR_PIN_RADIUS_PX + NEAR_PIN_EDGE_PX },
+  })
+  map.addLayer({ id: NEAR_PIN, type: 'circle', source: NEAR, filter: point, paint: { 'circle-color': surface, 'circle-radius': NEAR_PIN_RADIUS_PX } })
+}
+
+/** Padding that keeps the circle clear of the cards, clamped so the fit always has room. */
+function fitPadding(map: MapLibreMap): { top: number; right: number; bottom: number; left: number } {
+  const { clientWidth: w, clientHeight: h } = map.getContainer()
+  let pad = { top: FIT_PADDING_PX, right: FIT_PADDING_PX, bottom: FIT_PADDING_PX, left: FIT_PADDING_PX }
+  if (w <= NARROW_PX) pad = { ...pad, top: FIT_TOP_PHONE_PX, bottom: Math.round(h * FIT_BOTTOM_PHONE_SHARE) }
+  else if (w >= WIDE_PX) pad = { ...pad, right: FIT_SIDE_CARD_PX }
+  const fitAxis = (a: number, b: number, size: number): [number, number] => {
+    const limit = size * FIT_MAX_PAD_SHARE
+    const total = a + b
+    return total <= limit ? [a, b] : [(a * limit) / total, (b * limit) / total]
+  }
+  const [top, bottom] = fitAxis(pad.top, pad.bottom, h)
+  const [left, right] = fitAxis(pad.left, pad.right, w)
+  return { top, right, bottom, left }
+}
+
+/** The card for the chosen place. Memoised so the map's hover re-renders never touch it. */
+const NearCard = memo(function NearCard({ near, onClose }: { near: Near; onClose: () => void }) {
+  return (
+    <aside className="mx-near-card" aria-label={mxSearchCopy.aria.card}>
+      <div className="mx-near-card-head">
+        <button type="button" className="mx-near-close" onClick={onClose}>
+          {mxSearchCopy.card.close}
+        </button>
+      </div>
+      <div className="mx-near-card-body">
+        <NearbyMultiplexes key={`${near.lon},${near.lat}`} centre={near} />
+      </div>
+    </aside>
+  )
+})
 
 function rgbOf(hex: string): [number, number, number] {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex.trim())
@@ -229,7 +333,7 @@ function popupBody(props: MultiplexProps): HTMLElement {
   return body
 }
 
-export function MultiplexMap({ onSelectWard }: Props) {
+export function MultiplexMap({ onSelectWard, initialNear }: Props) {
   const load = useMultiplexData()
   const data = load.status === 'ready' ? load.data : null
   const container = useRef<HTMLDivElement>(null)
@@ -243,6 +347,8 @@ export function MultiplexMap({ onSelectWard }: Props) {
   const [tip, setTip] = useState<Tip | null>(null)
   const [filters, setFilters] = useState<MultiplexFilters>(DEFAULT_FILTERS)
   const [showPermits, setShowPermits] = useState(true)
+  const [near, setNear] = useState<Near | null>(initialNear ?? null)
+  const [cardOpen, setCardOpen] = useState(true)
   const reduced = useReducedMotion()
 
   const filtered = useMemo(() => (data ? applyFilters(data.permits, filters) : null), [data, filters])
@@ -251,10 +357,17 @@ export function MultiplexMap({ onSelectWard }: Props) {
   const classes = useMemo(() => rampClasses(counts ? Object.values(counts).map((c) => c.permits) : []), [counts])
 
   // The map's event handlers are made once; they read the latest props from here.
-  const live = useRef({ onSelectWard, reduced, showPermits })
+  const live = useRef({ onSelectWard, reduced, showPermits, near })
   useEffect(() => {
-    live.current = { onSelectWard, reduced, showPermits }
+    live.current = { onSelectWard, reduced, showPermits, near }
   })
+
+  const onPick = useCallback((place: PickedPlace) => {
+    setNear({ lon: place.lon, lat: place.lat })
+    setCardOpen(true)
+  }, [])
+  const onClear = useCallback(() => setNear(null), [])
+  const onCloseCard = useCallback(() => setCardOpen(false), [])
 
   useEffect(() => {
     const el = container.current
@@ -409,11 +522,34 @@ export function MultiplexMap({ onSelectWard }: Props) {
     popupRef.current?.remove()
     popupRef.current = null
     if (!fitted.current) {
-      const bounds = boundsOf(data.permits)
+      // A near-me view that was asked for already owns the camera; the all-Toronto fit would undo it.
+      const bounds = live.current.near ? null : boundsOf(data.permits)
       if (bounds) map.fitBounds(bounds, { padding: FIT_PADDING_PX, duration: 0, maxZoom: MAX_ZOOM })
       fitted.current = true
     }
   }, [data, shapes, filtered, classes, styleTick])
+
+  // The search circle and pin: added after the permit layers so they sit under the dots, and added
+  // again after a style swap. Cleared, the source is emptied.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || styleTick === 0 || !styleReady.current) return
+    // While the permit data is still loading its layers do not exist yet, and the circle must go under them.
+    if (near && load.status === 'loading') return
+    showNear(map, near)
+  }, [near, styleTick, data, load.status])
+
+  // Move the camera to the circle when a place is chosen (not on later data or filter changes).
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !near) return
+    const ring = (circlePolygon(near, DEFAULT_RADIUS_M).geometry.coordinates[0] ?? []) as [number, number][]
+    const bounds = new LngLatBounds()
+    for (const c of ring) bounds.extend(c)
+    map.fitBounds(bounds, { padding: fitPadding(map), maxZoom: MAX_ZOOM, duration: live.current.reduced ? 0 : FIT_EASE_MS, essential: true })
+    // Only the chosen point matters here, not the object identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [near?.lon, near?.lat])
 
   // The layer toggle.
   useEffect(() => {
@@ -427,7 +563,7 @@ export function MultiplexMap({ onSelectWard }: Props) {
   }, [showPermits, styleTick, data])
 
   return (
-    <div className="mx-map" aria-busy={load.status === 'loading'}>
+    <div className="mx-map" aria-busy={load.status === 'loading'} data-near-open={near !== null && cardOpen}>
       <div className="mx-map-canvas" ref={container} role="region" aria-label={mxCopy.aria.map}>
         {tip && (
           <div className="mx-tooltip" style={{ left: tip.x, top: tip.y }}>
@@ -440,8 +576,14 @@ export function MultiplexMap({ onSelectWard }: Props) {
           {load.message}
         </p>
       )}
-      {data && filtered && counts && (
-        <>
+      <div className="mx-top">
+        <MultiplexSearch onPick={onPick} onClear={onClear} active={near !== null} />
+        {near && !cardOpen && (
+          <button type="button" className="mx-near-reopen" onClick={() => setCardOpen(true)}>
+            {mxSearchCopy.card.reopen}
+          </button>
+        )}
+        {data && filtered && counts && (
           <MultiplexFilterPanel
             filters={filters}
             onChange={setFilters}
@@ -450,6 +592,11 @@ export function MultiplexMap({ onSelectWard }: Props) {
             showPermits={showPermits}
             onShowPermits={setShowPermits}
           />
+        )}
+      </div>
+      {near && cardOpen && <NearCard near={near} onClose={onCloseCard} />}
+      {data && filtered && counts && (
+        <>
           <MultiplexLegend wards={data.wards} counts={counts} classes={classes} fetchedAt={data.meta.fetchedAt} />
         </>
       )}

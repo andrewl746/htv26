@@ -92,21 +92,44 @@ async function load(signal: AbortSignal): Promise<MultiplexData> {
   }
 }
 
-/** Loads the permit points and the ward shapes together. */
-export function useMultiplexData(): MultiplexLoad {
-  const [state, setState] = useState<MultiplexLoad>({ status: 'loading' })
+// One load is shared by every component that asks for it (the map and the nearby-permits section):
+// the snapshots are fetched once per page. A failed load is forgotten so the next mount retries.
+let shared: Promise<MultiplexData> | null = null
+let loaded: MultiplexData | null = null
 
-  useEffect(() => {
-    const request = new AbortController()
-    load(request.signal).then(
+function loadShared(): Promise<MultiplexData> {
+  if (!shared) {
+    shared = load(new AbortController().signal).then(
       (data) => {
-        if (!request.signal.aborted) setState({ status: 'ready', data })
+        loaded = data
+        return data
       },
-      () => {
-        if (!request.signal.aborted) setState({ status: 'error', message: pending.load_error })
+      (error: unknown) => {
+        shared = null
+        throw error
       },
     )
-    return () => request.abort()
+  }
+  return shared
+}
+
+/** Loads the permit points and the ward shapes together (once; later callers reuse the result). */
+export function useMultiplexData(): MultiplexLoad {
+  const [state, setState] = useState<MultiplexLoad>(() => (loaded ? { status: 'ready', data: loaded } : { status: 'loading' }))
+
+  useEffect(() => {
+    let active = true
+    loadShared().then(
+      (data) => {
+        if (active) setState({ status: 'ready', data })
+      },
+      () => {
+        if (active) setState({ status: 'error', message: pending.load_error })
+      },
+    )
+    return () => {
+      active = false
+    }
   }, [])
 
   return state

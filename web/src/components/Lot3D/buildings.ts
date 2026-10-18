@@ -41,6 +41,17 @@ const GABLE_OVERHANG_M = 0.3
 const GRID_SNAP_DEG = 10
 /** A footprint closer to square than this has no clear long axis; its ridge runs the street's way. */
 const SQUARE_ASPECT = 1.25
+/**
+ * A footprint that fills less of its squared-up box than this (an L, a U, a notch or a cut corner)
+ * gets its pitched roof over its largest rectangle only, and flat roofs over the rest: a roof over
+ * the whole box would hang over the notch with its gable floating in the air.
+ */
+const FILLED_BOX = 0.9
+/** Footprint corners this close across the box are one grid line when finding that rectangle. */
+const GRID_SNAP_M = 0.35
+const MAX_GRID_LINES = 40
+/** A largest rectangle under this share of the footprint is no main body: the house is flat-roofed. */
+const MIN_PITCHED_SHARE = 0.55
 const PARAPET_HEIGHT_M = 0.5
 const PARAPET_THICKNESS_M = 0.3
 /** Buildings start a little narrower than their footprint while they grow up. */
@@ -123,9 +134,11 @@ export function buildBuilding(building: ContextBuilding, grid: StreetGrid, look:
   walls.translate(-cx, 0, cy)
 
   const parts: BuildingPart[] = []
+  const plan = building.kind === 'house' ? roofPlan(ring, centre, grid) : null
   if (look === 'classic') {
-    if (building.kind === 'house') {
-      parts.push({ slot: 'wall', geometry: walls }, { slot: 'roof', geometry: gableRoof(ring, centre, height, grid) })
+    if (plan && !plan.flat) {
+      // The walls keep their top cap, which shows where the roof does not reach.
+      parts.push({ slot: 'wall', geometry: walls }, { slot: 'roof', geometry: gableRoof(plan, height) })
     } else {
       parts.push({ slot: 'wall', geometry: merged([walls, ...parapet(ring, centre, height)]) })
     }
@@ -143,15 +156,20 @@ export function buildBuilding(building: ContextBuilding, grid: StreetGrid, look:
       seed: seededIndex(building.building_id + 37, 997),
     })
     const extraWalls = details.wall.map(metreUVs)
-    if (house) {
-      // The top cap hides under the roof.
-      caps.dispose()
+    if (plan && !plan.flat) {
       const tint = ROOF_TINTS[seededIndex(building.building_id + 101, ROOF_TINTS.length)]
-      const roof = pitchedRoof(ring, centre, height, grid, tint)
+      const roof = pitchedRoof(plan, height, tint)
       if (HOUSE_STYLE.chimney && seededIndex(building.building_id + 53, 5) < CHIMNEY.outOfFive) {
-        extraWalls.push(metreUVs(chimney(ring, centre, height, grid)))
+        extraWalls.push(metreUVs(chimney(plan, height)))
       }
       parts.push({ slot: 'wall', geometry: merged([sides, roof.gables, ...extraWalls]) }, { slot: 'roof', geometry: roof.slopes })
+      // The top cap hides under a roof over the whole footprint; beside a partial one it is the
+      // flat roof of the wings.
+      if (plan.partial) parts.push({ slot: 'flat', geometry: caps })
+      else caps.dispose()
+    } else if (plan) {
+      // No main body to pitch a roof over: a flat roof, with a low parapet like a flat-roofed house.
+      parts.push({ slot: 'wall', geometry: merged([sides, ...extraWalls]) }, { slot: 'flat', geometry: merged([caps, ...parapet(ring, centre, height)]) })
     } else {
       parts.push(
         { slot: 'wall', geometry: merged([sides, ...extraWalls]) },
@@ -324,8 +342,8 @@ function metreUVs(geometry: BufferGeometry): BufferGeometry {
 }
 
 /** A brick chimney near one gable end, just off the ridge, rising above it. */
-function chimney(ring: LocalPoint[], centre: LocalPoint, wallHeight: number, grid: StreetGrid): BufferGeometry {
-  const { a, b, a0, bm, rise } = roofFrame(ring, centre, grid)
+function chimney(plan: RoofPlan, wallHeight: number): BufferGeometry {
+  const { a, b, a0, bm, rise } = roofFrame(plan)
   const along = a0 + CHIMNEY.fromGableM
   const across = bm + CHIMNEY.offRidgeM
   const x = a[0] * along + b[0] * across
@@ -437,9 +455,100 @@ function boxOf(ring: LocalPoint[], centre: LocalPoint, grid: StreetGrid, top: nu
   }
 }
 
-/** The roof's frame: the squared-up box with the gable overhang, and the ridge's rise. */
-function roofFrame(ring: LocalPoint[], centre: LocalPoint, grid: StreetGrid) {
-  const { a, b, ea, eb } = squaredBox(ring, centre, grid)
+/**
+ * Where a house's pitched roof goes: a rectangle in the squared-up frame (axis a along the ridge, b
+ * counter-clockwise of it, extents ea and eb from the footprint's centre). It is the whole box when
+ * the footprint fills it; otherwise the largest rectangle inside the footprint, the rest flat-roofed
+ * (partial); and when even that rectangle is a small part of the footprint, no pitched roof (flat).
+ */
+interface RoofPlan {
+  a: LocalPoint
+  b: LocalPoint
+  ea: [number, number]
+  eb: [number, number]
+  partial: boolean
+  flat: boolean
+}
+
+function roofPlan(ring: LocalPoint[], centre: LocalPoint, grid: StreetGrid): RoofPlan {
+  const box = squaredBox(ring, centre, grid)
+  const whole: RoofPlan = { a: box.a, b: box.b, ea: box.ea, eb: box.eb, partial: false, flat: false }
+  const area = Math.abs(signedArea(ring))
+  if (area >= FILLED_BOX * (box.ea[1] - box.ea[0]) * (box.eb[1] - box.eb[0])) return whole
+  const rect = largestRectangle(ring, centre, box.a, box.b)
+  if (!rect || rect.area < MIN_PITCHED_SHARE * area) return { ...whole, partial: true, flat: true }
+  // The ridge runs along the rectangle's long side, or the box's way when it is about square.
+  const [along, across] = [rect.ea[1] - rect.ea[0], rect.eb[1] - rect.eb[0]]
+  if (across > SQUARE_ASPECT * along) {
+    return { a: box.b, b: [-box.a[0], -box.a[1]], ea: rect.eb, eb: [-rect.ea[1], -rect.ea[0]], partial: true, flat: false }
+  }
+  return { a: box.a, b: box.b, ea: rect.ea, eb: rect.eb, partial: true, flat: false }
+}
+
+/** Sorted coordinates, those within GRID_SNAP_M of each other merged; the outermost kept exact. */
+function gridLines(values: number[]): number[] {
+  const sorted = [...values].sort((p, q) => p - q)
+  const groups: number[][] = []
+  for (const v of sorted) {
+    const last = groups.at(-1)
+    if (last && v - last[last.length - 1] <= GRID_SNAP_M) last.push(v)
+    else groups.push([v])
+  }
+  return groups.map((g, i) => (i === 0 ? g[0] : i === groups.length - 1 ? g[g.length - 1] : g.reduce((s, v) => s + v, 0) / g.length))
+}
+
+/** Ray-casting point-in-polygon test. */
+function insideRing([x, y]: LocalPoint, ring: LocalPoint[]): boolean {
+  let hit = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit
+  }
+  return hit
+}
+
+/**
+ * The largest rectangle, square to axes a and b, inside the footprint: the footprint's corners make
+ * a grid in that frame, each cell is in or out by its middle, and every block of whole cells is tried.
+ */
+function largestRectangle(
+  ring: LocalPoint[],
+  [cx, cy]: LocalPoint,
+  a: LocalPoint,
+  b: LocalPoint,
+): { ea: [number, number]; eb: [number, number]; area: number } | null {
+  const pts: LocalPoint[] = ring.map(([x, y]) => [(x - cx) * a[0] + (y - cy) * a[1], (x - cx) * b[0] + (y - cy) * b[1]])
+  const us = gridLines(pts.map((p) => p[0]))
+  const vs = gridLines(pts.map((p) => p[1]))
+  if (us.length < 2 || vs.length < 2 || us.length > MAX_GRID_LINES || vs.length > MAX_GRID_LINES) return null
+  // Inside-cell counts summed from the corner, so a block's count is four lookups.
+  const w = vs.length
+  const sum = new Int32Array(us.length * w)
+  for (let i = 1; i < us.length; i++) {
+    for (let j = 1; j < vs.length; j++) {
+      const inside = insideRing([(us[i - 1] + us[i]) / 2, (vs[j - 1] + vs[j]) / 2], pts) ? 1 : 0
+      sum[i * w + j] = inside + sum[(i - 1) * w + j] + sum[i * w + j - 1] - sum[(i - 1) * w + j - 1]
+    }
+  }
+  let best: { ea: [number, number]; eb: [number, number]; area: number } | null = null
+  for (let i0 = 0; i0 < us.length - 1; i0++) {
+    for (let i1 = i0 + 1; i1 < us.length; i1++) {
+      for (let j0 = 0; j0 < vs.length - 1; j0++) {
+        for (let j1 = j0 + 1; j1 < vs.length; j1++) {
+          const cells = sum[i1 * w + j1] - sum[i0 * w + j1] - sum[i1 * w + j0] + sum[i0 * w + j0]
+          if (cells !== (i1 - i0) * (j1 - j0)) break
+          const area = (us[i1] - us[i0]) * (vs[j1] - vs[j0])
+          if (!best || area > best.area) best = { ea: [us[i0], us[i1]], eb: [vs[j0], vs[j1]], area }
+        }
+      }
+    }
+  }
+  return best
+}
+
+/** The roof's frame: its rectangle with the gable overhang, and the ridge's rise. */
+function roofFrame({ a, b, ea, eb }: RoofPlan) {
   const o = GABLE_OVERHANG_M
   const [a0, a1] = [ea[0] - o, ea[1] + o]
   const [b0, b1] = eb
@@ -447,9 +556,9 @@ function roofFrame(ring: LocalPoint[], centre: LocalPoint, grid: StreetGrid) {
   return { a, b, a0, a1, b0, b1, bm: (b0 + b1) / 2, rise }
 }
 
-/** A triangular prism over the footprint's squared-up bounding box, its ridge along axis a. */
-function gableRoof(ring: LocalPoint[], centre: LocalPoint, wallHeight: number, grid: StreetGrid): BufferGeometry {
-  const { a, b, a0, a1, b0, b1, bm, rise } = roofFrame(ring, centre, grid)
+/** A triangular prism over the roof plan's rectangle, its ridge along axis a. */
+function gableRoof(plan: RoofPlan, wallHeight: number): BufferGeometry {
+  const { a, b, a0, a1, b0, b1, bm, rise } = roofFrame(plan)
   // Corners around the base centre in scene coordinates: local (east, north, up) -> (x, up, -north).
   const at = (u: number, v: number, up: number) => [u * a[0] + v * b[0], up, -(u * a[1] + v * b[1])]
   const h = wallHeight
@@ -479,14 +588,8 @@ function gableRoof(ring: LocalPoint[], centre: LocalPoint, wallHeight: number, g
  * v up the slope) and a tint as vertex colour, and its gable ends with wall UVs (v = 1 - height,
  * as the extruded walls have) so they wear the wall's texture.
  */
-function pitchedRoof(
-  ring: LocalPoint[],
-  centre: LocalPoint,
-  wallHeight: number,
-  grid: StreetGrid,
-  tint: string,
-): { slopes: BufferGeometry; gables: BufferGeometry } {
-  const { a, b, a0, a1, b0, b1, bm, rise } = roofFrame(ring, centre, grid)
+function pitchedRoof(plan: RoofPlan, wallHeight: number, tint: string): { slopes: BufferGeometry; gables: BufferGeometry } {
+  const { a, b, a0, a1, b0, b1, bm, rise } = roofFrame(plan)
   const at = (u: number, v: number, up: number) => [u * a[0] + v * b[0], up, -(u * a[1] + v * b[1])]
   const h = wallHeight
   const slope = Math.hypot((b1 - b0) / 2, rise)

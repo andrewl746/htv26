@@ -1,10 +1,13 @@
-import { BoxGeometry, BufferGeometry, Color, ExtrudeGeometry, Float32BufferAttribute, type Object3D } from 'three'
+import { BoxGeometry, BufferGeometry, Color, ExtrudeGeometry, Float32BufferAttribute, Vector3, type Object3D } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
 import { SLOT_ATTRIBUTE } from './cutaway'
 import { openRing, seededIndex, shapeFrom, signedArea, vertexMean } from './geometry'
+import { frontEdge, houseDetails } from './houseDetails'
+import { HOUSE_STYLE } from './houseStyle'
 import type { Look } from './look'
 import type { Box } from './occlusion'
+import { towardStreet, type StreetFrame } from './streetFrame'
 import { ease, lerp } from './timeline'
 
 // Neighbouring buildings (MASTERSPEC 6.3 step 2): houses get a gable roof with the ridge along the
@@ -32,7 +35,9 @@ const PARAPET_THICKNESS_M = 0.3
 /** Buildings start a little narrower than their footprint while they grow up. */
 const GROW_START_WIDTH = 0.85
 /** Drawn look: shingle tints, multiplied over the shingle texture, picked per building. */
-const ROOF_TINTS = ['#6d6f73', '#7a6656', '#55585d', '#8a7766', '#5f5650']
+const ROOF_TINTS = ['#5b5d61', '#6a5648', '#4a4d52', '#7a6556', '#56504a']
+/** Drawn look: a brick chimney on some houses, near one gable end, standing above the ridge. */
+const CHIMNEY = { size: 0.6, aboveRidgeM: 0.8, fromGableM: 1.2, offRidgeM: 0.4, outOfFive: 3 }
 
 export const NEIGHBOUR_TOKENS = [1, 2, 3, 4, 5].map((i) => `--suplex-neighbour-${i}`)
 
@@ -48,8 +53,12 @@ export function applyGrowth(object: Object3D, p: number): void {
   object.scale.set(width, Math.max(ease.outBack(p), 0.001), width)
 }
 
-/** Which material a part takes: the walls of its colour, the pitched roof, or the flat roof. */
-export type PartSlot = 'wall' | 'roof' | 'flat'
+/**
+ * Which material a part takes: the walls of its colour, the pitched roof, the flat roof, and in
+ * the drawn look the windows' glass, the white trim (frames, sills, porches) and the front doors.
+ */
+export type PartSlot = 'wall' | 'roof' | 'flat' | 'glass' | 'trim' | 'door'
+const SHARED_SLOTS: PartSlot[] = ['roof', 'flat', 'glass', 'trim', 'door']
 
 export interface BuildingPart {
   slot: PartSlot
@@ -93,7 +102,7 @@ export function streetGrid(buildings: ContextBuilding[]): StreetGrid {
   return { wallRad, ridgeRad: ridges[0] === 0 && ridges[1] === 0 ? null : angleOf(ridges, 2) }
 }
 
-export function buildBuilding(building: ContextBuilding, grid: StreetGrid, look: Look): BuiltBuilding {
+export function buildBuilding(building: ContextBuilding, grid: StreetGrid, look: Look, street: StreetFrame | null = null): BuiltBuilding {
   const ring = openRing(building.footprint_local)
   const centre = vertexMean(ring)
   const [cx, cy] = centre
@@ -112,15 +121,35 @@ export function buildBuilding(building: ContextBuilding, grid: StreetGrid, look:
   } else {
     const { caps, sides } = splitExtrude(walls)
     walls.dispose()
-    if (building.kind === 'house') {
+    const house = building.kind === 'house'
+    const details = houseDetails({
+      ring,
+      centre,
+      wallHeight: height,
+      large: !house,
+      front: house ? frontEdge(ring, towardStreet(street, centre)) : null,
+      style: HOUSE_STYLE,
+      seed: seededIndex(building.building_id + 37, 997),
+    })
+    const extraWalls = details.wall.map(metreUVs)
+    if (house) {
       // The top cap hides under the roof.
       caps.dispose()
       const tint = ROOF_TINTS[seededIndex(building.building_id + 101, ROOF_TINTS.length)]
       const roof = pitchedRoof(ring, centre, height, grid, tint)
-      parts.push({ slot: 'wall', geometry: merged([sides, roof.gables]) }, { slot: 'roof', geometry: roof.slopes })
+      if (HOUSE_STYLE.chimney && seededIndex(building.building_id + 53, 5) < CHIMNEY.outOfFive) {
+        extraWalls.push(metreUVs(chimney(ring, centre, height, grid)))
+      }
+      parts.push({ slot: 'wall', geometry: merged([sides, roof.gables, ...extraWalls]) }, { slot: 'roof', geometry: roof.slopes })
     } else {
-      parts.push({ slot: 'wall', geometry: sides }, { slot: 'flat', geometry: merged([caps, ...parapet(ring, centre, height)]) })
+      parts.push(
+        { slot: 'wall', geometry: merged([sides, ...extraWalls]) },
+        { slot: 'flat', geometry: merged([caps, ...parapet(ring, centre, height)]) },
+      )
     }
+    if (details.glass.length) parts.push({ slot: 'glass', geometry: merged(details.glass) })
+    if (details.trim.length) parts.push({ slot: 'trim', geometry: merged(details.trim) })
+    if (details.door.length) parts.push({ slot: 'door', geometry: merged(details.door) })
   }
 
   return {
@@ -158,11 +187,11 @@ function merged(geometries: BufferGeometry[]): BufferGeometry {
 export interface MergedStreet {
   /** One per wall colour. */
   walls: (BufferGeometry | null)[]
-  roof: BufferGeometry | null
-  flat: BufferGeometry | null
+  /** One for each other slot: pitched roofs, flat roofs, glass, trim, doors. */
+  shared: { slot: PartSlot; geometry: BufferGeometry }[]
 }
 
-/** One geometry per wall colour, one for every pitched roof and one for every flat roof (after the ripple). */
+/** One geometry per wall colour and one per other slot, for the whole street (after the ripple). */
 export function mergeStreet(built: BuiltBuilding[]): MergedStreet {
   const placed = (g: BufferGeometry, b: BuiltBuilding) => g.clone().translate(b.x, 0, b.z)
   const merge = (geometries: BufferGeometry[]) => {
@@ -174,9 +203,47 @@ export function mergeStreet(built: BuiltBuilding[]): MergedStreet {
     built.flatMap((b) => (keep(b) ? b.parts.filter((p) => p.slot === slot).map((p) => placed(p.geometry, b)) : []))
   return {
     walls: NEIGHBOUR_TOKENS.map((_, i) => merge(of('wall', (b) => b.colorIndex === i))),
-    roof: merge(of('roof', () => true)),
-    flat: merge(of('flat', () => true)),
+    shared: SHARED_SLOTS.flatMap((slot) => {
+      const geometry = merge(of(slot, () => true))
+      return geometry ? [{ slot, geometry }] : []
+    }),
   }
+}
+
+/**
+ * UVs in metres for a box, like the extruded walls have, so a bay or a chimney wears its brick at
+ * the wall's scale: each face is projected onto the two axes across it, v = 1 - height on the sides.
+ */
+function metreUVs(geometry: BufferGeometry): BufferGeometry {
+  const position = geometry.getAttribute('position')
+  const normal = geometry.getAttribute('normal')
+  const uv = new Float32Array(position.count * 2)
+  const n = new Vector3()
+  for (let i = 0; i < position.count; i++) {
+    n.fromBufferAttribute(normal, i)
+    const [x, y, z] = [position.getX(i), position.getY(i), position.getZ(i)]
+    const [ax, ay, az] = [Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)]
+    const [u, v] = ay >= ax && ay >= az ? [x, z] : ax >= az ? [z, 1 - y] : [x, 1 - y]
+    uv[2 * i] = u
+    uv[2 * i + 1] = v
+  }
+  geometry.setAttribute('uv', new Float32BufferAttribute(uv, 2))
+  return geometry
+}
+
+/** A brick chimney near one gable end, just off the ridge, rising above it. */
+function chimney(ring: LocalPoint[], centre: LocalPoint, wallHeight: number, grid: StreetGrid): BufferGeometry {
+  const { a, b, a0, bm, rise } = roofFrame(ring, centre, grid)
+  const along = a0 + CHIMNEY.fromGableM
+  const across = bm + CHIMNEY.offRidgeM
+  const x = a[0] * along + b[0] * across
+  const y = a[1] * along + b[1] * across
+  const bottom = wallHeight + rise * 0.4
+  const top = wallHeight + rise + CHIMNEY.aboveRidgeM
+  return new BoxGeometry(CHIMNEY.size, top - bottom, CHIMNEY.size)
+    .toNonIndexed()
+    .rotateY(Math.atan2(a[1], a[0]))
+    .translate(x, (top + bottom) / 2, -y)
 }
 
 /** An ExtrudeGeometry's caps (its group 0) and side walls (group 1) as two geometries. */

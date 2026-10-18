@@ -4,6 +4,7 @@ import type { Group, Mesh, MeshStandardMaterial } from 'three'
 import type { DesignResult, LocalPoint } from '@contracts/types'
 import { token, tokenHex } from '../../styles/tokens'
 import { FLAT, perimeter, ringAt, shapeFrom } from './geometry'
+import { LOOK } from './look'
 import { ease, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 
@@ -14,6 +15,8 @@ const LOT_Y = 0.02
 const SETBACK_Y = 0.04
 const BUILDABLE_Y = 0.05
 const OUTLINE_Y = 0.07
+/** The drawn look shows the lot as a light wash over the lawn, not an opaque pad. */
+const DRAWN_LOT_OPACITY = 0.35
 
 type FadeStep = 'outline' | 'setbacks' | 'buildable'
 
@@ -23,15 +26,18 @@ function GroundPatch({
   colorToken,
   step,
   order,
+  opacityScale = 1,
 }: {
   points: LocalPoint[]
   y: number
   colorToken: string
   step: FadeStep
   order: number
+  opacityScale?: number
 }) {
   const shape = useMemo(() => shapeFrom(points), [points])
-  const { color, opacity } = token(colorToken)
+  const { color } = token(colorToken)
+  const opacity = token(colorToken).opacity * opacityScale
   const mesh = useRef<Mesh>(null)
   const material = useRef<MeshStandardMaterial>(null)
   useSequenceFrame((t, { timeline }) => {
@@ -79,7 +85,14 @@ export function Lot({ polygon, design }: { polygon: LocalPoint[]; design: Design
   const setbacks = design?.setbacks_local
   return (
     <group>
-      <GroundPatch points={polygon} y={LOT_Y} colorToken="--suplex-lot" step="outline" order={1} />
+      <GroundPatch
+        points={polygon}
+        y={LOT_Y}
+        colorToken="--suplex-lot"
+        step="outline"
+        order={1}
+        opacityScale={LOOK === 'drawn' ? DRAWN_LOT_OPACITY : 1}
+      />
       {design && setbacks && (
         <group key={`setbacks-${design.design_id}`}>
           {[setbacks.front, setbacks.rear, setbacks.left, setbacks.right].map((strip, i) => (

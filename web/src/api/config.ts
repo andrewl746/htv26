@@ -12,7 +12,10 @@ export const API_BASE: string | null = import.meta.env.VITE_API_BASE || null
  */
 export const AI_BASE: string | null = import.meta.env.VITE_AI_BASE || (API_BASE === null ? null : '/ai')
 
-/** Every request gives up after 3 s (MASTERSPEC 6.1); J9 then falls back to the demo cache. */
+/** `?demo=1` answers from public/demo-cache/ first and never calls the AI service (MASTERSPEC 6.7). */
+export const DEMO_ONLY = new URLSearchParams(window.location.search).get('demo') === '1'
+
+/** Every request gives up after 3 s (MASTERSPEC 6.1) and then falls back to the demo cache. */
 export const TIMEOUT_MS = 3000
 
 /**

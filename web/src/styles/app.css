@@ -419,12 +419,45 @@ button {
   }
 }
 
-/* ---------- Ward view (6.5): Yuvi's ward map, full-bleed over the base map and the 3D scene ---------- */
+/* ---------- Lot to ward and back (6.6) ---------- */
 
-.ward-view {
+/* "See your ward": the 3D scene, frozen on its last frame, fades off the map as the map pulls out. */
+.app[data-view='toWard'] .scene {
+  transition:
+    opacity 600ms ease-in,
+    visibility 0s 600ms;
+}
+
+/* The search bar and the result panel step aside at once. */
+.lot-chrome-leaving .topbar,
+.lot-chrome-leaving .panel {
+  pointer-events: none;
+  animation: fade-out 250ms ease-in both;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Yuvi's ward map, full-bleed over the base map and the 3D scene. Built hidden underneath while the
+   lot is on screen, so it shows on the very view the base map's flight ends on. */
+.ward-stage {
   position: absolute;
   z-index: 3;
   inset: 0;
+  visibility: hidden;
+}
+
+.ward-stage-shown {
+  visibility: visible;
+}
+
+.ward-stage-shown .ward-panel,
+.ward-stage-shown .ward-filter,
+.ward-stage-shown .ward-legend {
+  animation: fade-in 300ms ease-out both;
 }
 
 /* ---------- Result panel sections (J4, 6.4) ---------- */
@@ -744,7 +777,20 @@ a.flag-label {
 
   .landing,
   .landing-leaving,
-  .scene-visible {
+  .scene-visible,
+  .app[data-view='toWard'] .scene {
     transition: none;
+  }
+
+  .lot-chrome-leaving .topbar,
+  .lot-chrome-leaving .panel {
+    animation: none;
+    opacity: 0;
+  }
+
+  .ward-stage-shown .ward-panel,
+  .ward-stage-shown .ward-filter,
+  .ward-stage-shown .ward-legend {
+    animation: none;
   }
 }

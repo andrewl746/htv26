@@ -1,4 +1,5 @@
 import type { Map as MapLibreMap } from 'maplibre-gl'
+import { neutraliseBase } from '../WardMap/layers'
 import { tokenHex } from '../../styles/tokens'
 
 // OpenFreeMap's positron style (MASTERSPEC 6.1) recoloured to the UI palette, with the buildings
@@ -8,6 +9,12 @@ const BUILDING_FALLBACK_HEIGHT_M = 4
 export const BUILDINGS_LAYER = 'building-3d'
 
 type PaintProperty = Parameters<MapLibreMap['setPaintProperty']>[1]
+type PaintValue = Parameters<MapLibreMap['setPaintProperty']>[2]
+
+/** The palette over positron's own values, and positron's own values, for the ward transition. */
+const palettes = new WeakMap<MapLibreMap, { ours: [string, PaintProperty, PaintValue][]; stock: [string, PaintProperty, PaintValue][] }>()
+/** Positron's flat buildings, which the palette hides for the 3D ones and the ward map shows. */
+const FLAT_BUILDINGS = 'building'
 
 export function applyPalette(map: MapLibreMap): void {
   const charcoal = tokenHex('--palette-charcoal')
@@ -24,9 +31,19 @@ export function applyPalette(map: MapLibreMap): void {
     ['water', 'fill-color', grey],
     ['waterway', 'line-color', grey],
   ]
-  for (const [layer, property, value] of paint) {
-    if (map.getLayer(layer)) map.setPaintProperty(layer, property, value)
-  }
+  const present = paint.filter(([layer]) => map.getLayer(layer))
+  const stock = (layer: string, property: PaintProperty): [string, PaintProperty, PaintValue] => [
+    layer,
+    property,
+    map.getPaintProperty(layer, property) as PaintValue,
+  ]
+  // Grass keeps positron's colour here, but the ward map flattens it with the parks.
+  const grass = map.getLayer('landcover_grass') ? [stock('landcover_grass', 'fill-color')] : []
+  palettes.set(map, {
+    ours: [...present, ...grass],
+    stock: [...present.map(([layer, property]) => stock(layer, property)), ...grass],
+  })
+  for (const [layer, property, value] of present) map.setPaintProperty(layer, property, value)
 
   if (map.getLayer('building')) map.setLayoutProperty('building', 'visibility', 'none')
   const firstLabel = map.getStyle().layers.find((l) => l.type === 'symbol')?.id
@@ -79,4 +96,25 @@ export function fadeBuildings(map: MapLibreMap, shown: boolean, durationMs: numb
   if (!map.getLayer(BUILDINGS_LAYER)) return
   map.setPaintProperty(BUILDINGS_LAYER, 'fill-extrusion-opacity-transition', { duration: durationMs, delay: 0 })
   map.setPaintProperty(BUILDINGS_LAYER, 'fill-extrusion-opacity', shown ? 1 : 0)
+}
+
+function transitionTo(map: MapLibreMap, values: [string, PaintProperty, PaintValue][], durationMs: number): void {
+  for (const [layer, property, value] of values) {
+    if (!map.getLayer(layer)) continue
+    map.setPaintProperty(layer, `${property}-transition` as PaintProperty, { duration: durationMs, delay: 0 })
+    map.setPaintProperty(layer, property, value)
+  }
+}
+
+/**
+ * On the way to the ward the base map eases from the UI palette to the ward map's own neutral base
+ * (positron with its greens flattened, WardMap/layers.ts), so when the ward map takes over the
+ * ground does not change colour; on the way back it eases into the palette again.
+ */
+export function setWardBase(map: MapLibreMap, ward: boolean, durationMs: number): void {
+  const palette = palettes.get(map)
+  if (!palette) return
+  transitionTo(map, ward ? palette.stock : palette.ours, durationMs)
+  if (ward) neutraliseBase(map)
+  if (map.getLayer(FLAT_BUILDINGS)) map.setLayoutProperty(FLAT_BUILDINGS, 'visibility', ward ? 'visible' : 'none')
 }

@@ -3,7 +3,7 @@ import type { Group } from 'three'
 import type { Design as DesignSpec, LocalPoint } from '@contracts/types'
 import { placementFrame } from './floors'
 import { poseLevel } from './levelDrop'
-import { buildFacade } from './models/build'
+import { facadeOf } from './models/build'
 import { facadeMaterial } from './models/materials'
 import type { FacadeModel } from './models/types'
 import { progress } from './timeline'
@@ -15,7 +15,7 @@ import { useSequenceFrame } from './useSequence'
  * colours in the glow of their windows, matching their labels.
  */
 export function DrawnDesign({ placement, spec, model }: { placement: LocalPoint[]; spec: DesignSpec; model: FacadeModel }) {
-  const facade = useMemo(() => buildFacade(model, spec), [model, spec])
+  const facade = useMemo(() => facadeOf(model, spec), [model, spec])
   useEffect(() => () => facade.levels.forEach((l) => l.parts.forEach((p) => p.geometry.dispose())), [facade])
 
   // The model's frame (u across from the left wall, v back from the front) onto the placement:

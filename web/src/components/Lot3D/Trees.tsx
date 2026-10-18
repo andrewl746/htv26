@@ -11,17 +11,18 @@ import {
   Vector3,
   type BufferGeometry,
 } from 'three'
-import type { LocalPoint } from '@contracts/types'
 import { tokenHex } from '../../styles/tokens'
 import { cutawayDepthMaterial, SLOT_ATTRIBUTE, withCutaway } from './cutaway'
 import { seededRandom } from './geometry'
 import { LOOK } from './look'
 import { setOccluders, slotOf, SLOTS, type Box } from './occlusion'
 import { ease, growSpan, progress, type Timeline } from './timeline'
+import type { TreeSite } from './treeSites'
 import { useSequenceFrame } from './useSequence'
 
 // Decoration only (MASTERSPEC 6.3): two or three puffy spheres on a short trunk, sized by a seed
-// from the tree's position so a street always looks the same. They grow in with the ripple.
+// from the tree's position so a street always looks the same, the crown smaller where a house
+// leaves it less room (treeSites.ts). They grow in with the ripple.
 const TRUNK = { height: [1.6, 2.6], radiusTop: 0.18, radiusBottom: 0.26 }
 const PUFF = { radius: [1.3, 2.3], spread: 0.9, rise: 0.45 }
 const PUFF_LIGHTNESS_JITTER = 0.08
@@ -47,13 +48,13 @@ interface Puff extends Part {
   reach: number
 }
 
-function plan(trees: LocalPoint[]): { trunks: Part[]; puffs: Puff[]; boxes: Box[] } {
+function plan(trees: TreeSite[]): { trunks: Part[]; puffs: Puff[]; boxes: Box[] } {
   // MASTERSPEC 6.3 performance: at most 300 trees, the nearest ones.
-  const nearest = [...trees].sort((a, b) => Math.hypot(...a) - Math.hypot(...b)).slice(0, SLOTS.trees)
+  const nearest = [...trees].sort((a, b) => Math.hypot(...a.at) - Math.hypot(...b.at)).slice(0, SLOTS.trees)
   const trunks: Part[] = []
   const puffs: Puff[] = []
   const boxes: Box[] = []
-  nearest.forEach((point, index) => {
+  nearest.forEach(({ at: point, crownM }, index) => {
     const random = seededRandom(point)
     const between = (range: number[]) => range[0] + (range[1] - range[0]) * random()
     const [x, z] = [point[0], -point[1]]
@@ -64,17 +65,23 @@ function plan(trees: LocalPoint[]): { trunks: Part[]; puffs: Puff[]; boxes: Box[
     const box: Box = { x, z, ux: 1, uz: 0, halfU: 0, halfV: 0, top: trunkHeight }
     const count = random() < 0.5 ? 2 : 3
     const treePhase = random() * Math.PI * 2
-    for (let i = 0; i < count; i++) {
+    const shapes = Array.from({ length: count }, (_, i) => {
       const r = between(PUFF.radius)
       const angle = random() * Math.PI * 2
       const spread = i === 0 ? 0 : PUFF.spread * random()
+      return { r, angle, spread, lightness: (random() - 0.5) * PUFF_LIGHTNESS_JITTER }
+    })
+    // The whole crown shrinks to keep out of a house beside it.
+    const k = Math.min(1, crownM / Math.max(...shapes.map((c) => c.spread + c.r)))
+    for (let i = 0; i < count; i++) {
+      const [r, angle, spread] = [shapes[i].r * k, shapes[i].angle, shapes[i].spread * k]
       const position = new Vector3(x + Math.cos(angle) * spread, trunkHeight + r * 0.6 + i * PUFF.rise, z + Math.sin(angle) * spread)
       puffs.push({
         position,
         scale: new Vector3(r, r * 0.9, r),
         distance,
         slot,
-        lightness: (random() - 0.5) * PUFF_LIGHTNESS_JITTER,
+        lightness: shapes[i].lightness,
         phase: treePhase + i * 0.6,
         reach: 0.7 + 0.3 * i,
       })
@@ -118,7 +125,7 @@ function writeSway(mesh: InstancedMesh, puffs: Puff[], seconds: number): void {
   mesh.instanceMatrix.needsUpdate = true
 }
 
-export function Trees({ trees }: { trees: LocalPoint[] }) {
+export function Trees({ trees }: { trees: TreeSite[] }) {
   const { trunks, puffs, boxes } = useMemo(() => plan(trees), [trees])
   const resources = useMemo(
     () => ({

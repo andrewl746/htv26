@@ -5,11 +5,13 @@ import type { MapFeatures, MapRoad, RoadClass } from './osmMap'
 import { inFrame, ROAD_CENTRE_M, type StreetFrame } from './streetFrame'
 
 // The streets from the map (osmMap.ts) as flat geometry: asphalt ribbons with mitred bends and a
-// round pad at each junction, concrete sidewalks along the city streets, footpaths, parking lots
-// (stall rows along each parking aisle, white lines between the stalls, none where a building
-// stands), and sports fields and playgrounds. The lot's own street is Frontage.tsx's, so the map's
-// copy of it is left out where that one runs; the map is first nudged across the street so its
-// centreline lies on that one, which takes out the map's offset from the City's survey.
+// round pad at each junction, concrete sidewalks along the city streets, footpaths and tracks,
+// parking lots (stall rows along each parking aisle, white lines between the stalls, none where a
+// building stands), and sports fields and playgrounds, out to the ground's edge. Where the lot has
+// a frontage, its own street is Frontage.tsx's, so the map's copy of it is left out where that one
+// runs; the map is first nudged across the street so its centreline lies on that one, which takes
+// out the map's offset from the City's survey. A lot with no frontage gets the map's streets as
+// they are.
 
 /** Curb to curb, by class. */
 export const ROAD_WIDTH_M: Record<RoadClass, number> = {
@@ -23,8 +25,11 @@ export const ROAD_WIDTH_M: Record<RoadClass, number> = {
   alley: 4.2,
   driveway: 3,
   parking_aisle: 6,
+  track: 3,
   path: 1.8,
 }
+/** Drawn as a footpath, not asphalt, and with no pad at its ends. */
+const UNPAVED: ReadonlySet<RoadClass> = new Set(['path', 'track'])
 /** Sidewalks along city streets: how far out from the curb, and how wide. */
 const SIDEWALK: Partial<Record<RoadClass, { gap: number; width: number }>> = {
   primary: { gap: 0, width: 3 },
@@ -152,11 +157,14 @@ function pieces(line: LocalPoint[]): LocalPoint[][] {
   return out
 }
 
-/**
- * The map's roads, moved across the street onto the lot's street, without the stretch the
- * frontage road draws, and without what crosses the lot: consecutive kept pieces joined again.
- */
-export function placeRoads(map: MapFeatures, street: StreetFrame, reach: { back: number; ahead: number }, lot: LocalPoint[]): { roads: RoadPiece[]; shift: LocalPoint } {
+/** The lot's own street, which Frontage.tsx draws, and how far it runs each way. */
+export interface FrontageStreet {
+  street: StreetFrame
+  reach: { back: number; ahead: number }
+}
+
+/** How far the map's copy of the lot's street lies across the street from the frontage road's centreline. */
+function alignment(map: MapFeatures, street: StreetFrame): number {
   // The median distance of the map's parallel city streets near the frontage from its centreline.
   const offsets: number[] = []
   for (const r of map.roads) {
@@ -171,14 +179,25 @@ export function placeRoads(map: MapFeatures, street: StreetFrame, reach: { back:
   }
   offsets.sort((a, b) => a - b)
   const off = offsets.length ? offsets[Math.floor(offsets.length / 2)] : 0
-  const move = Math.abs(off) <= ALIGN.maxShiftM ? off : 0
-  const shift: LocalPoint = [-street.toward[0] * move, -street.toward[1] * move]
+  return Math.abs(off) <= ALIGN.maxShiftM ? off : 0
+}
+
+/**
+ * The map's roads within radiusM of the lot (the ground's edge), moved across the street onto the
+ * lot's street, without the stretch the frontage road draws, and without what crosses the lot:
+ * consecutive kept pieces joined again. With no frontage, the map's roads as they are.
+ */
+export function placeRoads(map: MapFeatures, frontage: FrontageStreet | null, lot: LocalPoint[], radiusM: number): { roads: RoadPiece[]; shift: LocalPoint } {
+  const move = frontage ? alignment(map, frontage.street) : 0
+  const shift: LocalPoint = frontage ? [-frontage.street.toward[0] * move, -frontage.street.toward[1] * move] : [0, 0]
   const moved = (p: LocalPoint): LocalPoint => [p[0] + shift[0], p[1] + shift[1]]
 
   const lotRing = openRing(lot)
   const keep = (r: MapRoad, [p, q]: LocalPoint[]) => {
     const mid: LocalPoint = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]
-    if (inside(mid, lotRing)) return false
+    if (Math.hypot(...mid) > radiusM || inside(mid, lotRing)) return false
+    if (!frontage) return true
+    const { street, reach } = frontage
     const [a, b] = [inFrame(street, p), inFrame(street, q)]
     const len = Math.hypot(b.s - a.s, b.o - a.o) || 1
     const onFrontage =
@@ -302,7 +321,7 @@ export function roadLayers(roads: RoadPiece[], map: MapFeatures, shift: LocalPoi
   const key = ([x, y]: LocalPoint) => `${Math.round(x * 2)},${Math.round(y * 2)}`
   const ends = new Map<string, { at: LocalPoint; count: number; width: number; walk: number }>()
   for (const r of roads) {
-    if (r.kind === 'path') continue
+    if (UNPAVED.has(r.kind)) continue
     const walk = SIDEWALK[r.kind]
     for (const at of [r.line[0], r.line[r.line.length - 1]]) {
       const e = ends.get(key(at)) ?? { at, count: 0, width: 0, walk: 0 }
@@ -323,7 +342,7 @@ export function roadLayers(roads: RoadPiece[], map: MapFeatures, shift: LocalPoi
     boxes.some(([x0, y0, x1, y1], i) => p[0] > x0 && p[0] < x1 && p[1] > y0 && p[1] < y1 && inside(p, rings[i]))
 
   for (const r of roads) {
-    if (r.kind === 'path') {
+    if (UNPAVED.has(r.kind)) {
       band(path, r.line, -r.width / 2, r.width / 2, ROAD_Y.path)
       continue
     }

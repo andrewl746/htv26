@@ -192,6 +192,12 @@
     "filter_legend": "Design shown on the map",
     "data_dates": "Data dates",
     "loading": "Loading the ward…",
-    "map_aria": "Map of the ward: lots coloured by whether a free City design may fit, and multiplex permits as gold dots."
+    "map_aria": "Map of the ward: lots coloured by whether a free City design may fit, and multiplex permits as gold dots.",
+    "near_heading": "Near your lot (within {{radius_m}} m)",
+    "near_could": "{{count}} lots in this ward may fit a free City design (an upper bound)",
+    "near_could_one": "{{count}} lot in this ward may fit a free City design (an upper bound)",
+    "near_did": "{{count}} multiplex permits issued since May 2023",
+    "near_did_one": "{{count}} multiplex permit issued since May 2023",
+    "near_ring_label": "The area within {{radius_m}} m of your lot"
   }
 }

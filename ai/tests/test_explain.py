@@ -91,6 +91,17 @@ def test_a_fresh_check_of_the_same_lot_hits_the_cache(client):
     assert len(fake.prompts) == 1
 
 
+def test_reworded_next_steps_do_not_change_the_key(client):
+    """The explanation never reads next_steps (contracts v0.1.8), so rewording them must not miss the cache."""
+    fake = use(FakeGemini(GOOD))
+    client.post("/explain", json=REQUEST)
+    reworded = json.loads(json.dumps(REQUEST))
+    reworded["check"]["next_steps"][0]["text"] = "Reworded, as Yuvi's PR #24 did to the real steps."
+    reworded["check"]["next_steps"].pop()
+    assert client.post("/explain", json=reworded).json()["cached"] is True
+    assert len(fake.prompts) == 1
+
+
 def test_a_different_engine_version_is_a_different_key(client):
     fake = use(FakeGemini(GOOD))
     client.post("/explain", json=REQUEST)

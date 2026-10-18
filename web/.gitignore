@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Licensed fonts (Helvetica Now is Monotype's, Milligram Macro a trial): copied in by hand on each
+# machine, never published with the repo. Without them the type falls back to Helvetica or Arial.
+public/fonts/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

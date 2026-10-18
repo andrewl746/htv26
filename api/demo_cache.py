@@ -4,7 +4,8 @@ whenever a file exists for it, and starts even when the data directory is gone.
 File names follow the web app's `public/demo-cache/` (6.7), so the A11 writer (`python -m api.cache_demo`) can
 fill both folders from one list: `search.<query>.json`, `check.<address_id>.json` (`check.lot.<lot_id>.json` for
 a lot lookup), `ward.<id>.json`, `trend.<id>.json`, `lots.<id>.geojson`, `permits.geojson`. A cached
-`CheckResponse` is served with `meta.cached` true. Lookups by lon/lat are never cached.
+`CheckResponse` is served with `meta.cached` true, and a cached trend with `source` "cache". Lookups by lon/lat
+are never cached.
 """
 from __future__ import annotations
 
@@ -61,7 +62,8 @@ def cache_name(path: str, params: Mapping[str, str]) -> str | None:
 
 
 def read(cache_dir: Path, path: str, params: Mapping[str, str]) -> tuple[str, Any] | None:
-    """(file name, parsed body) for a cached answer, or None. A cached CheckResponse gets `meta.cached` true."""
+    """(file name, parsed body) for a cached answer, or None. A cached CheckResponse gets `meta.cached` true, and a
+    cached trend `source` "cache" (it was written from Tiger Data, but now comes from a file)."""
     name = cache_name(path, params)
     if name is None:
         return None
@@ -71,4 +73,6 @@ def read(cache_dir: Path, path: str, params: Mapping[str, str]) -> tuple[str, An
     doc = json.loads(file.read_text(encoding="utf-8"))
     if name.startswith("check.") and isinstance(doc.get("meta"), dict):
         doc["meta"]["cached"] = True
+    if name.startswith("trend.") and isinstance(doc, dict):
+        doc["source"] = "cache"
     return name, doc

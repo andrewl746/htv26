@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import { Spherical, Vector3 } from 'three'
 import { cameraBridge } from './cameraBridge'
+import type { Vec3 } from './geometry'
 import { useSequenceFrame } from './useSequence'
 import { FOV_DEG, REST_TILT_DEG, TARGET_HEIGHT_M } from './view'
 
@@ -14,17 +15,27 @@ const TARGET = new Vector3(0, TARGET_HEIGHT_M, 0)
 const ORBIT_PERIOD_S = 24
 const ORBIT_IDLE_S = 5
 const UP = new Vector3(0, 1, 0)
+/** The dev elevation view (debug.ts) looks from far away through a long lens, so it reads nearly flat. */
+const ELEVATION_ZOOM = 3.2
+
+export interface FixedPose {
+  position: Vec3
+  target: Vec3
+}
 
 export function Camera({
   lotKey,
   distanceM,
   viewBearingDeg,
   rightInsetPx,
+  fixed = null,
 }: {
   lotKey: string
   distanceM: number
   viewBearingDeg: number
   rightInsetPx: number
+  /** Dev only: hold the camera here (debug.ts). */
+  fixed?: FixedPose | null
 }) {
   const camera = useRef<ComponentRef<typeof PerspectiveCamera>>(null)
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
@@ -86,6 +97,16 @@ export function Camera({
       if (ctl) ctl.enabled = false
       cam.position.set(...pose.position)
       cam.lookAt(...pose.target)
+      return
+    }
+    if (fixed) {
+      if (ctl) ctl.enabled = false
+      cam.position.set(...fixed.position)
+      cam.lookAt(...fixed.target)
+      if (cam.zoom !== ELEVATION_ZOOM) {
+        cam.zoom = ELEVATION_ZOOM
+        cam.updateProjectionMatrix()
+      }
       return
     }
     if (ctl && !ctl.enabled) ctl.enabled = true

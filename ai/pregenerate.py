@@ -100,8 +100,11 @@ def run(args: argparse.Namespace, settings: Settings, paced: Paced) -> int:
                   "run the same command later to resume.")
         return paced.failed is not None
 
-    print(f"Ward {args.ward} briefing, model {settings.gemini_model}, {len(langs)} language(s)")
-    ward, trend = ward_data(settings, args.ward, args.fixture)
+    if args.addresses_only:
+        langs = []  # explanations only: don't spend requests on the ward briefing
+    else:
+        print(f"Ward {args.ward} briefing, model {settings.gemini_model}, {len(langs)} language(s)")
+        ward, trend = ward_data(settings, args.ward, args.fixture)
     for lang in langs:
         # refresh regenerates the English once; translations are keyed by the English text, so they follow.
         result = briefing({"ward": ward, "trend": trend, "lang": lang}, settings, cache, paced,
@@ -132,7 +135,11 @@ def main(argv: list[str] | None = None, *, generate=generate_json, sleep=time.sl
     parser.add_argument("--model", help="override GEMINI_MODEL for this run")
     parser.add_argument("--refresh", action="store_true", help="regenerate even when cached (e.g. with a new model)")
     parser.add_argument("--fixture", action="store_true", help="use /contracts/fixtures instead of the API")
+    parser.add_argument("--addresses-only", action="store_true",
+                        help="only the --address-id explanations; skip the ward briefing (saves requests with --refresh)")
     args = parser.parse_args(argv)
+    if args.addresses_only and not args.address_id:
+        parser.error("--addresses-only needs at least one --address-id")
 
     settings = load_settings()
     if args.model:

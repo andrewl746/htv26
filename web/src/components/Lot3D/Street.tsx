@@ -1,39 +1,39 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { Group, Material } from 'three'
+import type { BufferGeometry, Group, Material } from 'three'
 import type { ContextBuilding } from '@contracts/types'
 import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, setSlot, streetGrid, type BuiltBuilding } from './buildings'
 import { cutawayDepthMaterial } from './cutaway'
+import { LOOK } from './look'
 import { setOccluders, slotOf, SLOTS } from './occlusion'
 import { growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
-import { useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
+import { slotMaterial, useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
+
+/** A neighbour's mesh: it sinks with its slot, and so does its shadow. */
+function StreetMesh({ geometry, material }: { geometry: BufferGeometry; material: Material }) {
+  return (
+    <mesh
+      geometry={geometry}
+      material={material}
+      customDepthMaterial={cutawayDepthMaterial}
+      castShadow
+      receiveShadow
+      dispose={null}
+    />
+  )
+}
 
 /** One building growing in its slot of the ripple, later the further it is from the lot. */
-export function GrowingBuilding({ building, wall, roof }: { building: BuiltBuilding; wall: Material; roof: Material }) {
+export function GrowingBuilding({ building, materials }: { building: BuiltBuilding; materials: StreetMaterials }) {
   const group = useRef<Group>(null)
   useSequenceFrame((t, { timeline }) => {
     if (group.current) applyGrowth(group.current, progress(t, growSpan(timeline, building.distance)))
   })
   return (
     <group ref={group} position={[building.x, 0, building.z]} visible={false}>
-      <mesh
-        geometry={building.body}
-        material={wall}
-        customDepthMaterial={cutawayDepthMaterial}
-        castShadow
-        receiveShadow
-        dispose={null}
-      />
-      {building.roof && (
-        <mesh
-          geometry={building.roof}
-          material={roof}
-          customDepthMaterial={cutawayDepthMaterial}
-          castShadow
-          receiveShadow
-          dispose={null}
-        />
-      )}
+      {building.parts.map((part) => (
+        <StreetMesh key={part.slot} geometry={part.geometry} material={slotMaterial(materials, part.slot, building.colorIndex)} />
+      ))}
     </group>
   )
 }
@@ -48,7 +48,7 @@ export function Street({ buildings }: { buildings: ContextBuilding[] }) {
     const grid = streetGrid(buildings)
     const nearest = buildings
       .filter((b) => !b.on_lot)
-      .map((b) => buildBuilding(b, grid))
+      .map((b) => buildBuilding(b, grid, LOOK))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, SLOTS.buildings)
     nearest.forEach((b, i) => setSlot(b, slotOf('buildings', i)))
@@ -76,7 +76,7 @@ export function Street({ buildings }: { buildings: ContextBuilding[] }) {
     <group>
       {/* Keyed by position: one massing polygon can come back as several parts with the same id. */}
       {built.map((b, i) => (
-        <GrowingBuilding key={i} building={b} wall={materials.walls[b.colorIndex]} roof={materials.roof} />
+        <GrowingBuilding key={i} building={b} materials={materials} />
       ))}
     </group>
   )
@@ -84,33 +84,12 @@ export function Street({ buildings }: { buildings: ContextBuilding[] }) {
 
 function MergedStreet({ built, materials }: { built: BuiltBuilding[]; materials: StreetMaterials }) {
   const merged = useMemo(() => mergeStreet(built), [built])
-  useEffect(() => () => [...merged.bodies, merged.roofs].forEach((g) => g?.dispose()), [merged])
+  useEffect(() => () => [...merged.walls, merged.roof, merged.flat].forEach((g) => g?.dispose()), [merged])
   return (
     <group>
-      {merged.bodies.map(
-        (g, i) =>
-          g && (
-            <mesh
-              key={i}
-              geometry={g}
-              material={materials.walls[i]}
-              customDepthMaterial={cutawayDepthMaterial}
-              castShadow
-              receiveShadow
-              dispose={null}
-            />
-          ),
-      )}
-      {merged.roofs && (
-        <mesh
-          geometry={merged.roofs}
-          material={materials.roof}
-          customDepthMaterial={cutawayDepthMaterial}
-          castShadow
-          receiveShadow
-          dispose={null}
-        />
-      )}
+      {merged.walls.map((g, i) => g && <StreetMesh key={i} geometry={g} material={materials.walls[i]} />)}
+      {merged.roof && <StreetMesh geometry={merged.roof} material={materials.roof} />}
+      {merged.flat && <StreetMesh geometry={merged.flat} material={materials.flat} />}
     </group>
   )
 }

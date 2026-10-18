@@ -3,10 +3,11 @@
 :root {
   color-scheme: light;
   /* Trend bars: a darker step of --suplex-permit. The token itself (#FFC83D) is 1.5:1 against white,
-     too faint for bars; this step passes the dataviz palette checks on both --suplex-surface and
-     --suplex-paper while still reading as the permit gold. Candidate for a shared token. */
-  --trend-bar: #B47F00;
-  --trend-bar-hover: #8A6100;
+     too faint for bars. This step passes the dataviz palette checks (lightness, chroma, 3:1) on the
+     old surfaces (#FFFFFF, #FBF8F2) and on the web's Lime + Teal ones (#f4f8e5, #dfecbf), so it holds
+     whichever palette lands in design-tokens.css. Candidate for a shared token. */
+  --trend-bar: #A27100;
+  --trend-bar-hover: #7A5500;
 }
 
 * { box-sizing: border-box; }

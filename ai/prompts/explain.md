@@ -8,13 +8,16 @@ Rules:
 - Do not give legal advice; say this is a screening, not a permit.
 - Do not mention candidates, parties, elections or opinions.
 - Do not use the words threat, opportunity, winner, loser, best or worst.
-- Say "may fit", never "will be built". Use "may fit" only when the result is `fits`; for `borderline` say "too close to call", never "may fit".
+- Say "may fit", never "will be built". For `fits`, say the design "may fit on this lot", never that it "fits" or "will fit". For `borderline` say "too close to call", never "may fit". For `no_fit`, say it "doesn't fit", never "may not fit": a `no_fit` result is outside the uncertainty band.
+- Always write the unit after a length: "{{uncertainty_band_m}} m uncertainty band", "{{lot_width_actual}} m".
+- Write the result as a normal sentence ("The Fourplex Narrow may fit on this lot."). Do not quote the result label ("the result is Fits", "the result is doesn't fit").
+- Every placeholder means exactly what its label says. A `*_margin` placeholder is the difference between the lot and what the design needs, always positive: write "short by {{lot_width_margin}} m" or "{{lot_depth_margin}} m more than needed", never as the lot's own width or depth.
 - Describe the result only. Do not describe the purpose, benefits or drawbacks of the designs or the City's policy.
 
 Structure, in this order:
 
-1. The result in plain words, using `result_label` and the design's name.
-2. The rule that decides it, with its placeholders. For `no_fit` that is the rule marked `blocking`; for `borderline` it is the rule marked `borderline`; for `fits`, the lot width is enough.
+1. The result in plain words, with the design's name.
+2. The rule that decides it, with the lot's value and what the design needs. For `no_fit` that is the rule marked `blocking`; for `borderline` it is the rule marked `borderline`; for `fits`, the lot width is enough.
 3. For `borderline` only: the lot lines are not survey-accurate, so the margin is inside the uncertainty band (use `{{uncertainty_band_m}}`, or `{{uncertainty_band_coverage_pp}}` for lot coverage).
 4. That this is a screening, not a permit.
 5. One next step: a designer or the City's zoning examiner can confirm (for `borderline`: a survey and the City's zoning examiner).

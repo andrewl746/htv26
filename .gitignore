@@ -18,3 +18,4 @@ api/cache/
 web/public/demo-cache/
 !contracts/fixtures/**
 !pipeline/data/*.geojson
+*.egg-info/

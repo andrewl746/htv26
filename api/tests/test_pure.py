@@ -15,7 +15,17 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api.main import Settings, create_app, trend_response, ward_response, warm_tiger_import
-from api.store import StoreError, load, normalise_address, normalise_data_dates, one_per_lot, prefix_range
+from api.store import (
+    StoreError,
+    _read_json,
+    check_crs,
+    load,
+    normalise_address,
+    normalise_data_dates,
+    one_per_lot,
+    prefix_range,
+    read_permit_points,
+)
 
 FIXTURES = Path(__file__).resolve().parents[2] / "contracts" / "fixtures"
 
@@ -126,6 +136,59 @@ def test_unexpected_errors_are_json(caplog) -> None:
     assert r.status_code == 500
     assert r.json() == {"error": "internal_error"}
     assert "unhandled error on /search" in caplog.text
+
+
+def test_unexpected_errors_carry_the_cors_headers() -> None:
+    def broken(q: str, limit: int) -> list:
+        raise RuntimeError("boom")
+
+    with TestClient(create_app(store=SimpleNamespace(search=broken)), raise_server_exceptions=False) as c:
+        r = c.get("/search", params={"q": "ab"}, headers={"Origin": "http://localhost:5173"})
+    assert r.status_code == 500
+    assert r.json() == {"error": "internal_error"}
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+# ---------- optional files and the GeoPackage's CRS ----------
+
+def test_permit_points_skip_null_dates_and_malformed_features(tmp_path) -> None:
+    good = {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-79.45, 43.65]},
+            "properties": {"id": 1, "d": "2024-01-02", "w": "04", "u": 3, "k": "multiplex"}}
+    bad = [
+        {**good, "properties": {**good["properties"], "d": None}},          # null date ("None" >= "2023")
+        {**good, "properties": {**good["properties"], "d": "2022-12-31"}},  # before the window
+        {**good, "properties": {**good["properties"], "k": "other"}},
+        {**good, "geometry": None},
+        {**good, "geometry": {"type": "Point", "coordinates": ["x", 1]}},
+        {"type": "Feature"},
+        "not a feature",
+    ]
+    path = tmp_path / "permits.geojson"
+    path.write_text(json.dumps({"type": "FeatureCollection", "features": [good, *bad]}), encoding="utf-8")
+    pts = read_permit_points(path, "2023-05-01")
+    assert len(pts) == 1
+    assert 300_000 < pts[0].x < 330_000 and 4_830_000 < pts[0].y < 4_840_000      # EPSG:2952 metres
+
+
+@pytest.mark.parametrize("text", ["{not json", "[1, 2]", ""])
+def test_malformed_optional_files_are_treated_as_missing(tmp_path, text: str) -> None:
+    path = tmp_path / "permits.geojson"
+    path.write_text(text, encoding="utf-8")
+    assert len(read_permit_points(path, "2023-05-01")) == 0
+    if text != "[1, 2]":
+        assert _read_json(path) is None
+
+
+def test_layers_outside_epsg_2952_stop_the_load(tmp_path) -> None:
+    import geopandas as gpd
+    from shapely.geometry import Point
+
+    ok = gpd.GeoDataFrame(geometry=[Point(0, 0)], crs="EPSG:2952")
+    check_crs(tmp_path / "x.gpkg", {"lots": ok})
+    with pytest.raises(StoreError, match="layer buildings is in EPSG:4326"):
+        check_crs(tmp_path / "x.gpkg", {"lots": ok, "buildings": ok.to_crs("EPSG:4326")})
+    with pytest.raises(StoreError, match="no CRS"):
+        check_crs(tmp_path / "x.gpkg", {"lots": gpd.GeoDataFrame(geometry=[Point(0, 0)])})
 
 
 def test_cors_allows_localhost_ports_and_the_extra_origins(tmp_path) -> None:

@@ -1,4 +1,4 @@
-# Suplex masterspec, version 3 (status updated 2026-10-17, see section 0)
+# Suplex masterspec, version 3 (status board updated 2026-10-17 20:10, see section 0)
 
 **Hack the Valley 11 · Hack the Valley × School of Cities challenge · 4 people · about 36 hours**
 
@@ -12,7 +12,14 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status: what is done and what is next](#0-status-what-is-done-and-what-is-next-updated-2026-10-17)
+- [0. Status board (updated 2026-10-17, 20:10, about Hour 22 of 36)](#0-status-board-updated-2026-10-17-2010-about-hour-22-of-36)
+  - [0.1 How far along we are](#01-how-far-along-we-are)
+  - [0.2 Status by person](#02-status-by-person)
+  - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
+  - [0.4 Web app review (Jayden's branch, all 16 commits, 2026-10-17)](#04-web-app-review-jaydens-branch-all-16-commits-2026-10-17)
+  - [0.5 Decisions since version 3 (each one changed the section in brackets)](#05-decisions-since-version-3-each-one-changed-the-section-in-brackets)
+  - [0.6 Known data limits (say "about", never "exactly")](#06-known-data-limits-say-about-never-exactly)
+  - [0.7 Process rules that slipped](#07-process-rules-that-slipped)
 - [1. Summary, decisions locked, assumptions](#1-summary-decisions-locked-assumptions)
 - [2. Product, users and demo](#2-product-users-and-demo)
   - [2.1 One-liner and pitch](#21-one-liner-and-pitch)
@@ -52,6 +59,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
   - [5.7 Attached houses (`attached.py`)](#57-attached-houses-attachedpy)
   - [5.8 Flags](#58-flags)
   - [5.9 Hand-checked test lots (`engine/tests/test_lots.py`)](#59-hand-checked-test-lots-engineteststest_lotspy)
+  - [5.10 Next steps (approved 2026-10-17)](#510-next-steps-approved-2026-10-17)
 - [6. Web app and visual direction (Jayden, `/web`)](#6-web-app-and-visual-direction-jayden-web)
   - [6.1 Stack and structure](#61-stack-and-structure)
   - [6.2 Screens and flow](#62-screens-and-flow)
@@ -79,14 +87,10 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
   - [8.2 Yuvi: data pipeline and Tiger Data](#82-yuvi-data-pipeline-and-tiger-data)
   - [8.3 Jayden: the web app](#83-jayden-the-web-app)
   - [8.4 Simone: the AI service, the briefing page, the story and all user-facing copy](#84-simone-the-ai-service-the-briefing-page-the-story-and-all-user-facing-copy)
+  - [8.5 Next-steps and re-plan tasks (approved 2026-10-17)](#85-next-steps-and-re-plan-tasks-approved-2026-10-17)
 - [9. Git workflow and the root `CLAUDE.md`](#9-git-workflow-and-the-root-claudemd)
   - [9.1 Workflow](#91-workflow)
   - [9.2 Root `CLAUDE.md` (full text; Andrew commits it in A1)](#92-root-claudemd-full-text-andrew-commits-it-in-a1)
-- [Who owns what (edit only your own folders)](#who-owns-what-edit-only-your-own-folders)
-- [Non-negotiable product rules](#non-negotiable-product-rules)
-- [Contracts](#contracts)
-- [Run commands (from the repo root)](#run-commands-from-the-repo-root)
-- [Coding conventions](#coding-conventions)
 - [10. Timeline and checkpoints](#10-timeline-and-checkpoints)
 - [11. Risks and fallbacks](#11-risks-and-fallbacks)
 - [12. Q&A prep (Simone writes the final answers in `/pitch/qa.md`)](#12-qa-prep-simone-writes-the-final-answers-in-pitchqamd)
@@ -101,120 +105,123 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 - [Appendix G. Dataset field reference and download URLs (verified 2026-10-17 through the City's CKAN API)](#appendix-g-dataset-field-reference-and-download-urls-verified-2026-10-17-through-the-citys-ckan-api)
 - [Appendix H. Verification log (what was checked on 2026-10-17, and what was not)](#appendix-h-verification-log-what-was-checked-on-2026-10-17-and-what-was-not)
 - [Appendix I. Report for Andrew: decisions made while you were away, and the questions this spec would have asked](#appendix-i-report-for-andrew-decisions-made-while-you-were-away-and-the-questions-this-spec-would-have-asked)
+- [Appendix J. Status log (every report, word for word)](#appendix-j-status-log-every-report-word-for-word)
 
 ---
 
-## 0. Status: what is done and what is next (updated 2026-10-17)
+## 0. Status board (updated 2026-10-17, 20:10, about Hour 22 of 36)
 
-Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branch `main`; all six PRs merged). The engine now runs on real City data: 19 hand-checked Ward 04 lots pin it (`docs/test-lots.md`), `pytest engine api` gives 199 passed and `contracts/validate.py` 37 ok. The citywide batch (A10) has not run yet, so no headline number exists; nothing is locked until Hour 24.
+Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 
-**Done and green on `main`**
+### 0.1 How far along we are
 
-| Task | State | How to verify |
+Measured against the planned hours in section 8, after the approved re-plan moved J5 to Yuvi, J7 to Simone and the 3D scene to Andrew (J8, J10 and two new 3D tasks), and added next steps (6.5 hours): a task counts as done when its acceptance check passes on `main` or on a clean PR, and a partly done task counts the share actually finished. Time used: about 20 of 36 hours (55%); about 8 hours remain before rehearsals start at Hour 28.
+
+| Person | Planned hours | Done hours | Done | Biggest piece left |
+|---|---|---|---|---|
+| Andrew | 35.0 | 31.3 | 89% | the Hour-24 lock (`scripts/hour24.ps1`); Simone's PR #17 with the `not_checked` fixture update; the palette into `contracts/design-tokens.css`; A13 |
+| Yuvi | 33.0 | 31.7 | 96% | the Hour-24 refresh and any fixes from Simone's review; next steps (PR #18), the ward map and the 2D plan view are done |
+| Jayden | 18.5 | 10.4 | 56% | J4 result panel, J6 transition, J9 demo mode (the 2D view now comes from Yuvi's plan view), the landing search card and the non-3D UI polish (about 8 hours; away for a few hours first) |
+| Simone | 29.0 | 22.2 | 77% | PR #17 in review (S8 on real data, S9 on Ward 04, S14) plus her `not_checked.json` change; the AI pass and the [LOCKED] numbers after Hour 24; ten rehearsals |
+| **Team** | **115.5** | **95.6** | **83%** | the result panel and transition (Jayden), the Hour-24 lock and demo cache, Simone's PR #17 with the `not_checked` change, the rehearsals |
+
+Andrew's main session has written the A10 batch and run it citywide (clean at 18:19, 78 of 78 sanity checks); the code is pushed (18:45), together with A9 (the demo-cache mode) and T20 (skewed lots), and the outputs are on the data release since 19:11 (`suplex_batch_2026-10-17.zip`; unzip into `data/out/`). Two more Claude sessions built A11's cache writer and the Hour-24 scripts (PR #20, merged at 19:57) and the 3D scene (PR #19, merged at 20:06 after the frame-rate check). Counting them, Andrew has about 3.7 hours left (the Hour-24 run, Simone's PR #17 with the fixture update, the palette, A13) and Yuvi about 1.3 (the Hour-24 refresh, fixes from S14); Jayden has the most left, about 8 hours (the result panel, the transition, the demo mode, then mounting the ward map and next steps). Next steps (PR #18) and the 3D scene (PR #19) are both merged, with `?look=classic` kept as the 3D fallback (T23).
+
+**By feature:**
+
+| Feature | State | Done |
 |---|---|---|
-| A1 repo scaffold | done: folders, `CLAUDE.md`, `.gitignore`, `.gitattributes`, `requirements.txt`, `.env.example`, `README.md` stub, `docs/decisions.md`, `contracts/README.md`; root `.venv` on Python 3.14 (the only interpreter on Andrew's machine; 3.12 to 3.14 all work) | `pip install -r requirements.txt` |
-| A2 contracts and fixtures | done: 13 schemas, `types.ts`, `designs.json`, `engine_config.json` (plus `attached.on_lot_m2`, see decisions), `design-tokens.css` v0, `copy/*.json` v0, `tiger/schema.sql`, 15 fixtures, `validate.py` | `python contracts/validate.py` prints "35 ok, 0 failed" |
-| A3 hour-0 checks | done in `docs/decisions.md` (19 m rule, `AVG_HEIGHT`, Ward 04, Python 3.14); the Sixplex Narrow sheet itself was not re-read (T3 still open) | read `docs/decisions.md` |
-| A4 lot geometry | done: `engine/suplex_engine/geometry.py` and `config.py`, 22 tests | `pytest engine/tests/test_geometry.py` |
-| A5 rules, config, designs | done: `rules.py` (every value with its by-law section), `designs.py`, 45 tests | `pytest engine/tests/test_rules.py` |
-| A6 classification, attached, fit, placement | done: `classify.py`, `attached.py`, `fit.py`, `models.py`, `copy.py`, `check.py` with `run_check(LotInput, cfg, designs, data_dates) -> CheckResult` (`.to_dict()` is the `CheckResponse`); the four `check.*.json` fixtures are reproduced; 38 tests | `pytest engine` prints 153 passed (2026-10-17 afternoon count, with A8) |
-| A7 API v1 (plus the `/ward`, `/trend` and `/health` parts of A9) | done 2026-10-17 afternoon: `api/__init__.py`, `api/store.py` (GeoPackage layers with STRtree indexes, single-part MultiPolygons unwrapped, `LotInput` built as `pipeline/smoke_engine.py` does), `api/main.py` (`/health`, `/designs`, `/search`, `/check` by `address_id`, `lot_id` or `lon`+`lat`, `/ward/{id}`, `/ward/{id}/trend` with the 2 s Tiger budget then `trend_cache`, `/static/permits.geojson`, `/static/wards/{id}.geojson`, JSON errors, CORS for localhost, gzip), 44 tests that skip without the data. Measured: `/check` 22 to 43 ms warm, Ward 04 load 0.3 s, citywide load 3.9 s and 2.3 GB; every `validate.py --url` check passes; `/ward/04/trend` says `cache` with `TIGER_DSN` unset; `/ward/{id}` answers 503 `ward_summary_unavailable` until A10 writes `ward_summary.json`. New optional env: `SUPLEX_GPKG` (path override), `SUPLEX_CORS_ORIGINS`. The API converts the pipeline's `data_dates.json` keys and timestamps to the contract's `data_dates` (`api/store.py` `normalise_data_dates`); the batch needs the same, or the pipeline writes contract keys (Yuvi) | `SUPLEX_DATA_DIR=data/out uvicorn api.main:app --port 8000`, then `python contracts/validate.py --url "http://127.0.0.1:8000/check?address_id=7986858"` (326 Quebec Ave); `pytest api` |
-| A8 hand-checked test lots | done 2026-10-17 afternoon: 19 real Ward 04 parcels in `engine/tests/test_lots.py` (loader `engine/tests/real_lots.py`, skips without `data/out/suplex.gpkg`), each measured without the engine and agreeing within 0.05 m on every regular lot; `docs/test-lots.md` lists them with the threshold tables. Thresholds in `engine_config.json`: `attached.cross_lot_m2` 4 → 20, `attached.tolerance_m` 0.3 → 0.05, `larger_building.avg_height_m` 12 → 16 (footprint 350 m² unchanged, now on the clipped footprint). Two engine fixes came out of it: rear lanes are never the frontage (5.2 step 1) and a design wider than the lot reports the lot's depth (5.5). Ward 04 attached share: 60.6% under the old numbers, **41.6%** now (the fixture guessed 35.8%) | `pytest engine/tests/test_lots.py`; `docs/test-lots.md` |
-| Web scaffold (start of J1) | done by Andrew: Vite + React 19 + TypeScript in `/web`, `@contracts/types` alias, dev proxy to :8000 and :8001, three / fiber / drei / maplibre / zustand installed; `App.tsx` renders only a heading (TODO: disclaimer from `contracts/copy/disclaimers.json`) | `cd web && npm install && npm run build` |
-| J1, J2, J3 (Jayden) | done on fixtures: the 3D test scene from `check.fits.json`, the address search, and the 3D sequence v1; branch `jayden`, PR #6, merged into `main` by Jayden on 2026-10-17 (web files only, so no conflict with the engine work) | `cd web && npm run dev` |
-| Landing hero and fly-in (Jayden, PR #7, merged as c3f63f1; web only; `npm run build` passes) | a MapLibre hero map of Toronto on the landing page that flies down into the 3D sequence (the pin-drop and swoop beat of 6.3), with a smooth handoff (no shader stalls, steadier tiles); `context.buildings[]` keyed by array position (Andrew's note); the dev proxy on 127.0.0.1; the "Try:" chips read fixture addresses until S9 supplies the real backup addresses. **Palette:** Jayden's UI palette (Charcoal `#605B56`, Grey `#837A75`, Muted Olive `#ACC18A`, Tea Green `#DAFEB7`) lives in `web/src/styles/palette.css` as a web-only override of the UI tokens, with measured contrast (ink on Tea Green 12.8:1); the locked map colours and the 3D scene tokens are untouched, and the 3D lot keeps the warm off-white so a lime lot never reads as "fits". **Andrew:** move those values into `contracts/design-tokens.css` (6.10) so the briefing page matches, then Jayden deletes `palette.css`; Simone reviews | `cd web && npm run dev`, open the landing page |
-**Simone, four reports on 2026-10-17 (branch `simone`, 17 commits, PR #3 merged into `main` as 8353357; touches only `ai/`, `docs/`, `pitch/` and `contracts/copy/`; `pytest ai/tests` gives 107 passed)**
+| 1. Address check | The engine and the API work on real data (19 hand-checked lots, 199 tests); search, the 3D sequence and the AI explanation work. Missing: the result panel's checklist, flags, permits near you and buttons (J4), and the red fail slice (J8) | about 70% |
+| 2. Permission vs. reality | The data, the permit counts and Tiger Data are done and checked against the City; the batch (A10) ran citywide and the ward map (J5) is merged. Missing: the batch outputs shared, the map wired into the app (J4, J6), the ward-panel chart (J7) | about 55% |
+| 3. Ward briefing | The service, validator, shareable page and eight-language translation work on fixtures and on the 19 real lots (PR #8); real ward numbers exist (A10) and wait only on the outputs being shared | about 80% |
+| Demo safety and pitch | The pitch facts are checked and the Devpost, deck and script are drafted. Missing: the demo cache (A11, J9), the offline rehearsal, the ten timed rehearsals | about 25% |
 
-| Task | State | How to verify |
+### 0.2 Status by person
+
+| Person | Done and merged | Waiting for Andrew to merge | Now and next |
+|---|---|---|---|
+| Andrew | A1 to A8: contracts, the engine on real data (19 hand-checked lots; `pytest engine api` 199 passed), API v1; half of A9; T8, T19 and T22 closed; approved next steps and the re-plan; merged PRs #8 and #9; T21 settled (six units, By-law 845-2025); merged PRs #12, #13, #15 and #16; A10 ran citywide at 18:19: all 25 wards, 495,456 lots in 1,290 s, 78 of 78 sanity checks pass (including the 19 hand-checked lots keeping their results), permit counts from Tiger Data; A9 done (the `SUPLEX_DEMO_CACHE` mode, JSON 500s that keep CORS, and on the citywide file a 5.5 s load, 2.4 GB peak, `/check` at most 43 ms for addresses in all 25 wards, `/ward/{id}` valid for all 25, the trend from Tiger Data in 0.36 s); T20 done and in the citywide run; the engine three times faster with byte-identical answers; all pushed at 18:45; the batch zip on the data release (19:11); merged PR #18 and turned his placeholder next-steps test into a real check (19:30: 432 tests pass, 38 fixtures validate); built in two Claude sessions and reviewed at 19:56: A11's cache writer and Hour-24 scripts (PR #20) and the 3D scene, J8, A16 and A15 (PR #19); PR #20 merged at 19:57 (`main` at 186c28c: 38 fixtures validate, 442 tests pass); PR #19 merged at 20:06 (197edf8) after the T23 check on this laptop (104 fps at 1920×1080, ×1.25), its `designs.json` change logged as contracts v0.1.9 (d8583aa); `main` builds, lints and passes 442 tests | nothing open; Simone's PR #17 waits for her `not_checked.json` push, then his review | at Hour 24, from the repo root `powershell -ExecutionPolicy Bypass -File scripts\hour24.ps1 -DryRun` and `... -Workers 10` (the refresh, the batch and the demo cache, about half an hour), then tag `headline-locked` and put the `data/out` snapshot on the drive; when Simone pushes her `not_checked.json` change, review PR #17 and merge it together with the `not_checked` list in the four check fixtures and `explain.request.json` (`engine/tests/test_fit.py` pins them), ideally before the lock; if it lands after, re-run the cache step (`scripts\hour24.ps1 -From 3`, a few seconds); the palette and `--suplex-permit-bar` into `contracts/design-tokens.css`, A13 |
+| Yuvi | Y1 to Y8: permits (446 against 452), the citywide GeoPackage, Tiger Data live (27.6% smaller after compression), the trend cache, the data release; Y7 closed on the citywide file (PR #9); merged at 18:08 (PR #12: a 2D plan view tab (the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and permit diamonds on a street map; zoom and pan; no addresses, no lists), which also carries Jayden's four unmerged commits with their palette conflict resolved; merged together with #13 onto `main` in a test checkout it builds and lints clean); J5, the ward map, merged at 18:17 (PR #15: J5, the ward map, entirely inside `WardMap/`; merged onto `main` in a test checkout it builds and lints clean. Hover shows only the result and the design, the gold dots are multiplex permits since May 2023 only, the base map has its green removed so only "may fit" is green, the sixplex options say "not allowed in this ward" where they should, the legend carries the screening line, the panel counts up and links to the briefing, there is no list or export, and it has a slot for Simone's chart; a dev page at `/src/components/WardMap/dev/index.html` shows it on the fixtures); next steps merged at 19:30 (PR #18: next steps end to end: Y11, all 14 steps re-read on the City, TRCA and by-law pages with quotes (`pipeline/reports/07-next-steps-sources.md`); Y12 `contracts/copy/next_steps.json`; Y13 the engine module with 66 tests, including the six real lots; Y14 `NextSteps.tsx`; plus the ward map on `labels.ward_map` with Simone's `TrendChart` mounted. Merged onto `main` in a test checkout: 38 fixtures validate, 431 tests pass, and the one failure is Andrew's placeholder test in `engine/tests/test_fit.py`, which still expects an empty list; the web builds and lints clean. One file outside his list: `ResultPanel/nextSteps.css`, the component's own styles) | nothing open | apply Simone's S14 review to his files in a new PR (`docs/next-steps-review.md` on her branch, PR #17): six wording changes, three missing source quotes, and her folded-in draft (a new `intro` key that `NextSteps.tsx` shows under the heading, her footer lines, the Property Information Report link on `zoning_check`); the Hour-24 refresh (Y9) |
+| Jayden | J1 to J3: search, the full 3D sequence, the landing hero map with the fly-in; clean build, type check and lint | nothing open: his four commits reached `main` through #12 at 18:08, so GitHub shows #14 as merged too | away for a few hours, then J4 the result panel (with the 3D Massing disclaimer, which is still not shown anywhere), J6 the transition, J9 the demo mode, the landing search card and the non-3D UI; switch `pending.<key>` in `copy.ts` to `labels.ui.<key>` and `labels.units.m2` (the strings are in `labels.json` since #13), and after #16 drop the pending block in `Plan/copy.ts`, which is his UI since the merge; mount `<NextSteps steps={check.next_steps} />` at the end of the result panel (merged with #18), and stop passing `trendSlot` to `WardMap`, which now mounts the chart itself; #19 is merged (20:06), so after pulling `main` run `npm install` once (it adds `@react-three/postprocessing` and `postprocessing` to `web/package.json`, his file); after the Hour-24 lock, copy `data/out/demo-cache/` into `web/public/demo-cache/` (again at Hour 30) |
+| Simone | S1 to S7, the S10 drafts, T1 and T13, the translation policy and glossary, PR #8; S8 part one: the explanations on the 19 hand-checked lots with the real API and Gemini, 19 of 19 passing the number check and matching Andrew's table after she caught and fixed a margin read as a depth ("the lot depth is -0.37 m"); the plan-view strings; the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A and the README draft, with [LOCKED] markers for numbers that only exist after Hour 24; merged at 18:08 (PR #13: J7 `TrendChart.tsx` (the briefing chart for the ward panel, checked against the fixture) and the web's five pending strings in `labels.json`; 118 tests pass); the pitch facts, Devpost and Q&A now say "up to six units, By-law 845-2025" (d64baa4); merged at 18:20 (PR #16: the last eight hard-coded strings (a new `ward_map` group, four more plan-view strings, the map attribution kept word for word); merged onto `main` in a test checkout it validates (37 fixtures), passes her 118 AI tests, and the web builds and lints clean); S14 done (19:50): her review of the next-steps copy, with the exact JSON for Yuvi's file, in `docs/next-steps-review.md` (PR #17) | PR #17, updated at 19:50 (S8 on real data, S9 back on Ward 04, her S14 review in `docs/next-steps-review.md`, an `--addresses-only` option for `ai.pregenerate`); not reviewed yet; her `not_checked.json` change ("Sewer, water and Toronto Hydro service capacity" and a new "Topography and slope" item) is ready but not pushed, because the engine copies that list into every check: she pushes it to PR #17 and Andrew updates the five fixtures in the same merge | push the `not_checked.json` change to PR #17, before the Hour-24 lock if she can (the demo cache saves the list); after Hour 24, the one `gemini-3.8-flash` pass on the locked data (Ward 04 English and French first; `scripts/hour24` prints the command), the [LOCKED] numbers, screenshots and a re-read of the French Ward 04 briefing; translation sheets (Tamil drops "if anything" in question 1) |
+
+### 0.3 Critical path and the approved re-plan
+
+**The critical path:**
+
+1. **A10, the citywide batch, ran clean at 18:19** (all 25 wards, 495,456 lots, 78 of 78 sanity checks). It is pushed, with T20 (skewed lots) already in it; its outputs are on the data release since 19:11 (`suplex_batch_2026-10-17.zip`), so the ward map on real data and the briefing on real numbers (S8) can start. Preliminary until the lock: 191,174 lots may fit citywide (45.4% of 421,204 house lots, an upper bound) against 1,444 multiplex permits; Ward 04 3,992 against 81. A re-run takes about 21 minutes and follows Yuvi's refresh at the Hour-24 lock.
+2. **Then, in parallel:** the ward map (J5, merged at 18:17) switches from fixtures to the real ward files; the briefing switches to real ward numbers (S8); S9 is settled: Ward 04 with 326 Quebec Ave (all four designs fit), 281 Armadale Ave (the Fourplex Narrow is too close to call) and 155 Vine Ave (a row house) (decision 18), and Simone revises PR #17 back to Ward 04. The ward map only appears in the app once Jayden wires it in (J4's "See your ward" button, then J6), so J4 and J6 are now the web's critical path.
+3. **Hour 24, the headline lock (A11):** Yuvi's refresh (`python pipeline/refresh.py --tiger`), then the batch, then the demo cache for 326 Quebec Ave, 281 Armadale Ave, 155 Vine Ave and Ward 04, then Simone's one `gemini-3.8-flash` pass, in stage order with Ward 04 in English and French first (7.9). The writer and a one-command runbook are on `main` (PR #20, merged at 19:57): `scripts\hour24.ps1 -DryRun`, then `-Workers 10`; it stops at the first failing step and resumes with `-From N`. After the refresh, `data/out/suplex.gpkg` is the citywide file, so an API started with `SUPLEX_GPKG=data/out/suplex_citywide.gpkg` would serve the old lots. If Simone's `not_checked.json` change merges after the lock, re-run the cache step (`scripts\hour24.ps1 -From 3`, a few seconds) so the cached checks carry the new list.
+4. **Hour 28 onward:** the offline rehearsal (Wi-Fi off, API and AI stopped), ten timed rehearsals (S11), the Devpost submitted by Hour 34.
+
+**Re-plan (approved by Andrew, 2026-10-17).** Jayden had about 14.6 hours of core web work left (0.4) and about 8.5 hours before rehearsals, and the ward map is on the never-cut list. So:
+
+- **Jayden** (away for a few hours first) does, in order: J4 (the result panel), J6 (the lot-to-ward transition), J9 (the demo-cache mode, a WebGL check and a "sample data" banner; the 2D view now comes from Yuvi's plan view in PR #12), then polishes the landing search card and the rest of the UI that is not 3D.
+- **Andrew** took over the 3D scene (`web/src/components/Lot3D/`): J8 (the red fail slice and the borderline stripes), the four designs modelled from the City's elevation sheets (A16) and a realism pass (A15). It runs in its own Claude session on branch `andrew-3d` and merges by Hour 27; the current look stays as the fallback. The A10 batch and the Hour-24 lock come first.
+- **Yuvi** builds the ward map (J5) in a new folder, `web/src/components/WardMap/`, from the ward files he designed; Jayden wires it into `App.tsx`. Next steps follows J5 (Y11, the sourcing, can start at once because it only touches Yuvi's report folder).
+- **Simone** ports her briefing-page SVG chart to `web/src/components/WardMap/TrendChart.tsx` (J7), so both charts are the same chart.
+- **Cut order for what is left:** visual extras (J10), then next steps, then the 2D plan view (keep the WebGL check), then the trend chart in the ward panel (it stays on the briefing page), then the animated lot-to-ward transition (fall back to a plain switch). Never cut: the address check with its 3D moment and the result panel's checklist, the ward map's could-versus-did headline, the screening labels and the uncertainty band, the rehearsal.
+
+### 0.4 Web app review (Jayden's branch, all 16 commits, 2026-10-17)
+
+The code is real: every lot, building and design comes from the API contract or `designs.json`, nearly all text comes from `contracts/copy`, and `tsc`, `vite build` and `oxlint` all pass. Network calls go only to the API proxy, OpenFreeMap and Google Fonts; there are no secrets, no addresses on any map, no lists of lots, no chat and no ranking words; the screening disclaimer and the "illustrative new-build scenario" label are present; the locked colours are untouched. What needs fixing:
+
+| Severity | Where (`web/src`) | Problem |
 |---|---|---|
-| S1 Gemini key and limits | done; recorded in `docs/decisions.md` with the model split (section 7.1) | `docs/decisions.md` |
-| S1 Sixplex Wide bedroom split | recorded (3 and 4 bedrooms in the two upper homes, 12 in total) | `docs/decisions.md` |
-| S1 Hack the Valley 11 rules | **closed (T1):** one project may enter the School of Cities challenge and the MLH prizes; all work must happen during the event, which began 10 p.m. Eastern on 2026-10-16, and every commit is dated after that. **Do not rewrite or squash git history: the timestamps are the evidence.** Section 1 assumption 2 is withdrawn | `docs/decisions.md` |
-| S2 story drafts | done: `pitch/hook.md`, `docs/devpost.md`, `pitch/qa.md` | `pitch/` |
-| S3 `/explain` | done: FastAPI on 8001, `POST /explain`, `GET /health`, structured output, sha256 cache, template fallback; Gemini only ever sees placeholder names, never values | `curl` per 8.4 S3 |
-| S4 validator | done test-first: every 7.4 case; reject, one retry, then template; every rejection logged for the Devpost count; Gemini mocked in tests | `pytest ai/tests` |
-| S5 `/briefing` | done: ward numbers map, the three fixed questions, shared validation policy | `pytest ai/tests` |
-| S6 briefing page | done: `/b/{ward_id}?lang=xx` with linked numbers, language picker, copy and print, a monthly chart, a methodology footer; works with Wi-Fi off; `&fixture=1` shows sample data behind a "made-up numbers" banner. Differences from 7.7: an inline SVG chart instead of Chart.js (no external request), bars in `#B47F00` because the permit gold is 1.5:1 on white | `localhost:8001/b/04?lang=en&fixture=1` |
-| S7 translation and pre-generation | done: all eight languages revalidated per language with the English placeholders required; `pregenerate.py` paces to the model's rate limit and resumes; Ward 04 cached in all eight languages and served with Gemini off; about 25 of the day's 500 requests used. One allowance: translations may write the month of `permits_since` as a digit (Chinese writes "2023年5月"); English stays strict | `python -m ai.pregenerate --ward 04 --langs all` |
-| T13 pitch facts | done: `pitch/facts.md` with page numbers; "216 variance applications" and "guidance is missing" cut; the 48.9% figure confirmed (13,928 starts in 2025 against a 28,500 annual target); costs become "declared value"; the Mayor is not named | `pitch/facts.md` |
-| S10 drafts | done: full Devpost, demo script with both sponsor walkthroughs, 11-slide deck content, sourced Q&A, README draft; Hour-24 numbers marked [LOCKED] | `pitch/`, `docs/devpost.md` |
-| S9 copy | first pass done: no "will be built" even negated, "since May 2023" everywhere, a singular line for one permit; backup-address sheet ready | `contracts/copy/*.json` |
-| S11 | rehearsal log ready for the ten timed runs | `pitch/rehearsal-log.md` |
-| S8, S9 addresses | waiting on A7 (API) and A10 (batch) | — |
+| High | `components/Lot3D/Scene.tsx` 136-138 | A design that does not fit rises exactly like one that fits: `fail_slices_local` is never read, so there is no red slice (2.4, 6.3). Fix in J8 |
+| High | `components/ResultPanel/ResultPanel.tsx` 45-50 | The tab panel is an empty element: no rule checklist, not-checked list, flags, permits near you, explanation or "See your ward" button. Fix in J4 |
+| Medium | `api/config.ts` 6 | Without `VITE_API_BASE` the app silently serves the synthetic fixtures ("200 Fixture St") with no label, and `web/README.md` is still the Vite template. Add a "sample data" banner and document the variable |
+| Medium | `App.tsx` 24-30 | No WebGL check and no error boundary: without WebGL even the landing page crashes, and the demo-cache fallback is only a comment. Fix in J9 |
+| Medium | `styles/palette.css`, `components/BaseMap/mapStyle.ts` | Page, panels, neighbours, roofs, trees and map buildings are now all green, which dilutes "green means may fit"; the olive map buildings are 1.16:1 against the fit green. The ward map (J5) must use a neutral base so the lot colours read |
+| Low | `examples.ts` 9-12 | The landing chips use two real hand-checked lots (326 Quebec Ave fits, 281 Armadale Ave is too close to call). Their results are right, but choosing demo addresses is S9's job: Simone confirms or replaces them |
+| Low | `styles/tokens.ts` 17 | Reading a missing token throws, and several tokens exist only in `palette.css`: do not delete that file until its values move into `contracts/design-tokens.css` |
+| Low | `copy.ts` 10-16 | Five user-facing strings live in code, waiting for Simone to add them to the copy files; the 3D Massing disclaimer is never shown |
 
-**Simone asks of others:** Andrew: `.env.example` updated (done: `GEMINI_MODEL=gemini-3.5-flash-lite`, `SUPLEX_AI_URL`, `AI_LOG_DIR`); fix "1-6 units" in the two fixtures; decide the site-exception policy (T19); pick one percentage unit across fixtures (`pct` in the check rows, `%` in the briefing fixture). Jayden: `/explain` is live on the dev proxy (show `text` and `disclaimer`, badge from `source`, notice from `translation_unavailable`, the singular permit line when the count is 1); "Get the ward briefing" links to `/b/{ward_id}`; add `--suplex-permit-bar: #B47F00` as a shared token so both charts match. Everyone: ten minutes each on a translation review sheet for the language you read. Team: whether the first candidate question should be more neutral (done: the flatter wording is in `questions.json`).
+Built but not in the task list: the landing hero map and the fly-in (a good opening for the demo), the neighbour cutaway and sink shader, the shader warm-up. Worth keeping: strict use of the contract types, one animation timeline with a real reduced-motion path, an accessible search and tabs with icon plus text, careful three.js disposal and caps.
 
-**Simone, PR #5 (`ai/`, `docs/`, `pitch/`, `contracts/copy/`; 112 tests):** the French review applied ("quartier", never "circonscription"; heading 4 fixed); a per-language translation glossary (`ai/prompts/translate_glossary.json`) with forbidden words that trigger a reject-and-retry like an invented number, and fixed strings, part of the cache key; "multiplex" can no longer become "duplex" or "triplex" in any language; the review badge under the language picker ("Reviewed by a speaker" for en and fr, "Machine translation, not yet reviewed" for the rest, driven by `languages.*.reviewed` in `labels.json`); the Hour-30 keep-or-drop checklist in the rehearsal log; the Devpost and `pitch/facts.md` updated with the real Tiger Data numbers and the ward check (fact 15), plus a locked-numbers table (Ward 04 "did" = 81, final after Hour 24). Open question answered by Andrew: the French word for a house lot is "terrains" everywhere, heading included.
+### 0.5 Decisions since version 3 (each one changed the section in brackets)
 
-**Decision (Simone, 2026-10-17, accepted): `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`.** At 20 requests a day, `gemini-3.8-flash` cannot support development; one clean demo pre-generation alone takes 16 requests. `gemini-3.8-flash` is used only for the one-off pre-generation after the Hour-24 lock, and `gemini-2.5-flash` is dropped. Before committing to the split she compares the validator's rejection rate for the two models; if flash-lite is as clean, it does everything. Touches `/ai/config.py` and `.env` only; no contract changes. Sections 1 (decision 12), 7.1, 7.9, 8.4, 11, 13 and Appendix I were updated to match.
+1. Gemini defaults to `gemini-3.5-flash-lite` (500 requests a day); `gemini-3.8-flash` (20 a day) is used once, for the pre-generation after the Hour-24 lock; `gemini-2.5-flash` is dropped (decision 12, 7.1).
+2. Hack the Valley rules: one project may enter the challenge and the MLH prizes; all work happened after the 10 p.m. kickoff; **never rewrite or squash git history**, the timestamps are the evidence (T1).
+3. A multiplex permit means one that creates 2 to 6 units: 446 against the City's 452 for May 2023 to Nov 2024, Ward 04 exactly 42 against 42 (4.3, decision 9).
+4. The parcel file has no CORRIDOR parcels, so the street layer is derived; rear lanes are never treated as the frontage (4.4, 5.2).
+5. The height overlay column is `HT_LABEL`; "older bylaw" is inferred when no zone polygon covers at least 25% of a lot (4.2, 5.3).
+6. Ward 23 is wholly in the sixplex overlay; no ward is partial (4.4, Appendix C).
+7. Building footprints are clipped to the lot; the attached and larger-building thresholds were tuned on 19 hand-checked lots; Ward 04's attached share is 41.6% (5.7, Appendix C, `docs/test-lots.md`).
+8. The site-specific exception is an informational flag: shown in the address check, never on the map, never counted as "needs extra review" (T19).
+9. The first candidate question is now "What, if anything, should the City do about its free multiplex designs on lots where they fit?" (`contracts/copy/questions.json`).
+10. All eight languages stay, with a "Reviewed by a speaker" badge on English and French and a "Machine translation, not yet reviewed" badge on the rest; French uses "quartier" and "terrains"; a glossary rejects forbidden words the way the validator rejects invented numbers (7.6).
+11. The briefing page draws its chart as inline SVG and uses `--suplex-permit-bar` (`#A27100`), because the permit gold is 1.5:1 on white (7.7, Appendix D).
+12. Branches are `main` (Andrew), `yuvi`, `jayden`, `simone`; React 19; Python 3.14 (section 9).
+13. The web app's look is now Yuvi's Lime and Teal palette with the Newsreader serif (PR #10), replacing Appendix D's Inter and Space Grotesk; `contracts/design-tokens.css` still holds the old values, so the briefing page will not match until Andrew moves the final palette there.
+14. **Development charges and parkland cash-in-lieu are waived for multiplexes of up to six units** ([By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), enacted July 24, 2025): no development charges on the second to fourth units, the fifth and sixth reduced to $0, and no parkland cash-in-lieu on the second to sixth, while the lot has no more than six units (a garden or laneway suite on the City's deferral program does not count). The City's "Considerations when building multiplexes" page still says four and is out of date. Say "up to six units" and cite the by-law; never name the councillors who moved it (T21). An earlier version of this board said "four, never six": that was wrong.
+15. **Approved by Andrew on 2026-10-17:** "Your next steps" at the end of the address check (2.4, 5.10, 8.5), and the re-plan in 0.3 (J5 to Yuvi, J7 to Simone); `CLAUDE.md` lists the ownership exceptions.
+16. **Andrew took over the 3D scene** (`web/src/components/Lot3D/`) from Jayden on 2026-10-17: J8 and J10 move to him, plus the four designs modelled from the City's elevation sheets (A16) and a realism pass (A15); Jayden keeps all UI that is not 3D. The 3D work lands on branch `andrew-3d` by Hour 27, with the current look kept as the fallback (T23).
+17. **The 2D plan view** (Yuvi, PR #12) is the spec's 2D view (6.7): the lot, the yards, the buildable area, the design's footprint with red slices, neighbours, trees and the permit diamonds on a street map. It takes the 2D part off J9, and after the merge it is part of Jayden's UI like the rest of `/web`.
+18. **The demo ward is Ward 04, Parkdale–High Park** (Andrew, 2026-10-17), after a switch to Ward 20 at 18:41 was reversed: Ward 04 shows all four designs (it is in the sixplex overlay; Ward 20 is not), our permit count matches the City's exactly (42 and 42; Ward 20 differs, 23 against 16), and the 19 hand-checked lots are there. Demo addresses, all checked on the citywide batch: 326 Quebec Ave (all four designs fit; the opener), 281 Armadale Ave (the Fourplex Narrow is too close to call on lot width, 7.45 m against 7.6 m; the other three don't fit) and 155 Vine Ave (a row house: the free designs don't apply, which answers the semis question). The first two are already the landing page's example chips.
 
-**Yuvi, reported 2026-10-17 (branch `yuvi`, 6 commits, merged into `main` the same day as 2123951; full write-up in `pipeline/REPORT.md`, to go into `docs/decisions.md` through Simone)**
+### 0.6 Known data limits (say "about", never "exactly")
 
-| Task | State | How to verify |
-|---|---|---|
-| Y1 permits fields and rule | done: **Rule A works**, 446 multiplex permits May 2023 to Nov 2024 against the City's 452 (−1.3%); Rule B not needed | `python pipeline/permits.py --report` |
-| Y3 permits file | done: 7,397 projects since 2022; `GEO_ID` join 98.5%, geocode 99.3% with the street fallback; 55 unlocated (counted, not mapped); `permits.parquet`, `permits.geojson` (1.1 MB), `permit_counts.json`, `data_dates.json` on the drive | `python pipeline/checks.py --permits` |
-| Y4, Y6 dev-ward and citywide build | done: `suplex.gpkg` with all 25 wards (507 MB, 193 s build) on the drive; `checks.py --all` passes every check | `python pipeline/checks.py --all` |
-| Y5 Tiger Data code and trend cache | done against a local TimescaleDB 2.30.2 in Docker: `schema.sql`, `load.py`, `queries.py`, `cache_trends.py`, `trend_cache/01..25.json` on the drive, so `/ward/{id}/trend` already works from the cache | `python pipeline/tiger/ping.py` once `TIGER_DSN` exists |
-| Y2 Tiger Data sign-up | **done (T18 closed):** the real service is loaded and checked against `permit_counts.json` for all 25 wards; compression took the hypertable from 3.59 MB to 2.60 MB; the trend cache is rebuilt from the real service. `TIGER_DSN` goes to Andrew privately, never into GitHub; without it the API serves the cache | `python pipeline/tiger/ping.py` with `TIGER_DSN` set |
-| Y7 QA | partly done (PR #2): `pipeline/smoke_engine.py` runs the real engine on real lots. First run failed on every lot because 409,164 of 428,184 massing buildings were single-part `MultiPolygon`s the engine's geometry reader could not take; fixed in `build_lots.py` (single-part shapes are now `Polygon`, the 221 true multi-part buildings keep their largest part) and the data release replaced. After the fix all 21,300 Ward 04 lots run through `run_check` in 163 s (8 ms a lot) with 0 errors; wards 09, 19 and 23 clean on 800-lot samples. Plumbing only, not accuracy: the hand-checked lots (A8) still decide that | `PYTHONPATH=engine python pipeline/smoke_engine.py --ward 04` |
-| Y8 trees, Y9 refresh | done (PR #2): optional `trees` layer, `pipeline/refresh.py`, new `lots` columns (`bldg_count`, `bldg_area_on_lot_m2`, `bldg_max_footprint_m2`, `bldg_avg_height_m`, `is_sliver`), `addresses.is_primary`, a Tiger Data Devpost draft in `pipeline/tiger/devpost_tiger.md` | PR #2 |
-
-Data is distributed as the GitHub release `data-2026-10-17` on the repo: `suplex_ward04.gpkg` (25 MB, for A7), `suplex_citywide.gpkg.gz` (241 MB), and a small permits-and-trend zip. The files were replaced after the MultiPolygon fix, so re-download if fetched before. PR #2 touched only `pipeline/` and is merged into `main` as 3f9ddcc.
-
-**Yuvi, PR #4 (pipeline only; reports 4 and 5):** the real Tiger Data compression numbers are 3,588,096 to 2,596,864 bytes (−27.6% total, indexes −77.7%, 20 quarterly chunks all compressed), recorded in `pipeline/tiger/tiger.md` and `devpost_tiger.md`, with `walkthrough.sql` and `demo.py` for the sponsor walkthrough. **Ward-by-ward check against the City's own table** (council background file 255851, Figure 10): Ward 04 is 42 against 42; all wards 438 against 452, correlation 0.969, mean absolute difference 3.0. That closes the Y3 comparison with the Toronto Multiplex Tracker: our counts are now checked against the City directly.
-
-**Notes for A7 from Yuvi's real-data run:** `pipeline/smoke_engine.py` already builds a `LotInput` from the GPKG, so the API loader can copy it; unwrap single-part MultiPolygons when loading; `parcelid` and `address_point_id` are integers in the file but `LotInput` wants strings; `addresses.is_primary` marks one address per lot for the autocomplete (T7). **For A8 (resolved):** the 59% attached share in the smoke run was mostly eaves crossings and near-touching detached roofs; after the hand-checked lots set the thresholds the share is 41.6% (table above).
-
-**Known data limits (Yuvi, 2026-10-17; this is the material for the Devpost's limitations paragraph, T17, and for the pitch's "say about, never exactly" rule).** The release `data-2026-10-17` matches Yuvi's local files hash for hash; `checks.py --all` passes every check (median lot area equals the City's stated area, 99.9% of addresses join a lot, all 25 wards present, 99.3% of permits geocoded; Tiger Data live with 7,342 permits in 20 chunks, all compressed, per-ward totals equal to `permit_counts.json`).
-
-1. **Permits:** we count 446 multiplex permits for May 2023 to Nov 2024 against the City's 452. Ward 04 matches exactly (42); some wards differ by up to about 11; 17 permits have no ward and are counted but not mapped. Say "about", never "exactly".
-2. **Lot shapes** are not survey-accurate and carry no frontage field; frontage is computed from geometry.
-3. **Streets:** the parcel file has no CORRIDOR parcels, so the street layer is derived; water or rail edges can occasionally read as street.
-4. **Buildings** are the 2025 3D Massing, labelled "illustrative only" by the City; one polygon often covers a row of houses, and about 24,000 lots have no building at all.
-5. **Zoning:** 4.8% of lots have no zone polygon ("older bylaw" is inferred); 88% carry a site-specific exception we do not read; the zoning data is dated February 2026 and the ravine layer 2019.
+1. **Permits:** 446 against the City's 452; some wards differ by up to about 11; 17 permits have no ward and are counted, not mapped.
+2. **Lot shapes** are not survey-accurate and have no frontage field; frontage is computed from geometry.
+3. **Streets** are derived; water or rail edges can occasionally read as street.
+4. **Buildings** are the City's 2025 3D Massing ("illustrative only"); one polygon often covers a row of houses; about 24,000 lots have no building.
+5. **Zoning:** 4.8% of lots have no zone polygon; 88% carry an exception we do not read; zoning data is from February 2026, the ravine layer from 2019.
 6. **Trees** are decoration only.
 
-**Not proven yet:** fit accuracy beyond the 19 hand-checked lots; and the **Hour-24 refresh**, when Yuvi re-runs the data and permit counts may shift slightly. Nobody hard-codes a number before then, and every Devpost number must equal the final `ward_summary.json`.
+Not proven yet: fit accuracy beyond the 19 hand-checked lots, and the Hour-24 refresh, after which permit counts may move slightly. Nobody hard-codes a number before the lock; every Devpost number must equal the final `ward_summary.json`.
 
-**What Yuvi found that changes the spec** (each applied to its section; the engine-side actions are Andrew's):
+### 0.7 Process rules that slipped
 
-1. **Multiplex means units created 2 to 6.** The step 5 branch that let a structure type naming 2 to 6 units count as a multiplex picks up about 830 one-unit suites and gives 1,278. Units created decide; named counts are reported only. The `permit_rule` string is now "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind". **Andrew:** change the string in `fixtures/ward.04.json` and `ward_summary.sample.json` (they say 1-6).
-2. **No CORRIDOR parcels exist** in the current Property Boundaries file (COMMON 491,687, CONDO 3,769, RESERVE 2,983). The `corridors` layer is derived: ward area minus every parcel, cut into 250 m tiles, negative synthetic `parcelid`; 98.0% of lots touch it. Water and rail edges can read as street. **Andrew:** the engine uses the layer as-is and keeps the nearest-address-point fallback.
-3. **The height overlay column is `HT_LABEL`** (float metres); coverage is `PRCNT_CVER`. Ward 04 has no coverage overlay polygons; 57% of lots citywide do. T4 closed.
-4. **No zone polygon carries `ZN_STATUS` 5** (values 0 to 3). "Older bylaw" is now inferred: a lot with no zone polygon covering at least 25% of it gets `zn_zone` null and `zn_status` 5 (4.8% of COMMON lots). The engine rule in 5.3 is unchanged.
-5. **Ward 23 is fully in the sixplex overlay.** By-law 654-2025 Diagram 1 is the "Scarborough North (23) Ward Area" and matches the City Wards polygon; Diagram 2 is the eight TEYCC wards. No ward is partial; `pipeline/data/sixplex_overlay_ward23.geojson` is the ward polygon. **Andrew:** `engine_config.json` `sixplex_wards` gains "23" and `partial_sixplex_wards` becomes `[]`; `sixplex_overlay: "partial"` never occurs (the type keeps the value; the web's partial case can go). T11 closed.
-6. **One massing polygon often covers a whole row of houses.** 78% of lots get a building by largest overlap, about 97% intersect one. **Andrew:** use footprint-intersects-lot (clipped to the lot) for `vacant` and for building area; a merged row polygon can exceed the 350 m² `larger_building` threshold without the lot being a larger building, so apply that threshold to the clipped area and tune on the test lots (T8). The cross-lot footprint is still the attached-house signal.
-7. **88% of Ward 04 lots have `zn_exception` = Y** (359,326 zone polygons citywide). A `site_exception` flag on every lot says nothing. ★ **Decision (needs Andrew's confirmation):** the address check keeps one muted line ("this zone has a site-specific exception, x1234, which Suplex does not read"), the map shows no exception icon, and the ward panel's "need extra review" count excludes exceptions; `ward_summary.flags.site_exception` is still reported.
-8. **`permits.geojson` carries all four kinds in `k`;** the web filters to `multiplex` for the dots (section 6.5 already says so). `permit_counts.json` `since_may_2023` and `by_year` are multiplex only; `by_kind_since_may_2023` and `by_year_by_kind` hold every kind; `unlocated` holds the 55.
-9. Checkpoint numbers worth knowing: multiplex permits since May 2023 by ward run from 5 (Ward 13) to 177 (Ward 09); Ward 04 has 81. 35.6% of lots are in the sixplex overlay. Zones: RD 233,604, R 103,487, RM 54,248, RS 29,529, RT 14,739. Flags: heritage register 2.3%, heritage district 2.3%, ravine 6.6%, TRCA 7.2%.
+Section 9.1 says only Andrew merges into `main` and everyone edits only their own folder. Today:
 
-**Andrew, 2026-10-17 afternoon (branch `main`, 12 commits 883c945..0c35ec8; `pytest engine` 153 passed, `pytest api` 44 passed, `validate.py` 37 ok)**
+- Jayden merged his own PRs #6 and #11 into `main`.
+- Yuvi wrote PR #10 inside `/web`, Jayden's folder (the Lime and Teal palette and the Newsreader serif), and merged it into `main` himself.
 
-What the real Ward 04 data changed, beyond Yuvi's items (details and tables in `docs/test-lots.md`):
+Nothing broke: `main` builds, type-checks and lints clean, and the engine, API and AI tests pass. But after Hour 24 a self-merge that breaks `main` costs the demo, and two people restyling the same folder is how a demo ends up half one palette and half the other. From now on: every change goes in as a PR to Andrew; nobody merges their own PR; a change someone wants in another person's folder is a message to that person. The palette that wins must also land in `contracts/design-tokens.css` (through Andrew) so Simone's briefing page matches the app.
 
-1. **Rear lanes.** The derived street-space layer includes public lanes: 34% of Ward 04 lots have two or more street edges and 78% of those are a street plus a lane behind, not a corner. The shorter-edge corner rule faced the lane on 2,451 house lots (13%); the pairwise walk moves about 258 more, 189 of them house lots. Section 5.2 step 1 now walks the street edges from the one nearest the address point outward and drops every edge opposite an edge already kept, then applies the corner rule; of an opposite pair the edge nearer the address point wins (a corner lot addressed from the street half of its long side loses its lane; one addressed from the lane half keeps it, a known limit). Lots without an address point (33) keep the old rule.
-2. **Eaves are not party walls.** The massing polygons are roof outlines. A detached house's roof crosses the lot line by 4 to 20 m² and sits 0.1 to 0.5 m from the neighbour's, so `cross_lot_m2 = 4` and `tolerance_m = 0.3` called 3,438 detached houses attached. With 20 m² and 0.05 m the attached share of measured house lots is 41.6% (was 60.6%; Yuvi's smoke run said 59%). Known limit: a semi whose party wall the massing splits with a visible gap (602 Indian Rd, 95 Grenadier Rd) reads as detached; those lots still fail on lot width.
-3. **3-storey houses are not larger buildings.** 12 to 16 m average massing heights are almost all small-footprint single-address houses (274 of 318); apartments in the sample all exceed the 350 m² footprint rule anyway. `avg_height_m` is 16.
-4. **Garages.** 343 house lots (1.8%) are `unmeasurable` because a detached garage over 20 m² counts as a second building (5.2 step 6). Left as the spec says; a second-building threshold would be a contract change.
-5. **Depth row when the design does not fit the lot's width** (34 Rexford Rd read 24.6 m on a 33.5 m lot): now the lot's centre-line depth whenever the width row fails. Designs that fit the width are still measured under the placed rectangle; on skewed lots that reads short (542 Ward 04 results, pessimistic: a wider rule was tried and withdrawn because they then read "fits" or "too close to call" while the 3D view drew the building over the side yard). Fix before A10: align the placement to the lot's sides on skewed lots.
 
-Asks: **Simone** — `ai/numbers.py` lines 125 and 132 emit `"%"`; the fixtures now say `"pct"` everywhere and `ai/tests` has one failure (`test_matches_the_english_briefing_fixture`) until that changes; the `site_exception` flag text in `contracts/copy/reasons.json` was edited by Andrew (an `{exception}` placeholder the engine fills, plus `text_without_number`), please read it over; `docs/test-lots.md` is Andrew's A8 deliverable placed in `/docs` as 8.1 says. **Jayden** — `context.buildings[]` can repeat a `building_id` (the on-lot clipped part plus the off-lot remainders of one massing polygon), so key on array position; `lot.existing_building` is the clipped part; the exception line is informational (`site_exception` is never in `f` or in "needs extra review"); use `127.0.0.1` rather than `localhost` for the API on Windows (about 2 s per new connection otherwise). **Yuvi** — `data/out/data_dates.json` carries dataset slugs (`3d-massing`, `_fetched_at`) and timestamps; the API maps them to the contract keys and dates in `api/store.py` `normalise_data_dates`; writing the contract keys from `download.py` would let the batch share it.
-
-A stale `origin/feat/pipeline` branch also exists from before the rename; delete it once `yuvi` is merged.
-
-**Next, in order**
-
-1. Andrew: send each teammate their kickoff prompt (section 8) and this section. Teammates clone, create `.venv`, run `pip install -r requirements.txt`, open branch `yuvi` / `jayden` / `simone` from `main`.
-2. Yuvi: put `suplex.gpkg`, the permit files and `trend_cache/` on the drive (done on his machine); sign up for Tiger Data (Y2) and load it; then Y7 when Andrew sends the test lots.
-3. Andrew: **done 2026-10-17 afternoon** — the engine-side items 1, 5, 6 and 7 from Yuvi's findings (commits ebe4ccd, 6aaea16, 032bd83, a813998, plus 6d32489 for the `pct` unit), A7 (merged as 0c35ec8) and A8 (af59c65, 14d5311, caf3c0c) are on `main`; see the table above. **Next for Andrew:** A10 citywide batch (`engine/suplex_engine/batch.py`: `ward_summary.json`, `wards/{id}.geojson` with `f` from `classify.review_flags`, reuse or move the API's `normalise_data_dates`), A9's `SUPLEX_DEMO_CACHE` mode and A11 demo cache, the deferred review minors listed in `docs/test-lots.md` and the API report (null permit dates, CRS check, malformed optional files, a test that context reaches the engine, CORS on 500s).
-4. Jayden: J1 to J3 and the landing hero are merged; A7 is live, so J8 (the live API switch) can happen alongside J4 (the result panel, with `/explain` on the proxy), then J5 (ward map, which needs A10's per-ward files; fixtures until then) and J6 (transition). Read `levels[]` and `homes[]` from `designs.json` (section 6.3 used to say `floors[]`).
-5. Simone: S1 to S7, S10 drafts and T13 are merged; next are the translation review sheets, then S8 and S9 once the API and the batch exist.
-
-**Decisions made in the first session without Andrew** (full list with reasons in `docs/decisions.md`): `attached.on_lot_m2 = 10` added to `engine_config.json`, its schema and `types.ts`; lot-level `width_m` is the cross-section at the 6.0 m setback line and `depth_m` the centroid line; the band is inclusive (|margin| of 0.5 m is still borderline); street edges under 3 m are never the frontage; the buildable area is the lot clipped by the setback lines; `ward.04.json` `by_year` changed to sum to 41; the city summary entry uses `ward_id: "city"`; `BriefingRequest.ward` also accepts the full `/ward/{id}` response; 8.375 rounds to 8.38; React 19 rather than 18; branches renamed to `main` / `yuvi` / `jayden` / `simone`.
-
-**Open items carried forward**: T1 (HTV 11 rules, Simone), T3 (re-read the Sixplex Narrow zoning matrix), mockups not yet in `/docs/mockups/`, the TRCA flag links to the ArcGIS FeatureServer because there is no City dataset, the `web/src/App.tsx` disclaimer TODO. Closed since the first version: T2 (Gemini limits read; model decision above).
-
+PR #12 (Yuvi) changed Jayden's files and carried Jayden's unmerged commits. It was opened before the new ownership rules were pushed, and it resolves the palette conflict that blocks Jayden's own PR #14, so it was merged (with Simone's #13) at 18:08, and GitHub shows #14 as merged through it. From now on `CLAUDE.md` applies: in `/web`, Yuvi edits only `WardMap/` and the next-steps component.
 ---
 
 ## 1. Summary, decisions locked, assumptions
@@ -235,7 +242,7 @@ A stale `origin/feat/pipeline` branch also exists from before the rename; delete
 | 8 | Uncertainty band: 0.5 m for geometry-derived margins, 2 percentage points for lot coverage, both constants in `/contracts/engine_config.json`. |
 | 9 | Multiplex permit rule: the Toronto Multiplex Tracker's scope (permits creating 1–6 dwelling units, non-SFD structure types, with the tracker's two exceptions), split by kind; **`multiplex` means units created 2 to 6** (Yuvi, 2026-10-17: 446 against the City's 452), and the headline counts that kind only. Rule B was not needed (section 4.3). |
 | 10 | Cut order if behind: Tiger Data and the trend chart (go/no-go Hour 14) → the sixplex designs → translation → citywide coverage (fall back to 2–3 wards). Never cut: the address check and 3D moment, the permission vs. reality headline, the screening labels and uncertainty band, the rehearsal. |
-| 11 ★ | **Dev ward and default demo ward: Ward 04, Parkdale–High Park.** It is in the sixplex overlay, so all four designs apply, and it mixes detached and attached house lots of many widths, so all four result types show up. If citywide is cut, ship wards 04, 19 and the ward that contains the venue. |
+| 11 ★ | **Dev ward and default demo ward: Ward 04, Parkdale–High Park.** It is in the sixplex overlay, so all four designs apply, and it mixes detached and attached house lots of many widths, so all four result types show up. If citywide is cut, ship wards 04, 19 and the ward that contains the venue. **Confirmed 2026-10-17 after a brief switch to Ward 20: Ward 04 stays the dev and demo ward (0.5, decision 18).** |
 | 12 ★ | Gemini model: `gemini-3.5-flash-lite` by default (changed 2026-10-17 by Simone after reading the free-tier limits: 500 requests a day against 20 for `gemini-3.8-flash`). `gemini-3.8-flash` is reserved for the one-off demo pre-generation after the Hour-24 lock, if its drafts pass the validator more often; `gemini-2.5-flash` is dropped. One constant, `GEMINI_MODEL`, read from the environment in `/ai/config.py`. Structured JSON output through the SDK's response schema. |
 | 13 ★ | Translation languages (8): English, French, Simplified Chinese, Traditional Chinese, Spanish, Tagalog, Tamil, Portuguese. Codes `en fr zh-Hans zh-Hant es tl ta pt`. Simone may swap entries; the list lives in `/ai/config.py`. |
 | 14 ★ | AI output uses `{{placeholders}}` for every number from its input. The renderer fills in the values and links them to sources. The validator rejects any literal number not in the input's allowed set and any placeholder key that does not exist. |
@@ -243,6 +250,7 @@ A stale `origin/feat/pipeline` branch also exists from before the rename; delete
 | 16 ★ | Identifiers: address = Address Points `ADDRESS_POINT_ID` · lot = Property Boundaries `PARCELID` · building = 3D Massing shapefile feature index (the file has no id column) · ward = City Wards `AREA_SHORT_CODE` ("04"). |
 | 17 ★ | Sixplex Narrow (19.0 m long) is tested against the general detached-houseplex rule 10.20.40.20(3): 19.0 m is allowed only on lots at least 36 m deep with frontage under 10 m, or at least 40 m deep with frontage of 10 m or more; everywhere else the 17.0 m limit applies and the design reads "doesn't fit: building length". By-law 654-2025 contains no depth or length provision (Appendix H). |
 | 18 ★ | Ports: API 8000, AI service 8001, web 5173. Python 3.12 or 3.13 in one root virtualenv. Node 20 or newer. |
+| 19 | "Your next steps": a rule-driven, sourced checklist at the end of the address check, picked by the engine from the lot's own result and flags, never by AI (2.4, 5.10, 8.5). Approved by Andrew on 2026-10-17. |
 
 **Assumptions made while writing.** Each one that could change the build is also a TODO in section 13.
 
@@ -302,6 +310,17 @@ A stale `origin/feat/pipeline` branch also exists from before the rename; delete
   - a plain-language explanation written by Gemini (`POST /explain`), with a one-click translation
 - A **"See your ward"** button starts the zoom-out to feature 2. It never happens on its own.
 
+**Feature 1, part 2: "Your next steps" (approved by Andrew on 2026-10-17).**
+
+The address check ends with a short checklist of what this owner would actually do next, picked by rules from this lot's own result and flags, written in plain words, with who to contact and a City link for every step. It turns "may fit" into "here is how you would find out for sure and apply". Full rules in section 5.10.
+
+- **Personal, not generic.** Every step shows why it appears for this lot: "because the Fourplex Narrow is too close to call on lot width (7.62 m measured against 7.6 m needed)", "because this lot is in the TRCA regulated area", "because there is a house here today". The City's pages cannot do that; Suplex can, because the engine already knows the result, the margins and the flags.
+- **Code picks the steps, never AI.** A pure function in the engine maps the check result to step ids; the text comes from a sourced copy file. Gemini never writes, reorders or explains a step.
+- **Sourced.** Every step links to the City page it comes from, and the copy file keeps the quote it was checked against and the date. Steps and contacts are re-checked before the demo (Y11).
+- **Four groups, in order:** *Confirm first* (survey, zoning check, your zone's exception), *Other approvals for this lot* (heritage, ravine, conservation authority, trees), *Apply with a City design* (design professional, building permit, demolition permit, development charges), *If the free designs don't fit* (attached-house options, a custom design or minor variance, or ask zoning staff).
+- **Labelled as screening.** The list ends with "Screening only, not a permit or legal advice. Steps and contacts come from City of Toronto pages checked on {date}; confirm with the City before you rely on them."
+- **Not in scope, still:** no step-by-step variance guide, no cost estimate, no designer or contractor names, no chat.
+
 **Feature 2: Permission vs. reality (the insight).**
 
 - A ward map compares lots where a City design may fit against actual multiplex permits issued since May 2023.
@@ -357,6 +376,8 @@ AI policy what-ifs · AI matching family members to homes · AI extraction or ex
 | 1:30–2:30 | Click "See your ward": the 3D street fades into the ward map. Lots fill green and grey in a ripple outward from the judge's lot, gold permit dots drop in, counters count up to the headline gap. |
 | 2:30–3:20 | Generate the ward briefing, click one number to show its source, translate it once. |
 | 3:20–4:00 | How it works (City data, rules in code with bylaw sections, AI only phrases computed numbers) and limits (screening only, what isn't checked, the uncertainty band). |
+
+The 0:30 to 1:30 beat ends with one line while the panel scrolls: "and because this lot is too close to call, step one is a survey; because it's a heritage property, Heritage Planning is next, each with the City's own link."
 
 **Demo safety.** Two backup addresses (one that fits, one that fails or is too close to call), one demo ward with a pre-generated briefing, cached API responses for all of these so the demo works without the server or Wi-Fi (section 6.7), and the offer "your street, or a family member's" so no one has to show their home address.
 
@@ -441,7 +462,7 @@ FastAPI, one process, loads `data/out/suplex.gpkg` and the batch outputs at star
 
 Errors are JSON: `{"error": "address_not_found"}` with 404, `{"error": "outside_toronto"}` with 404 for coordinates outside the ward polygons, `{"error": "bad_request", "detail": "..."}` with 400. CORS is open for `localhost` ports and the demo host.
 
-**Demo cache.** `api/cache/` holds full responses for the backup addresses and the demo ward, written by `python -m api.cache_demo`. When `SUPLEX_DEMO_CACHE=1`, the API serves a cached response whenever one exists for the request. The web app has its own copy of the same files (section 6.7), so the demo survives the API dying too.
+**Demo cache.** `api/cache/` holds full responses for the backup addresses and the demo ward, written by `python -m api.cache_demo` (A11). When `SUPLEX_DEMO_CACHE=1`, the API serves a cached response whenever one exists for the request. The web app has its own copy of the same files (section 6.7), so the demo survives the API dying too. **Built in A9 (2026-10-17):** `api/demo_cache.py` names the files exactly as the web's `public/demo-cache/` does (`search.<query>.json` with the query normalised as `/search` does and runs of anything but a-z and 0-9 turned into one `-`, `check.<address_id>.json`, `check.lot.<lot_id>.json`, `ward.<id>.json`, `trend.<id>.json`, `lots.<id>.geojson`, `permits.geojson`; lon/lat lookups are never cached), so one writer fills both folders; a cached `CheckResponse` is served with `meta.cached` true and every cached answer carries an `X-Suplex-Cache` header naming its file. With the mode on and no data directory, the API still starts: `/health` says `mode: demo_cache_only`, `/designs` reads the contract file, and any request the cache cannot answer gets 503 `data_unavailable`. Unexpected errors are JSON 500s that keep the CORS headers.
 
 ### 3.4 Batch run (Andrew, `engine/suplex_engine/batch.py`)
 
@@ -455,6 +476,8 @@ Runs the same engine over every lot in the processed file. `python -m suplex_eng
 | `batch_report.md` | counts per ward, run time, engine version, designs version, and the sanity checks (every ward's classes sum to its lot count; dev-ward hand-checked lots still pass) |
 
 Permit counts per ward come from Tiger Data through `pipeline/tiger/queries.py`; if Tiger Data is unavailable, from Yuvi's `permit_counts.json`. The file records which.
+
+**As built (A10, 2026-10-17).** Each lot's `LotInput` is built by the API's own loader (`api/store.py`, whose `load()` takes a `bbox`) and run through `run_check`, so the map and the address check cannot disagree; each ward is cut west to east into strips of about 1,500 lots that run in parallel (`--workers`, default half the cores), each reading only its strip of the GeoPackage plus 160 m. Also written: `data/out/batch/{id}.json`, one ward's counts, so `--ward 04` rebuilds `ward_summary.json` from every ward run so far. Definitions the contract left open: a lot's **best result** is the best of its four designs and the **limiting rule** `k` is the blocking rule of the first design (in `designs.json` order) with that result, or its first borderline row; **could** is the lots whose best design fits (an upper bound); **top_blocking_rules** counts lots by the rule that blocks their best design; **flags** count every lot in the ward that carries the flag, and `any_on_fitting_lots` counts lots whose best design fits and that carry a review flag (never `site_exception`); the **city** entry sums the wards, and its permits add the 17 with no ward once all 25 wards are present. The feature `id` (and `properties.id`) is the parcel id, so the map's click can open `/check?lot_id=`; never shown. `batch_report.md` runs the sanity checks itself: the summary validates against its schema, all 25 wards present, every ward's classes, best results and per-design results sum to its lot count, no engine errors, one valid feature per lot under 8 MB gzipped, the 19 hand-checked lots keep their expected class and results, and (when the counts are local) the city permits equal `permit_counts.json`. Run time: about 350 lots a second on 10 workers (the engine was made about three times faster first, with byte-identical output).
 
 ### 3.5 Tiger Data (Yuvi, `/pipeline/tiger`)
 
@@ -637,7 +660,7 @@ The engine is a pure Python package, `suplex_engine`, with no web or database im
 
 1. **Street-facing edge.** Take the lot boundary's segments that lie within 0.5 m of a `corridors` polygon (the derived street-space layer, section 4.4, since the parcel file has no CORRIDOR parcels); merge adjacent segments whose directions differ by under 15° into edges. If no corridor touches the lot, fall back to the boundary edge nearest the lot's address point. **Rear lanes (A8, 2026-10-17):** the derived street-space layer includes public lanes, so 34% of Ward 04 lots have two or more street edges and 78% of those have a lane behind, not a corner; when the lot has an address point, the street edges are walked from the one nearest that point outward and every edge parallel to an edge already kept (direction within the 15° merge angle) and apart from it (more than 3 m) is dropped; of an opposite pair the edge nearer the address point wins, so a lane loses whenever the address point sits on the street half of the lot (about 2,700 Ward 04 house lots changed frontage; an address on the lane half keeps the lane, a known limit). Then, on a corner lot (two or more remaining street edges) the front lot line is the **shorter** street edge, following the by-law's corner-lot convention. If no edge is found, or the chosen edge is under 3 m long, the lot is `unmeasurable`.
 2. **Street frame.** Rotate the lot so the frontage edge lies on the x axis with the lot in positive y. All measurements below are in that frame; the response is reported in the centroid frame of section 3.9.
-3. **Lot depth.** The distance from the frontage line to the rear boundary along the line through the lot centroid, perpendicular to the frontage. This is a simplification of the by-law definition for irregular lots; say so in "What we don't check".
+3. **Lot depth.** The distance from the frontage line to the rear boundary along the line through the lot centroid, perpendicular to the frontage. This is a simplification of the by-law definition for irregular lots; say so in "What we don't check". **Skewed lots (T20, 2026-10-17):** when both side lot lines lean the same way by at least `placement.align_to_sides_deg` (2°, Appendix C) from the frontage normal, measured between a quarter and three quarters of that depth, the line through the centroid follows the side lot lines instead, and the depth is how far from the frontage line (still square to the street) it leaves the lot. Square to the frontage, the centre line of a skewed lot leaves through a side lot line and reads short (11 Harcroft Rd: 27.9 m on a 35 m parallelogram). A pie lot, whose sides lean opposite ways or only one of them, tapers rather than leans and keeps the square measurement (4 Olympus Ave).
 4. **Width across the building band.** For a design of length L with front setback F, sample y from F to F + L every 0.5 m; at each y take the length of the lot's cross-section (the segment that contains the centroid's x). `actual_width` is the minimum. A pie-shaped or tapering lot is measured where the building would actually sit.
 5. **Depth across the building's width.** After placing the building (step 5.4), sample x across its width every 0.5 m; at each x take the distance from the frontage line to the rear boundary. `actual_depth` is the minimum.
 6. **Unmeasurable** also when the lot is a multipolygon, or when two or more separate building footprints over 20 m² sit on it. Corner lots are measured normally.
@@ -686,12 +709,14 @@ For each design, in order:
 1. **`detached_building`.** Required: a detached lot. Actual: `detached`, `attached` or `vacant`. Fails for class `attached` (no margin, no band).
 2. **`units_allowed`.** Required: the design's units. Actual: units allowed on this lot (4, or 6 inside the overlay). Pass when actual ≥ required. Outside the overlay the sixplex designs fail here and the UI reads "not allowed in this ward". No band.
 3. **`lot_width`.** Required = design width + left yard + right yard, where each yard is the larger of the design's own side yard (1.2 and 0.9 for Fourplex Narrow, 1.2 and 1.2 for the others, because the designs need their side walkways) and the zone minimum. Actual = the minimum width across the building band (5.2). Margin = actual − required. Band applies. `detail`: "5.5 m building + 1.2 m + 0.9 m side yards".
-4. **`lot_depth`.** Required = front setback + design length + rear setback (rear uses the lot depth for the 25% zones). Actual = the minimum depth across the building's width; a design that, with its side yards, is wider than the lot's band width (the width row fails, borderline included) cannot be placed between the side lot lines, so its row reports the lot's centre-line depth instead of samples that would run past a leaning side line (A8, 2026-10-17). Known limit: on skewed lots the frontage-aligned rectangle leans over a side even when the lot is wide enough and the sampled depth reads short (542 Ward 04 results, pessimistic); aligning the placement to the lot's sides is the fix. Margin = actual − required. Band applies. `detail`: "6.0 m front + 17.0 m building + 7.7 m rear (25% of 30.8 m)".
+4. **`lot_depth`.** Required = front setback + design length + rear setback (rear uses the lot depth for the 25% zones). Actual = the minimum depth across the building's width; a design that, with its side yards, is wider than the lot's band width (the width row fails, borderline included) cannot be placed between the side lot lines, so its row reports the lot's centre-line depth instead of samples that would run past a leaning side line (A8, 2026-10-17). On a skewed lot (T20, below) the building follows the side lot lines and the row reports the front setback, the design length and the smallest clearance, square to the street, between the turned building's rear wall and the lot boundary straight behind it: the depth the lot offers this design, which on a lot that does not lean is the frontage-to-rear depth again. Margin = actual − required. Band applies. `detail`: "6.0 m front + 17.0 m building + 7.7 m rear (25% of 30.8 m)".
 5. **`building_length`.** Required = the zone's allowed length for this lot (17.0 or 19.0, or `not_applicable` in RT). Actual = the design's length. Margin = allowed − actual. **No band** (two constants). Sixplex Narrow fails here on lots that do not meet the deep-lot test.
 6. **`height`.** Required = the allowed height (greater of the overlay value and 10.0 m). Actual = the design's 10.0 m. Margin = allowed − actual. No band.
 7. **`lot_coverage`.** Required = allowed percentage (greater of the overlay value and 45; `not_applicable` when the overlay has no value). Actual = design building area ÷ lot `area_m2` × 100. Margin = allowed − actual in percentage points. Band applies (2 pp).
 
 **Placement.** The building footprint is a rectangle aligned to the frontage edge: front wall at the front setback, width centred between the side lot lines after the two required yards (any extra width split equally), length along the lot. It is computed for every design, including ones that do not fit, so the 3D view can show the red slice where the footprint crosses a setback or the lot line.
+
+**Skewed lots (T20, done 2026-10-17).** When both side lot lines lean the same way by at least `placement.align_to_sides_deg` (2°) across the design's band, the rectangle turns to follow them, as houses on a diagonal street do: it stays the City's rectangle (pre-approved plans cannot be sheared), centred between the side lot lines measured square to them, and pushed back until its nearer front corner is the front setback from the front lot line. `lot_width` is then the lot's width square to its sides over the turned building's length (the street-parallel cross-section overstates it by 1/cos of the lean), and `lot_depth` as in step 4. The front and rear setback strips stay parallel to the street, the side yards follow the sides; `placement_local` keeps its corner order. Below 2° the frontage-square rectangle stays within about 0.3 m of the side yards over a 17 m building, so nothing changes there (600 random Ward 04 checks: 544 byte-identical, all 56 that changed are skewed). Ward 04 effect: 1,501 design results changed, 1,411 for the better and 90 for the worse; lots that may fit 3,611 → 3,992 (19.9% → 22.0% of house lots); `lot_depth` blocks 1,631 lots instead of 2,008. The worse ones are honest: the true width square to the sides is too small (303 Quebec Ave, 7.02 m against 7.6), or the turned rectangle's far rear corner needs 0.3 to 0.7 m more depth. Known limits: only two orientations are tried (square to the street, or along the sides), so a design that would fit at an angle in between reads a little pessimistic at the band's edge; and the lot-level `width_m` reported in the response is still the street-parallel cross-section at 6 m (it lives in `check.py`, held until next steps is decided).
 
 **Result per design.**
 
@@ -725,6 +750,76 @@ Flags come from the lot row (section 4.4) and never change the result or the col
 ### 5.9 Hand-checked test lots (`engine/tests/test_lots.py`)
 
 Five to ten real lots in Ward 04, chosen at Hour 8 to 10 by looking at the parcel fabric and massing in QGIS or a notebook, measured by hand, and written as expectations with tolerances. The set must include: a clear fit on a wide, deep lot; a borderline width (a 25-foot lot); a borderline depth; a clear fail (narrow lot); a corner lot; a pie-shaped lot; a semi; a row house; a condo; a non-residential lot; one lot with a heritage flag; and, if one exists nearby, a vacant lot. Each case asserts the class, the result per design, and the `lot_width` and `lot_depth` actual values within 0.3 m. `pytest` must pass before every merge to `main`. The list of test lots is documented in `/docs/test-lots.md` (parcel ids and what each one exercises).
+
+### 5.10 Next steps (approved 2026-10-17)
+
+`engine/suplex_engine/next_steps.py` holds one pure function, `build_next_steps(result: CheckResult, copy: dict) -> list[NextStep]`, called at the end of `run_check`. It reads only fields the engine already produced and never calls an API, a model or the network. Text, contacts and links come from `contracts/copy/next_steps.json`; the function fills the `{placeholders}` in the `why` lines with values from the result (formatted with the same rounding as the checklist: metres to two decimals).
+
+**Inputs it uses:** `lot.class`, `lot.reason`, `lot.vacant`, `lot.flags[].id` and `detail` (the exception number), every `designs[].result`, and for borderline results the `rules[]` row that is inside the band (rule, required, actual, margin).
+
+**The steps, their triggers and their sources** (in display order; a step appears at most once; the `why` line names the first trigger that matched):
+
+| Group | Step id | Shown when | What it says (short) | Who | Source checked 2026-10-17 |
+|---|---|---|---|---|---|
+| Confirm first | `survey` | any design is `fits` or `borderline` | Get a current survey by an Ontario Land Surveyor; the City's plans need a site plan "referenced to a current survey", and Suplex measures from City lot lines that are not survey-accurate. When a result is `borderline`, this step comes first and its `why` names the rule and both values | Ontario Land Surveyor | [Pre-approved multiplex plans](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/); [Zoning Applicable Law Certificate](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/) ("current land survey by an Ontario Land Surveyor") |
+| Confirm first | `zoning_check` | class `checked` or `attached` | Ask Toronto Building's zoning staff (416-397-5330, weekdays 8:30 a.m. to 4:30 p.m.); for a written answer before applying, a Zoning Applicable Law Certificate reviews your drawings (up to three reviews; the fee is credited against the building permit) | Toronto Building | [Considerations when building multiplexes](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/); ZALC page |
+| Confirm first | `site_exception` | flag `site_exception` | Your zone carries site-specific exception x{number}, which can change setbacks, height, coverage or density limits; Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff | Toronto Building | Considerations page ("A Chapter 900 exception ... may still set an FSI maximum"); [Interactive By-law Map](https://map.toronto.ca/maps/map.jsp?app=ZBL_CONSULT) |
+| Other approvals | `heritage` | flag `heritage_register` or `heritage_district` | This property is on the Heritage Register or in a Heritage Conservation District. Changes and demolition can need heritage approval, in some cases City Council's; talk to Heritage Planning before you design | Heritage Planning (heritageplanning@toronto.ca) | Heritage Register and Conservation District datasets; Ontario Heritage Act. **Y11 verifies the wording on the City's Heritage Planning page** |
+| Other approvals | `ravine` | flag `ravine` | Without a ravine permit you cannot harm any tree there regardless of size, change the ground level, add fill, or build structures or retaining walls | Urban Forestry, Tree and Ravine Protection | [When to apply for a tree or ravine permit](https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/) |
+| Other approvals | `trca` | flag `trca` | Building or replacing a home in the Toronto and Region Conservation Authority's regulated area usually needs a TRCA permit as well as the building permit; call TRCA planning staff first | TRCA | Tree and ravine page ("TRCA regulates development in or near watercourses, valleys, the Lake Ontario shoreline, and wetlands"); Ontario Regulation 41/24. **Y11 verifies on trca.ca** |
+| Other approvals | `trees` | class `checked` or `attached` | Trees 30 cm or more across on your lot, and City street trees of any size, need a permit before work that could injure or remove them; a building permit does not cover trees, and the permit application includes a Tree Declaration Form | Urban Forestry | Tree and ravine page; [Tree Declaration form](https://www.toronto.ca/wp-content/uploads/2017/10/8fda-Tree_Declaration.pdf); plans page |
+| Apply with a City design | `designer` | any design `fits` or `borderline` | A qualified design professional completes the site-specific parts: site plan, lot grading plan, the zoning and code matrices on sheets A010 and A011, and signed architectural, structural and mechanical letters. Changing the plan itself, even the heating or plumbing, means it is no longer pre-approved | Design professional | Plans page |
+| Apply with a City design | `permit` | any design `fits` or `borderline` | Apply online through Toronto Building and enter the pre-approved plan number; you do not resubmit the City's drawings. The application also includes forms such as the Residential Infill Public Notice declaration and the Municipal Road Damage form | Toronto Building | Plans page; [Building permit fees](https://www.toronto.ca/services-payments/building-construction/apply-for-a-building-permit/building-permit-fees/) |
+| Apply with a City design | `demolition` | any design `fits` or `borderline` and the lot is not `vacant` | Replacing the house needs a demolition permit, which can be added to the same application after you submit | Toronto Building | Plans page ("Demolition, mechanical, plumbing, and drain permits can be added after submission") |
+| Apply with a City design | `fees` | any design `fits` or `borderline` | A multiplex with up to six units pays no development charges on its second to fourth units, the fifth and sixth are reduced to $0, and parkland cash-in-lieu is waived for the second to sixth, while the lot has no more than six units (a garden or laneway suite on the City's deferral program does not count) | Toronto Building | [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), enacted July 24, 2025, amending Municipal Code 415-6 A (2) and 415-30 A (16); the City's "Considerations" page still says four units and is out of date |
+| If the designs don't fit | `attached_options` | class `attached` | The City's free designs are for detached lots. On a semi or row-house lot you may still convert the existing house to up to four homes, or add a garden or laneway suite, if the rules are met (a semi cannot become a fiveplex or sixplex, 600.60.40(3)(D)) | Toronto Building | Considerations page; [Garden suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/garden-suites/); [Laneway suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/changing-lanes-laneway-suites-in-toronto/); By-law 654-2025 |
+| If the designs don't fit | `custom_or_variance` | class `checked` and all four designs `no_fit` | None of the City's four designs fits as checked. A design professional can look at a custom design; plans that go beyond the zoning rules can apply to the Committee of Adjustment for a minor variance | Design professional; Committee of Adjustment | Considerations page; [Committee of Adjustment](https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/) |
+| If the designs don't fit | `ask_zoning` | class `condo`, `non_residential`, `older_bylaw`, `larger_building` or `unmeasurable` | Suplex could not check this lot ({reason}). Toronto Building's zoning staff can tell you what is allowed: 416-397-5330, weekdays 8:30 a.m. to 4:30 p.m. | Toronto Building | Considerations page |
+
+**What a few real lots get** (from `docs/test-lots.md`; these become the tests). The flag-driven steps (`site_exception`, `heritage`, `ravine`, `trca`) also appear wherever the lot carries that flag; the table shows the steps the result itself drives:
+
+| Lot | Result | Steps, in order |
+|---|---|---|
+| 281 Armadale Ave | Fourplex Narrow too close to call on width (7.45 m against 7.6 m) | `survey` (why: the width margin), `zoning_check`, `site_exception` if flagged, `trees`, `designer`, `permit`, `demolition`, `fees` |
+| 22 Baby Point Rd | fits, heritage register and district | `survey`, `zoning_check`, `heritage`, `trees`, `designer`, `permit`, `demolition`, `fees` |
+| 155 Vine Ave | attached (row house) | `zoning_check`, `trees`, `attached_options` |
+| 34 Rexford Rd | all four `no_fit` on width | `zoning_check`, `trees`, `custom_or_variance` |
+| 1 Ripley Ave | condo, not checked | `ask_zoning` |
+| 20 Grafton Ave | vacant, all `no_fit` | `zoning_check`, `trees`, `custom_or_variance` (no `demolition`: nothing to demolish) |
+
+**Copy file** `contracts/copy/next_steps.json`:
+
+```json
+{
+  "checked_on": "2026-10-17",
+  "groups": { "confirm": "Confirm first", "approvals": "Other approvals for this lot",
+              "apply": "Apply with a City design", "alternatives": "If the free designs don't fit" },
+  "footer": "Screening only, not a permit or legal advice. Steps and contacts come from City of Toronto pages checked on {checked_on}; confirm with the City before you rely on them.",
+  "steps": {
+    "survey": {
+      "group": "confirm",
+      "title": "Get a current survey of your lot",
+      "text": "The City's plans need a site plan based on a current survey by an Ontario Land Surveyor. Suplex measures from City lot lines, which are not survey-accurate.",
+      "who": "An Ontario Land Surveyor",
+      "links": [{ "label": "Pre-approved multiplex plans", "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/" }],
+      "sources": [{ "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/", "quote": "referenced to a current survey" }]
+    }
+  },
+  "why": {
+    "borderline": "Because the {design} is too close to call on {rule}: this lot measures {actual} m against {required} m needed.",
+    "any_fit": "Because at least one City design may fit this lot.",
+    "flag": "Because this lot is {flag_label}.",
+    "has_building": "Because there is a house on this lot today.",
+    "attached": "Because this is a semi or row-house lot.",
+    "no_fit": "Because none of the four City designs fits as checked.",
+    "not_checked": "Because Suplex could not check this lot."
+  }
+}
+```
+
+The `sources` entries are never shown in the UI; they are the audit trail for Simone's review and the Devpost. Every step in the table above has one.
+
+**Contract change** (Andrew, A14): `CheckResponse` gains `next_steps: NextStep[]` (Appendix A), ordered, empty only for an address outside Toronto (which never reaches the engine). The four `check.*.json` fixtures gain their lists. `/explain` ignores the field: the AI never phrases or reorders steps.
 
 ---
 
@@ -795,6 +890,7 @@ About six seconds before the orbit starts. **Fails show the problem:** when a de
 - **Flags:** one chip per flag with its icon, label and sentence.
 - **Permits near you:** "N multiplex permits within 500 m since May 2023" and the unlabelled dots drawn on the 3D ground plane as small gold discs at their local offsets (they are inside the 150 m scene or beyond it; draw those beyond 150 m at the edge of the ground disc). Never an address.
 - **Explanation:** the Gemini text from `POST /explain` for the selected design, loaded after the result is on screen, with a skeleton while it loads, a language picker (the eight languages) and the `source` badge ("AI-written from the numbers above" or "Template"). If the AI service is unreachable, show the template fallback text that the web app can also produce itself from the same copy strings.
+- **Your next steps** (5.10; Yuvi's `NextSteps.tsx`, mounted by Jayden): after the explanation, the `next_steps` list grouped under its four headings; each step shows its title, two lines of text, who to contact, the City links, and its `why` line as a muted chip; the footer disclaimer closes the list. Never colour-only, never reordered by the web app.
 - **See your ward:** a primary button. Pressing it starts the transition (6.6). The ward data (`/ward/{id}` and `/static/wards/{id}.geojson`) is fetched in the background as soon as the check result arrives.
 
 ### 6.5 The ward map
@@ -928,7 +1024,7 @@ Plain HTML, CSS and JavaScript (no build step), served by the AI service at `GET
 2. `POST /briefing` with `{ward, trend, lang}` and renders the `BriefingResponse`: the title ("Ward 04, Parkdale–High Park: multiplexes, before you vote"), the generated date and data dates, the sections in order (what may fit · the most common blocking rule · permits issued · what isn't checked · three questions to ask candidates), the trend chart, the disclaimer, and a "How these numbers were computed" footer with the dataset links.
 3. Renders every `{{key}}` as `<a class="num" href="{source_url}" title="{label}">{formatted value}</a>`, so each number links to its source: the ward map (`{webUrl}/?ward=04`) for engine counts, the City dataset page for permit counts, and this page's methodology footer for the uncertainty band.
 4. Language picker: a `<select>` of the eight languages that reloads with `?lang=`. Copy button: copies the resolved plain text plus the page link. Print styles: single column, no buttons, black text, links printed as footnotes.
-5. Trend chart as a small inline SVG (built that way by Simone instead of Chart.js, so the page makes no external request and works in the Wi-Fi-off rehearsal): bars, two marker lines, a hover tooltip per month, a "show as a table" view, the same caption as the web app. Bars use `--suplex-permit-bar` (`#B47F00`), a darker step of the permit gold that passes 3:1 on both surfaces. Styles import `/static/design-tokens.css` so the page matches the app.
+5. Trend chart as a small inline SVG (built that way by Simone instead of Chart.js, so the page makes no external request and works in the Wi-Fi-off rehearsal): bars, two marker lines, a hover tooltip per month, a "show as a table" view, the same caption as the web app. Bars use `--suplex-permit-bar` (`#A27100`), a darker step of the permit gold that passes 3:1 on both surfaces. Styles import `/static/design-tokens.css` so the page matches the app.
 
 Cached briefings: `pregenerate.py --ward 04 --langs all` fills the cache for the demo ward in every language and for the two backup addresses' explanations. The page serves from cache first, so the demo does not wait on Gemini.
 
@@ -970,7 +1066,7 @@ interaction = client.interactions.create(
 draft = ExplainDraft.model_validate_json(interaction.output_text)
 ```
 
-If the installed SDK version has no `interactions`, use the older form: `client.models.generate_content(model=GEMINI_MODEL, contents=prompt_text, config={"response_mime_type": "application/json", "response_schema": ExplainDraft})` and read `response.text`. Either way, `generate_json()` retries once after 2 s on a 429 or a JSON parse error, then raises; the caller falls back to the template. Keep schemas flat; the docs warn that deeply nested schemas can be rejected. The free-tier limits are in the section 7.1 table. The demo needs about 16 generations (one ward in eight languages, two addresses × four designs in English), which is nearly the whole 20-a-day budget of `gemini-3.8-flash`, so the pre-generation order is: run everything with `gemini-3.5-flash-lite` first so the cache is complete, then, if the validator comparison favours it, overwrite the demo ward's briefings with `gemini-3.8-flash` inside that budget and keep the flash-lite files as the fallback. Never run the 3.8-flash pass before the Hour-24 lock.
+If the installed SDK version has no `interactions`, use the older form: `client.models.generate_content(model=GEMINI_MODEL, contents=prompt_text, config={"response_mime_type": "application/json", "response_schema": ExplainDraft})` and read `response.text`. Either way, `generate_json()` retries once after 2 s on a 429 or a JSON parse error, then raises; the caller falls back to the template. Keep schemas flat; the docs warn that deeply nested schemas can be rejected. The free-tier limits are in the section 7.1 table. The demo needs about 16 generations (one ward in eight languages, two addresses × four designs in English), which is nearly the whole 20-a-day budget of `gemini-3.8-flash`, so the pre-generation order is: run everything with `gemini-3.5-flash-lite` first so the cache is complete, then, if the validator comparison favours it, overwrite the demo ward's briefings with `gemini-3.8-flash` inside that budget and keep the flash-lite files as the fallback. Never run the 3.8-flash pass before the Hour-24 lock. For the demo the full set is 20 requests (Ward 04 in eight languages, plus twelve explanations for the three addresses), the model's whole daily budget with no room for a retry, so the pass runs in stage order: Ward 04 in English and French, its other six languages, then 326 Quebec Ave and 281 Armadale Ave; anything left stays on the validated `gemini-3.5-flash-lite` cache.
 
 ### 7.10 What the Gemini judge sees
 
@@ -1004,6 +1100,14 @@ Every task below has an id, a description, inputs, outputs, an acceptance check 
 
 Total about 26.5 hours.
 
+**3D scene taken over from Jayden (2026-10-17, 0.3):** Andrew's plan grows to 35 hours with A14 (0.5) and these three, which run in a separate Claude session on branch `andrew-3d` (kickoff prompt in 8.5):
+
+| ID | Task | Inputs | Outputs | Acceptance check | Depends on | Hours |
+|---|---|---|---|---|---|---|
+| J8 | Fail visuals | `designs[].fail_slices_local` | a translucent red slab per failing slice, labelled with the rule and its numbers; a striped slab labelled "too close to call" for borderline results | the `no_fit` and `borderline` fixtures show the slabs; never colour alone | — | 2.0 |
+| A16 | The four designs as the City drew them | the plan sets' elevations (A200 to A202, pages 16 to 18), sections (A300 on), floor plans (A100 to A104); the floor datums: ground 0.000, second 2.840, third 5.690, roof 8.529, parapet 8.800 m | a facade model per design in `web/src/components/Lot3D/models/`: openings at the drawn sizes and sill heights, the stepped-back third floor with its roof-deck guard, the entry stair and canopy, the lift, Juliet balconies, the basement walkout, cladding zones; `contracts/designs.json` `levels[]` set to the drawn floor-to-floor heights | next to each A200 front elevation the window count and positions match and heights match within 0.1 m; the floors still drop in one by one; `python contracts/validate.py` passes | J8 | 3.0 |
+| A15 | Realism pass | section 6.3; the review in 0.4 | an offline Lightformer environment, ACES or AgX tone mapping, soft and contact shadows, N8AO ambient occlusion, physically based materials, procedural window and brick textures on neighbours, better roofs, a road and sidewalk strip, stylized trees with a wind sway; a PerformanceMonitor; the current look behind `?look=classic` | at least 50 fps on the demo laptop with 400 buildings; the whole sequence plays; reduced motion works; `npm run build` and `npx oxlint` pass | A16 | 3.0 |
+
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `main`):**
 
 ```
@@ -1032,6 +1136,8 @@ Then continue with A4 (lot geometry) using test-driven development: write engine
 | Y10 | Checkpoints | — | — | present at Hours 6, 12, 18, 24 and 30 with the current `checks.py` output pasted in `/docs/decisions.md` | — | 2.0 |
 
 Total about 22.5 hours.
+
+**Re-plan approved 2026-10-17 (0.3):** Yuvi also builds the ward map (J5: section 6.5 and the J5 row in 8.3) in `web/src/components/WardMap/`, and owns next steps (8.5). His kickoff prompts for both are in 8.5.
 
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `yuvi`):**
 
@@ -1062,6 +1168,8 @@ Then continue with Y3 and Y4. Print a check for everything you build (pipeline/c
 | J11 | Checkpoints | — | — | present at Hours 6, 12, 18, 24 and 30 with a build that runs on `main` | — | 1.5 |
 
 Total about 27 hours (25 without J10).
+
+**Re-plan approved 2026-10-17 (0.3):** J5 (the ward map) moved to Yuvi, J7 (the trend chart) to Simone, and the 3D work (J8, J10) to Andrew, who took over `web/src/components/Lot3D/`. Jayden gains 2 hours of polish on the landing search card and the UI that is not 3D, so his plan is 19.5 hours. His order is J4, J6, J9, the UI polish, then wiring in Yuvi's `WardMap` and mounting `NextSteps.tsx`. His revised kickoff prompt is in 8.5.
 
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `jayden`):**
 
@@ -1095,7 +1203,9 @@ Then continue with J2 and J3. Build everything against the fixtures first; the l
 
 Total about 27 hours.
 
-**Choosing the backup addresses and the demo ward (S9, with Andrew).** The demo ward is Ward 04 unless the batch results make another sixplex ward a clearer story. From `wards/04.geojson` and the API, pick: one lot whose Fourplex Narrow and Fourplex Wide both `fit`, with no flags, on a street with neighbours in the massing and a few street trees; and one lot that is `borderline` on `lot_width` (a 25-foot lot) or a clear `no_fit`. Prefer lots with no permit dot within 50 m, so the demo never implies anything about a particular owner's plans. Never a teammate's home unless they volunteer. Write both addresses, their expected results and their `address_id` values in `/pitch/demo.md`.
+**Re-plan approved 2026-10-17 (0.3):** Simone also ports her briefing-page chart into `web/src/components/WardMap/TrendChart.tsx` (J7) and reviews the next-steps copy (S14). Her kickoff prompt for J7 is in 8.5.
+
+**Choosing the backup addresses and the demo ward (S9, with Andrew).** The demo ward is Ward 04 unless the batch results make another sixplex ward a clearer story. From `wards/04.geojson` and the API, pick: one lot whose Fourplex Narrow and Fourplex Wide both `fit`, with no flags, on a street with neighbours in the massing and a few street trees; and one lot that is `borderline` on `lot_width` (a 25-foot lot) or a clear `no_fit`. Prefer lots with no permit dot within 50 m, so the demo never implies anything about a particular owner's plans. Never a teammate's home unless they volunteer. Write both addresses, their expected results and their `address_id` values in `/pitch/demo.md`. **Done 2026-10-17:** Ward 04, with 326 Quebec Ave (all four designs fit), 281 Armadale Ave (the Fourplex Narrow is too close to call) and 155 Vine Ave (a row house), all checked on the citywide batch (decision 18).
 
 **Kickoff prompt (paste into a fresh Claude Code session in the repo root, branch `simone`):**
 
@@ -1107,6 +1217,72 @@ Start with task S3 from section 8.4: scaffold the FastAPI service in /ai on port
 Use the neutral tone from section 2.5 in every prompt and every string: no candidate names, no threat or opportunity framing, "may fit" never "will be built", and "Screening only, not a permit or legal advice" where a result is shown. Ask Andrew before changing any contract other than contracts/copy.
 ```
 
+### 8.5 Next-steps and re-plan tasks (approved 2026-10-17)
+
+Yuvi owns next steps end to end, including its panel component, because his data work is finished and Jayden's list is the longest; the others each have one small piece. Andrew approved the feature and the re-plan on 2026-10-17: Yuvi builds the ward map (J5) first, then Y11 to Y14 (Y11, the sourcing, can fill gaps while he waits on the batch output). Besides `/pipeline`, Yuvi owns `web/src/components/WardMap/` (except `TrendChart.tsx`, which is Simone's) and four next-steps files: `engine/suplex_engine/next_steps.py`, `engine/tests/test_next_steps.py`, `contracts/copy/next_steps.json` and `web/src/components/ResultPanel/NextSteps.tsx`; `CLAUDE.md` lists these exceptions. Next steps merges before the Hour-24 demo cache if it can; if it lands later, Andrew regenerates the cache once more (one command). If the ward map runs late, next steps is cut at Hour 27.
+
+| ID | Owner | Task | Inputs | Outputs | Acceptance check | Depends on | Hours |
+|---|---|---|---|---|---|---|---|
+| Y11 | Yuvi | Source every step | section 5.10; the City pages linked there; trca.ca; the City's Heritage Planning pages | `pipeline/reports/07-next-steps-sources.md`: for each of the 14 steps, the page URL, the exact sentence it rests on, and the date read; anything not confirmable is marked and its step reworded or cut | every step has a quote; the heritage and TRCA wording is confirmed on their own pages; the fourplex and sixplex fee wording matches the City's current page | — | 1.0 |
+| A14 | Andrew | Contract and hook | Appendix A `NextStep` | `contracts/schemas/check.response.schema.json`, `types.ts`, the four `check.*.json` fixtures gain `next_steps`; `run_check` calls `build_next_steps` (a stub returning `[]` until Y13 lands); changelog line | `python contracts/validate.py` passes; `pytest engine api` green | approval | 0.5 |
+| Y12 | Yuvi | Copy file | Y11 | `contracts/copy/next_steps.json` with all 14 steps, the `why` templates, the footer and a `sources` entry per step | Simone's tone review (S14) passes; no step names a business, a person or a candidate | Y11, A14 | 1.0 |
+| Y13 | Yuvi | Engine module and tests | section 5.10; Y12 | `engine/suplex_engine/next_steps.py`; `engine/tests/test_next_steps.py` covering every trigger on synthetic fixtures and the six real lots in the 5.10 table | `pytest engine` green with the real-lot tests running; the six lots return exactly the steps in the table; no AI or network call in the module | A14, Y12 | 2.0 |
+| Y14 | Yuvi | Render "Your next steps" | `fixtures/check.*.json` with `next_steps`; Jayden's panel styles | `web/src/components/ResultPanel/NextSteps.tsx`: the four group headings, each step with title, text, who, links and its `why` line as a muted chip; the footer; keyboard reachable; no colour-only state. Jayden mounts it at the end of the result panel with one line | all four fixtures render; a not-checked lot shows only `ask_zoning`; links open in a new tab; `npm run build` passes | A14, J4 | 1.5 |
+| S14 | Simone | Tone and fact review | Y11, Y12 | review notes; `pitch/facts.md` corrected so development charges say "up to six units", citing By-law 845-2025; one demo line (2.8) | every step reads neutral and plain; nothing reads as legal advice or as a promise | Y12 | 0.5 |
+
+Total about 6.5 hours, mostly Yuvi's (5.5).
+
+**Kickoff prompt for Yuvi's next steps (after J5):**
+
+```
+You are working in the Suplex repo with me, Yuvi. Read CLAUDE.md, then MASTERSPEC.md section 0, section 5.10 (Next steps), section 8.5 and Appendix A. I own /pipeline, and for this feature also engine/suplex_engine/next_steps.py, engine/tests/test_next_steps.py, contracts/copy/next_steps.json and web/src/components/ResultPanel/NextSteps.tsx; edit nothing else. Branch yuvi, opened fresh from main.
+
+Start with Y11: for each of the 14 steps in the 5.10 table, open the linked City page (and trca.ca and the City's Heritage Planning pages for those two steps), copy the exact sentence the step rests on, and write pipeline/reports/07-next-steps-sources.md with URL, quote and date. Reword or cut any step you cannot confirm, and say so. Then Y12: write contracts/copy/next_steps.json exactly in the shape shown in 5.10. Then Y13, test-first: write engine/tests/test_next_steps.py from the six real lots in the 5.10 table and synthetic cases for every trigger, then engine/suplex_engine/next_steps.py with build_next_steps(result, copy) until it passes. The module is pure: no network, no AI, no new dependencies; values in the why lines use the checklist's rounding. Then Y14: web/src/components/ResultPanel/NextSteps.tsx, rendering CheckResponse.next_steps with the types from @contracts/types and the existing panel styles; do not edit any other web file (Jayden mounts it). Commit after each step, no Co-Authored-By trailers, never rewrite history, never merge your own PR, and open a PR to Andrew when pytest engine and npm run build are green.
+```
+
+**Kickoff prompt for Yuvi's ward map (J5, start now):**
+
+```
+You are working in the Suplex repo with me, Yuvi. Read CLAUDE.md first (it lists my approved exceptions), then MASTERSPEC.md section 0 (especially 0.3 and 0.4), section 6.5 (the ward map), section 8.3 row J5, and Appendix A (LotFeatureProps, PermitFeatureProps, WardResponse, TrendResponse). Besides /pipeline I own web/src/components/WardMap/ (except TrendChart.tsx, which is Simone's) and the four next-steps files; edit nothing else, and never App.tsx: Jayden wires the map in. Branch yuvi, opened fresh from main.
+
+Task J5: build the ward map as React and TypeScript components in web/src/components/WardMap/, exported from index.ts as WardMap with props for the ward id, the searched lot id and an onSelectLot(lotId) callback. Use MapLibre with the neutral OpenFreeMap positron style, not the green landing-page BaseMap style, so the lot colours read. Layers: lots filled by result for the selected design (--suplex-fit for fits, a 12 px diagonal-stripe pattern for borderline, --suplex-nofit for no_fit, no fill for not_checked; thin outlines from zoom 15); gold permit dots (kind multiplex, issued since 2023-05-01) above the lots; a pulsing white outline on the searched lot. Controls: the five-option design filter (the sixplex options disabled with "not allowed in this ward" when sixplex_overlay is "none"); a legend that is always visible and ends with "Screening only, not a permit."; the ward panel with counters that count up over 1.5 s, the most common reason lots don't fit, the attached share, the flags line, the data dates, and a "Get the ward briefing" link to the AI service's /b/{ward_id}. Leave a slot in the panel for Simone's TrendChart (she adds TrendChart.tsx to the same folder). Hover shows only the result and the design, never an address or a parcel id; clicking a lot calls onSelectLot. No list, export or download of lots anywhere. Types from @contracts/types, strings from contracts/copy, colours from the design tokens. Build against contracts/fixtures/lots.04.sample.geojson, ward.04.json and permits.sample.geojson first, then the real data/out/wards/04.geojson from Andrew's batch. Acceptance: npm run build and npx oxlint pass in web/; the fixture ward renders; the filter recolours by design; hover never shows an address. Commit as you go, no Co-Authored-By trailers, never rewrite history, never merge your own PR; open a PR to Andrew when done, then start next steps with the prompt above.
+```
+
+**Kickoff prompt for Simone's chart (J7):**
+
+```
+You are working in the Suplex repo with me, Simone. Read CLAUDE.md first (it lists my approved exception), then MASTERSPEC.md section 0.3, section 6.8 (the trend chart) and Appendix A (TrendResponse). Besides /ai, /docs, /pitch and contracts/copy, I own exactly one web file, web/src/components/WardMap/TrendChart.tsx; edit no other web file (Yuvi owns the rest of WardMap/, Jayden the rest of the UI, Andrew the 3D scene). Branch simone, opened fresh from main.
+
+Task J7: port the inline SVG monthly chart from ai/page/briefing.js into a React and TypeScript component, TrendChart.tsx, that takes a TrendResponse prop and draws the same chart: bars in var(--suplex-permit-bar, #A27100) (Andrew is adding the token to contracts/design-tokens.css), integer y ticks, the two dashed markers from markers[], a tooltip per month, the caption from section 6.8 with the source badge when source is "cache", and a visually hidden table for screen readers. No chart library. Types from @contracts/types, strings from contracts/copy. Check it against contracts/fixtures/trend.04.json. Acceptance: npm run build and npx oxlint pass in web/. Commit, no Co-Authored-By trailers, never merge your own PR; open a PR to Andrew.
+```
+
+**Revised kickoff prompt for Jayden (all UI that is not 3D):**
+
+```
+You are working in the Suplex repo with me, Jayden. Read CLAUDE.md first, then MASTERSPEC.md sections 0.3 and 0.4 (the review of my branch), 2.4, 6.2, 6.4, 6.6, 6.7 and Appendix A. I own /web except web/src/components/Lot3D/ (Andrew's now: he took over the 3D scene), web/src/components/WardMap/ (Yuvi's; TrendChart.tsx in it is Simone's) and web/src/components/ResultPanel/NextSteps.tsx (Yuvi's). Branch jayden, updated from main.
+
+Start by opening a PR to Andrew for the four commits already on the jayden branch. Then do these in order, each with a commit, npm run build and npx oxlint passing:
+1. J4: fill the result panel's tab panel in ResultPanel.tsx: the rule checklist (label, required, actual, signed margin with unit, a pass, borderline or fail icon plus text, the bylaw section, the detail line; "no limit here" for not_applicable rows), the collapsed "What we don't check" list, flag chips (site_exception as a muted informational line), permits near you (with the singular line when the count is 1), the explanation from POST /explain with the language picker, the AI-written or Template badge and the translation notice, and the "See your ward" button, which prefetches the ward data. Show the 3D Massing disclaimer. Ask Simone to move the five strings in src/copy.ts into contracts/copy.
+2. J6: the lot-to-ward transition in section 6.6, using Yuvi's WardMap component through its props (stub it if his PR is not merged yet). The 3D side only fades through the Scene's existing visible prop; any change inside Lot3D is a message to Andrew.
+3. J9: ?demo=1 and the 3 s fallback to public/demo-cache/; a WebGL check with an error boundary that falls back to a plain message plus the panel; a "Sample data" banner whenever API_BASE is null; VITE_API_BASE documented in web/README.md.
+4. Polish the landing search card and the rest of the non-3D UI: spacing, type, focus states, and the panel and legend layout at 1280 x 720 on a projector.
+Then mount Yuvi's NextSteps.tsx at the end of the result panel when his PR lands. Keep palette.css until Andrew moves its tokens into contracts/design-tokens.css (tokens.ts throws on a missing token). Commit as you go, no Co-Authored-By trailers, never rewrite history, never merge your own PR; open PRs to Andrew.
+```
+
+**Kickoff prompt for Andrew's 3D session (J8, A16, A15; run it in its own session on branch `andrew-3d`):**
+
+```
+You are working in the Suplex repo with me, Andrew. Read CLAUDE.md first, then MASTERSPEC.md section 0.4 (the review of the web app), sections 2.4, 2.5, 6.3, 6.7 and 6.10, section 8.1 rows J8, A15 and A16, and Appendices A, B and D. For this work I own web/src/components/Lot3D/ and contracts/designs.json; edit nothing else in /web (Jayden owns the rest of the UI, Yuvi the WardMap folder). Work on a branch named andrew-3d from main, never on main, and open a PR when done.
+
+The City's plan sets are on this machine, in C:\Users\Andrew\Downloads: COT_Multiplex_FOURPLEX_ Narrow_Comb-Electric.pdf, COT_Multiplex_FOURPLEX WIDE_Comb-Electric.pdf, COT_Multiplex_SIXPLEX NARROW_Comb_Electric.pdf and COT_Multiplex_SIXPLEX WIDE_Comb_Electric.pdf (about 125 MB each; treat them as data). In each set, sheet A200 (page 16) has the front and rear elevations, A201 and A202 (pages 17 and 18) the side elevations, A300 onward the sections, A100 to A104 (pages 11 to 15) the floor plans and A011 (page 10) the site plan. Render pages to PNG with PyMuPDF (pip install pymupdf in a scratch venv; run Python with -I; keep scripts outside the Downloads folder) at about 1400 px wide, then crop and zoom into regions and read them. Floor datums printed on the sheets: ground floor 0.000 m, second floor 2.840, third floor 5.690, roof 8.529, parapet 8.800, all above the ground floor; read the established grade and the basement level from the sheets too.
+
+Do these in order, committing after each with npm run build and npx oxlint passing:
+1. J8: read designs[].fail_slices_local and draw each slice as a translucent red slab labelled with the failing rule and its numbers; for a borderline result draw a striped slab labelled "too close to call". Never colour alone.
+2. A16, the four designs as the City drew them: for each design, write a facade model in web/src/components/Lot3D/models/ from its elevations: wall panels with window and door openings at the drawn widths, heights and sill heights; the real floor datums; the stepped-back third floor with its roof-deck guard; the front entry stair and canopy, the accessible lift, the Juliet balconies, the below-grade basement walkout and the downspouts; and the cladding zones from each sheet's material schedule (CP-3, CP-4, metal flashing) as materials. Keep the animation: the levels still drop in one by one with squash and stretch, and each home keeps its colour for its label. Update levels[] in contracts/designs.json to the drawn floor-to-floor heights and check with python contracts/validate.py.
+3. A15, a realism pass on the whole scene that keeps every animation: an offline environment built from drei Lightformers (no downloaded HDR files: the demo must run with Wi-Fi off), ACES or AgX tone mapping, soft shadows and contact shadows, ambient occlusion through @react-three/postprocessing (N8AO), physically based materials, procedural window and brick textures on the neighbouring buildings, better roofs, a road and sidewalk strip along the frontage, and stylized trees with a gentle wind sway. Add a PerformanceMonitor that drops ambient occlusion and shadows when the frame rate falls under 45, and keep the current look behind ?look=classic as the fallback.
+Acceptance: next to each A200 front elevation, the window count and positions match and the heights match the datums within 0.1 m; the whole sequence still plays; at least 50 fps on this laptop with 400 buildings; prefers-reduced-motion still works; npm run build and npx oxlint pass. No Co-Authored-By trailers, never rewrite history, never merge your own PR.
+```
+
 ---
 
 ## 9. Git workflow and the root `CLAUDE.md`
@@ -1115,7 +1291,7 @@ Use the neutral tone from section 2.5 in every prompt and every string: no candi
 
 - **One repo,** `suplex`, on GitHub under Andrew's account, public by submission time (the Devpost links it). `main` must always run the demo. Only Andrew merges into `main`, through pull requests.
 - **Branches:** Andrew works on `main`; `yuvi`, `jayden` and `simone` are the teammates' branches, opened by them from `main`. Nobody but Andrew commits to `main`. No other long-lived branches; a quick experiment is a branch off your own branch, merged back by you.
-- **Folder ownership:** `/contracts`, `/engine`, `/api`, root files → Andrew · `/pipeline` → Yuvi · `/web` → Jayden · `/ai`, `/docs`, `/pitch`, `contracts/copy/` → Simone. Each person edits only their own folders. A change anyone needs in someone else's folder is a message to that person, not a commit.
+- **Folder ownership:** `/contracts`, `/engine`, `/api`, root files → Andrew · `/pipeline` → Yuvi · `/web` → Jayden · `/ai`, `/docs`, `/pitch`, `contracts/copy/` → Simone. Each person edits only their own folders. A change anyone needs in someone else's folder is a message to that person, not a commit. **Approved exceptions (2026-10-17):** Yuvi owns `web/src/components/WardMap/` (except `TrendChart.tsx`) and the four next-steps files listed in 8.5; Simone owns `web/src/components/WardMap/TrendChart.tsx`; Jayden wires both into the app. Every change reaches `main` through a PR to Andrew; nobody merges their own PR.
 - **Contract changes** go through Andrew: describe the change, Andrew updates the schema, `types.ts` and the fixture together on `main` within the hour, and everyone rebases. `contracts/README.md` keeps a one-line changelog.
 - **Commit small and often:** every working increment, with messages in the form `area: what changed` (`engine: lot width across the building band`, `web: ward map stripe pattern`). Push at least hourly so nothing is lost on a dead laptop.
 - **Integration checkpoints** at Hours 6, 12, 18, 24, 30 and 34: each person opens a PR from their branch; Andrew runs `scripts/check.sh` (engine and AI tests, API start, web build, the demo flow by hand) and merges. Never one big merge at the end.
@@ -1157,7 +1333,8 @@ Suplex is a 36-hour Hack the Valley 11 project for the Hack the Valley × School
 challenge. It checks any Toronto address against the City's four free pre-approved multiplex
 designs in an animated 3D view, compares lots where a design may fit ("could") with multiplex
 permits issued since May 2023 ("did") on a ward map, and writes a plain-language ward briefing.
-MASTERSPEC.md is the source of truth. Read the sections it assigns to your owner before coding.
+MASTERSPEC.md is the source of truth. Read section 0 (status: what is done, what is next) and then the
+sections it assigns to your owner before coding. Repo: https://github.com/andrewl746/htv26
 
 ## Who owns what (edit only your own folders)
 
@@ -1167,7 +1344,17 @@ MASTERSPEC.md is the source of truth. Read the sections it assigns to your owner
 - Jayden: /web. Branch jayden.
 - Simone: /ai, /docs, /pitch and contracts/copy/*.json. Branch simone.
 
+Approved exceptions (2026-10-17, MASTERSPEC 0.3 and 8.5); each file has exactly one owner:
+- Andrew also owns web/src/components/Lot3D/ (the 3D scene, taken over from Jayden).
+- Yuvi also owns web/src/components/WardMap/ (except TrendChart.tsx) and the next-steps files:
+  engine/suplex_engine/next_steps.py, engine/tests/test_next_steps.py,
+  contracts/copy/next_steps.json and web/src/components/ResultPanel/NextSteps.tsx.
+- Simone also owns web/src/components/WardMap/TrendChart.tsx.
+- Jayden owns the rest of /web (all UI that is not 3D): he wires WardMap into App.tsx and
+  mounts NextSteps.tsx.
+
 Never edit outside your folder. If you need a change elsewhere, stop and tell the owner.
+Every change reaches main through a pull request to Andrew. Never merge your own PR.
 Contract changes (anything in /contracts except contracts/copy) go through Andrew, who changes
 the schema, types.ts and the fixture together. Build against /contracts/fixtures first.
 
@@ -1243,6 +1430,8 @@ Hour 0 is when the team starts building from this spec. Checkpoints are integrat
 | 24–30 | A13 demo laptop setup; integration | Y9 Tiger Data Devpost material with Simone | J9 finishes, J10 polish and extras | S10 Devpost, README, deck, demo script, Q&A | **Hour 30: offline rehearsal** (Wi-Fi off, API and AI stopped) passes on the cache |
 | 30–36 | merges, final `demo` tag at Hour 34 | walkthrough rehearsal | extras only if everything works | S11 ten rehearsals including a judge typing a random address; **Devpost submitted early (Hour 34)** | **Hour 34:** submitted; `main` tagged `demo` |
 
+**Approved re-plan, Hours 20 to 27:** Yuvi builds the ward map (J5), then next steps (Y11 to Y14, with Andrew's A14 contract hook and Simone's S14 review); Simone ports her chart (J7); Jayden does J4, J6 and J9 and the UI that is not 3D, then wires in the ward map and next steps; Andrew's separate 3D session does J8, A16 and A15 on branch `andrew-3d`. Next steps is cut at Hour 27 if it is not merged; the 3D work merges by Hour 27 or the current look ships.
+
 **Cut first if behind, in this order:**
 
 1. Tiger Data and the trend chart (go/no-go at Hour 14; the local permits file still powers the headline, the dots and "permits near you")
@@ -1293,6 +1482,7 @@ Visual extras are not on this list because they never start before the core work
 - **"Doesn't the Toronto Multiplex Tracker already map permits?"** Yes, and we credit it. It shows what got permitted. We add what could be built with the City's free designs, and put the two side by side.
 - **"Why does the Sixplex Narrow fail on so many lots?"** It is 19 m long, and the by-law allows 19 m for a detached houseplex only on lots at least 36 m deep (frontage under 10 m) or 40 m deep (frontage 10 m or more); elsewhere the limit is 17 m. That is a finding, not a bug, and the checklist shows the section.
 - **"Why is the AI allowed anywhere near this?"** It never decides anything. It phrases numbers the engine computed, writes placeholders instead of digits, and a validator rejects any number it did not get. We can show the rejection log.
+- **"Isn't the next-steps list legal advice?"** No. It lists the City's own published steps, with the City's links, picked by fixed rules from this lot's result, and it ends with "screening only, not a permit or legal advice". It tells you who to ask, not what the answer is.
 
 ---
 
@@ -1313,8 +1503,13 @@ Visual extras are not on this list because they never start before the core work
 | T11 | **Done (Yuvi):** Ward 23 is fully in the overlay (By-law 654-2025 Diagram 1 is the ward); no drawing needed. Remaining: Andrew updates `engine_config.json` (`sixplex_wards` gains "23", `partial_sixplex_wards` empty) | Andrew | Hour 8 | sixplex results in Ward 23 |
 | T18 | **Done (Yuvi):** the real Tiger Data service is loaded and checked for all 25 wards; compression 3.59 MB to 2.60 MB; trend cache rebuilt from it; `TIGER_DSN` shared privately | Yuvi | Hour 12 | the Hour-14 go/no-go is passed |
 | T19 | **Done 2026-10-17:** the site-exception policy is confirmed and built (`classify.INFORMATIONAL_FLAGS`, `review_flags`): the flag stays in the address check with the exception number, never an icon on the map, never counted as "need extra review"; `ward_summary.flags.site_exception` still counts it | Andrew | Hour 8 | 88% of Ward 04 lots carry an exception number |
-| T20 | Fix the skewed-lot placement so the depth row stops reading short on lots whose sides lean more than about 8° (542 pessimistic Ward 04 results, `docs/test-lots.md` fix 2) | Andrew | before A10 | fit accuracy on tapered lots |
-| T12 | Pick the two backup addresses and confirm the demo ward from real batch results | Simone, Andrew | Hour 20 | demo safety |
+| T20 | **Done 2026-10-17 (Andrew):** on a lot whose side lot lines both lean the same way by 2° or more (`placement.align_to_sides_deg`), the lot depth is measured along them and each design turns to follow them; width square to the sides; Ward 04: 1,411 results better, 90 worse (all checked), lots that may fit 3,611 → 3,992 (5.2 step 3, 5.5) | Andrew | before A10 | fit accuracy on tapered lots |
+| T21 | **Done 2026-10-17:** [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf) (enacted July 24, 2025) waives development charges on the second to fourth units, reduces the fifth and sixth to $0, and waives parkland cash-in-lieu on the second to sixth, for lots with no more than six units. Say "up to six units" and cite the by-law; never name the councillors who moved it. The City's "Considerations" page saying four is out of date. Simone updated `pitch/facts.md`, the Devpost and the Q&A (d64baa4) | Simone | Hour 26 | a wrong fee claim in the pitch |
+| T22 | **Done 2026-10-17 (Andrew):** next steps and the re-plan approved; `CLAUDE.md` and section 9 list the ownership exceptions | Andrew | Hour 20 | done |
+| T23 | The 3D work (J8, A16, A15) merges from branch `andrew-3d` by Hour 27, or the current look ships; `?look=classic` stays as the fallback either way, and the demo laptop is tested at 50 fps or better before the merge **Done 2026-10-17 20:06: PR #19 merged after the check on this laptop: 104 fps with a 1920×1080 canvas at ×1.25 once the sequence rests, 82 to 144 fps through it, no drop in pixel ratio; `?look=classic` stays as the fallback.** | Andrew | Hour 27 | a half-finished 3D scene on stage |
+| T24 | **Done 2026-10-17 (Andrew): keep 150 m.** Decide whether the `/check` context radius (`context_radius_m`, now 150 m) grows to 500 m so the plan view shows houses as far out as the permit dots. Recommended: keep 150 m. The 3D scene caps at 400 buildings, `/check` must answer in under a second, 500 m is about 11 times the area, and the plan view's street map already shows the streets beyond | Andrew | Hour 22 | the plan view's reach against 3D performance and response time |
+| T25 | Half done: `suplex_batch_2026-10-17.zip` is on the data release (19:11, 16,243,073 bytes; unzip into `data/out/`). Remaining: the A11 demo cache for 326 Quebec Ave, 281 Armadale Ave, 155 Vine Ave and Ward 04, written at Hour 24 by `scripts/hour24.ps1` (on `main` since PR #20 merged at 19:57) | Andrew | Hour 24 | the demo cache |
+| T12 | **Done 2026-10-17 (Andrew): Ward 04 with 326 Quebec Ave, 281 Armadale Ave and 155 Vine Ave** (decision 18). A switch to Ward 20 with 88 Manderley Dr and 37 Wanstead Ave at 18:41 was reversed: Ward 20 shows no sixplexes and its permit count differs from the City's. All three addresses were re-checked on the citywide batch (engine 0.2.0): 326 Quebec Ave fits all four designs, 281 Armadale Ave is too close to call for the Fourplex Narrow, 155 Vine Ave is a row house. Re-check after the Hour-24 refresh | Simone, Andrew | Hour 20 | demo safety |
 | T13 | **Done (Simone):** every fact in `pitch/facts.md` with its page. Cut: the variance figure and "guidance is missing". Confirmed: 452 and 726, 75% renovations, declared values $1,012,782 and $216,090, the 285,000 target, 48.9% (13,928 starts against 28,500 in 2025), 23.3% single-detached, the 69% poll | Simone | Hour 28 | every slide number has a source or is cut |
 | T14 | Put the mockup video and the ward-view image in `/docs/mockups/` | Andrew | Hour 0 | Jayden's visual target |
 | T15 | Check the Street Tree GPKG field names before building the trees layer (not verified; optional layer) | Yuvi | Hour 20 | decoration only |
@@ -1352,6 +1547,10 @@ Visual extras are not on this list because they never start before the core work
 
 - [Toronto Multiplex Tracker](https://malcolmkennedy.com/to-multiplex-map/) ([open data showcase](https://open.toronto.ca/?p=4591), [GitHub](https://github.com/zuzubak/to-multiplex-map))
 - [LotMore](https://lotmore.ca/multiplex-toronto), [VanPlex PlexCheck](https://www.vanplex.ca/toronto-multiplex/)
+
+**Permit process (next steps, read 2026-10-17)**
+
+- [Pre-approved multiplex building plans](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/), [Considerations when building multiplexes](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/multiplex-housing/considerations-when-building-multiplexes/), [Zoning Applicable Law Certificate](https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/), [When to apply for a tree or ravine permit](https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/), [Municipal Code Chapter 415](https://www.toronto.ca/legdocs/municode/1184_415.pdf), [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), [Garden suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/garden-suites/), [Laneway suites](https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/changing-lanes-laneway-suites-in-toronto/), [Committee of Adjustment](https://www.toronto.ca/city-government/planning-development/committee-of-adjustment/)
 
 **Tools**
 
@@ -1468,6 +1667,17 @@ export interface CheckResponse {
   lot: Lot; designs: DesignResult[]; not_checked: string[];
   permits_nearby: PermitsNearby; context: Context; meta: Meta;
 }
+// ---------- next steps (approved 2026-10-17, section 5.10; added to CheckResponse by A14) ----------
+export type NextStepId = "survey" | "zoning_check" | "site_exception" | "heritage" | "ravine" | "trca" | "trees"
+  | "designer" | "permit" | "demolition" | "fees" | "attached_options" | "custom_or_variance" | "ask_zoning";
+export type NextStepGroup = "confirm" | "approvals" | "apply" | "alternatives";
+export interface NextStep {
+  id: NextStepId; group: NextStepGroup;
+  title: string; text: string; who: string;
+  why: string;                                   // the lot-specific reason, values filled by the engine
+  links: { label: string; url: string }[];       // City pages; never a business or a person
+}
+// CheckResponse gains:  next_steps: NextStep[];   // ordered by group then catalogue order; never written by AI
 
 // ---------- ward_summary.json and GET /ward/{id} ----------
 export interface ResultCounts { fits: number; borderline: number; no_fit: number; not_checked: number; }
@@ -1673,6 +1883,7 @@ Bylaw constants (6.0 m front, 7.5 m rear, 17.0 and 19.0 m lengths, 10.0 m height
   "attached": { "on_lot_m2": 10, "cross_lot_m2": 20, "shared_edge_m": 3, "tolerance_m": 0.05 },
   "vacant_min_footprint_m2": 20,
   "street_edge": { "corridor_distance_m": 0.5, "merge_angle_deg": 15, "min_length_m": 3 },
+  "placement": { "align_to_sides_deg": 2 },
   "sample_step_m": 0.5,
   "nearby_permits_radius_m": 500,
   "context_radius_m": 150,
@@ -1697,7 +1908,7 @@ The three map colours are locked by the product spec. Everything else is a start
   --suplex-nofit: #C9CCD6;           /* doesn't fit */
   --suplex-permit: #FFC83D;          /* multiplex permit dot */
   --suplex-permit-outline: #3A2E00;
-  --suplex-permit-bar: #B47F00;      /* chart bars: the gold fails 1.5:1 on white; this step passes 3:1 (Simone, 2026-10-17) */
+  --suplex-permit-bar: #A27100;      /* chart bars: the gold fails 1.5:1 on white; this step passes 3:1 on the old and the Lime and Teal surfaces (Simone, 2026-10-17) */
 
   /* v0: result and UI colours */
   --suplex-borderline-base: #DDF3E7; /* pale green under the stripes */
@@ -2084,3 +2295,229 @@ You asked for every decision to be made rather than asked. Here is each one, why
 3. Decide whether to accept the Ward 04 choice and the Sixplex Narrow decision (17), or change them before anyone starts.
 4. Do A1 and A2 (repo and contracts), or ask for the scaffold to be generated from the appendices.
 5. Send each teammate their section's kickoff prompt and the shared sections to read.
+
+---
+
+## Appendix J. Status log (every report, word for word)
+
+Section 0 is rewritten on each update; this appendix keeps what it said before, so nothing is lost. Newest first. The entries below were section 0 from 2026-10-17 03:40 to 17:00.
+
+### 2026-10-17, 20:10: PR 19 merged; Simone's S14 hand-off
+
+- T23 checked in the app's browser on this laptop, with the merged scene served from a scratch copy: 104 fps with a 1920×1080 canvas at ×1.25 once the sequence rests, 82 to 144 fps through it from the click, the pixel ratio never dropped; the borderline label reads "Too close to call · Lot width · Needs 7.6 m · This lot 7.62 m" over "By-law section 10.20.40.70(3)".
+- PR #19 merged at 20:06 (197edf8), pinned to the reviewed head 2be3716. `main` builds and lints clean, 38 fixtures validate, 442 tests pass; `npm install` on the demo laptop added the three new packages without touching the lockfile. Contracts changelog v0.1.9 (d8583aa) logs the `designs.json` levels (v0.1.7 and v0.1.8 were already taken).
+- Simone: S14 done in `docs/next-steps-review.md` (PR #17) with the exact JSON for Yuvi, who applies it in his own PR. Her `not_checked.json` change waits to be pushed: `engine/tests/test_fit.py` pins the engine's list to the four check fixtures, so Andrew updates those and `explain.request.json` in the same merge.
+
+### 2026-10-17, 20:00: PR 20 merged
+
+- PR #20 (A11's cache writer and the Hour-24 scripts) was merged at 19:57 from Andrew's GitHub account, as a merge commit (186c28c) whose PR head is the reviewed commit cf1b82e; the main folder pulled it at 19:58.
+- `main` after the merge: 38 fixtures validate, 442 tests pass. The lock is now one command from the repo root: `powershell -ExecutionPolicy Bypass -File scripts\hour24.ps1 -DryRun`, then `-Workers 10`.
+- PR #19 (the 3D scene) stays open until Andrew's own 50 fps check on the demo laptop (T23).
+
+### 2026-10-17, 19:56: PRs 19 and 20 reviewed
+
+- PR #20 (A11, head cf1b82e, only `api/` and `scripts/`): `python -m api.cache_demo` writes the Ward 04 demo (33 searches, the three checks, the ward, its trend, its lots, the permits) only after every answer is a 200 that matches its contract, else nothing; 10 tests write only to temporary folders. `scripts/hour24.ps1` and `.sh` run the refresh, the batch and the cache, stop at the first failure, resume with `-From N`, load `.env` without printing it, and quote the repo path. Known: a lot clicked on the ward map is not cached; cache-only mode still logs a harmless GeoPackage error at start.
+- PR #19 (the 3D scene, head 2be3716): fail slabs drawn from the engine's slices, rules and margins, coloured from the design tokens, hatched and labelled from `contracts/copy`; the four designs as drawn; the realism pass, with no downloads and the dev switches dev-only. Outside `Lot3D/`: two packages in Jayden's `web/package.json`, and `designs.json` `levels[]`, now summing to the 10.0 m `height_m` the engine checks (it said 11.0); no result changes.
+- One test merge of both with `main`: 38 fixtures validate, 442 tests pass, the web builds and lints clean; ruff is clean on `api/` (22 older findings in the engine tests, unchanged). Simone's PR #17 was updated at 19:50 and does not overlap either.
+
+### 2026-10-17, 19:35: S14 goes through Yuvi
+
+- S14 can start now that PR #18 is on `main`. `contracts/copy/next_steps.json` is Yuvi's file (CLAUDE.md: each file has one owner), so Simone sends him her review changes, including her draft's intro and footer lines and the Property Information Report link, and he applies them. Her `not_checked.json` additions go in her own file.
+- Corrects the message to Simone sent with the PR #18 review, which asked her to edit Yuvi's file directly.
+
+### 2026-10-17, 19:30: next steps merged
+
+- Yuvi's PR #18 merged after checking that the only change since review was `main` merged into his branch (his code identical, no spec edits of his own).
+- Andrew's placeholder test in `engine/tests/test_fit.py` now checks the real steps; `pytest engine api ai/tests` gives 432 passed, `contracts/validate.py` 38 ok.
+- Next: Simone's S14 review of the copy (folding in her draft); Jayden mounts `NextSteps` in the result panel.
+
+### 2026-10-17, 19:19: next steps ready, Simone's next-steps draft
+
+- Yuvi's PR #18 (next steps Y11 to Y14, the ward map on Simone's strings and chart) was reviewed: clean, with one expected failure in Andrew's placeholder test.
+- Simone sent a separate "What happens next" draft. Recommended: fold it into Yuvi's copy during S14 instead of a second section; keep her intro, footer, the Property Information Report link and the `not_checked.json` additions; drop the AI Pre-Check link (two units or fewer).
+
+### 2026-10-17, 19:11: the batch outputs are shared
+
+- `suplex_batch_2026-10-17.zip` (16,243,073 bytes: `ward_summary.json`, `batch_report.md`, `wards/01..25.geojson`) is on the `data-2026-10-17` release; Simone's S8 and pre-generation pass can start.
+- The A9-A10 session has ended; A11's cache writer and an Hour-24 runbook are being built in a new session on its own branch. The 3D session is still working.
+
+### 2026-10-17, 19:05: the demo goes back to Ward 04
+
+- Andrew reversed the 18:41 switch to Ward 20: Ward 04 shows all four designs, its permit count matches the City's (42 and 42) and holds the hand-checked lots.
+- Demo addresses, checked on the citywide batch: 326 Quebec Ave (all four fit), 281 Armadale Ave (the Fourplex Narrow too close to call), 155 Vine Ave (a row house).
+- Simone's PR #17 (Ward 20 across the pitch) is not merged; she revises it to Ward 04. Updated: decision 18, decision 11, 0.3, 7.7, 7.9, 8.4, T12, T25.
+
+### 2026-10-17, 19:00: Simone's S9 report, Ward 20 recorded across the spec
+
+- Simone (PR #17, clean, `pitch/` and `docs/` only): S9 on real data; 73 Manderley Dr proposed as the "fits" opener beside Andrew's picks (88 Manderley Dr, 37 Wanstead Ave); 12 of 12 explanations clean on real data; Ward 20 across the demo file, script, deck, Devpost, Q&A, rehearsal log and README draft; a facts warning that Ward 20's permit count differs from the City's (16 against our 23).
+- Her two flags, fixed here: 0.3 step 3 said Ward 04 for the demo cache (now Ward 20), and the one `gemini-3.8-flash` pass cannot cover everything (about 28 requests against 20 a day), so it runs about 18 in stage order (7.9).
+- Recorded: decision 18 (demo ward 20), decision 11 amended, the S9 note in 8.4, `--ward 20` in 7.7, T25 (confirm the opener, share the batch zip).
+
+### 2026-10-17, 19:05: Andrew's main session: A14 done, backup addresses chosen, T24 settled
+
+- **A14 done** (Andrew confirmed next steps in his main session). `CheckResponse.next_steps: NextStep[]` is in `check.response.schema.json` (required), `types.ts` and the four `check.*.json` fixtures, which carry their 5.10 lists (wording drafted from the 5.10 table; live text comes from Yuvi's `contracts/copy/next_steps.json`; the fees step says up to six units under By-law 845-2025, T21). `explain.request.schema.json` accepts the field without requiring it, so `/explain` keeps working when the web forwards the whole check. `run_check` ends with `build_next_steps(result, copy)`; `engine/suplex_engine/next_steps.py` is a stub returning [] that Yuvi replaces in Y13 (his file from here on), and `copy.next_steps_copy()` returns {} until his copy file exists. `pytest engine` 175, `pytest api` 73, `pytest ai/tests` 118, `validate.py` 37 ok, `npm run build` passes. Yuvi can start Y12 to Y14 from `main`.
+- **T12: backup addresses 88 Manderley Dr and 37 Wanstead Ave; demo ward 20** (Andrew's pick). 88 Manderley Dr is too close to call for both fourplexes, 37 Wanstead Ave is a semi or row lot; neither is a clean "fits" (73 to 83 Manderley Dr are, if the demo needs one). Details in the T12 row.
+- **T24: the context radius stays 150 m** (Andrew).
+- **Batch outputs packed for sharing:** `data/out/suplex_batch_2026-10-17.zip` (16 MB); Andrew uploads it to the data release; teammates unzip it into `data/out/`.
+
+### 2026-10-17, 18:45: Andrew's main session: A9, A10 and T20 pushed
+
+- **A9 done.** `SUPLEX_DEMO_CACHE=1` serves `api/cache/` whenever a file answers the request (`api/demo_cache.py`; the file names are the web's `public/demo-cache/` names, so one writer fills both) and lets the API start with no data at all (`/health` says `demo_cache_only`; anything uncached is 503 `data_unavailable`). Unexpected errors are JSON 500s that keep the CORS headers. The review minors are fixed: permits with a null date, malformed optional files, a GeoPackage layer not in EPSG:2952, and a test that buildings, trees and permits reach the engine. On the citywide file: 5.5 s load, 2.4 GB peak, `/check` at most 43 ms over 100 addresses in all 25 wards, `/ward/{id}` valid for all 25, `/ward/04/trend` from Tiger Data in 0.36 s and from the cache when Tiger is down.
+- **A10 done.** `python -m suplex_engine.batch --ward 04 | --all` (3.4 "As built"). Citywide at 18:19: 495,456 lots, 0 engine errors, 1,290 s on 10 workers, 78 of 78 sanity checks (schema, all 25 wards, every count sums to its lots, one valid feature per lot, every ward file under 1.1 MB gzipped against the 8 MB limit, the 19 hand-checked lots unchanged). Permit counts from Tiger Data, equal to `permit_counts.json` in every ward. 300 random lots: the map file and `/check?lot_id=` agree on all 300. Before the batch the engine was made about three times faster (copy files cached, cross-sections shared across designs, a cheaper centroid frame), checked byte-identical on 600 random Ward 04 checks. The engine is now installed editable (`-e ./engine` in `requirements.txt`): teammates re-run `pip install -r requirements.txt`.
+- **T20 done, before the citywide run.** When both side lot lines lean the same way by 2° or more (`placement.align_to_sides_deg`, a new key in `engine_config.json`, its schema and `types.ts`), the lot depth is measured along them and each design turns to follow them, with its width square to the sides (5.2 step 3, 5.5). A pie lot tapers rather than leans and is unchanged (4 Olympus Ave). Ward 04: 1,411 design results better, 90 worse; may fit 3,611 → 3,992. ENGINE_VERSION 0.2.0.
+- **Preliminary numbers, not for the Devpost until the Hour-24 lock:** city 191,174 lots may fit (45.4% of house lots), 1,444 multiplex permits since May 2023, about 1 for every 132 lots that could; attached share 30.0%; the most common blocking rule is the detached-building rule (126,543 lots). Ward 04: 3,992 (22.0%), 81 permits, about 1 for every 49.
+- **Held at Andrew's request until the next-steps decision is confirmed in this session:** A11 (the demo cache and the lock) and any change to `engine/suplex_engine/check.py` (A14's hook lives there). Known limit left in `check.py` for that reason: the lot-level `width_m` is still the street-parallel cross-section at 6 m, which overstates the width of a skewed lot.
+- **Decisions made without asking:** the skew threshold (2°, where the old square placement stays within about 0.3 m of the side yards over a 17 m building); "both side lines lean the same way" as the test for a skew; a turned design's depth row = front setback + length + the clearance behind its rear wall, square to the street; the map file's feature id is the parcel id (needed for the click to `/check?lot_id=`, never shown); `flags` count every lot in a ward, `any_on_fitting_lots` only lots whose best design fits; the city permits add the 17 with no ward; `engine_config.json` keeps `version` 0.1.0 (the check fixtures pin it).
+
+### 2026-10-17, 18:25: PR 16 merged, the batch ran clean
+
+- Andrew had Simone's PR #16 (the last eight hard-coded strings) merged at 18:20, after checking it still matched the reviewed commit. No PRs are open.
+- The citywide batch finished at 18:19 in Andrew's main session: 25 wards, 495,456 lots, 1,290 s, 78 of 78 sanity checks pass, permit counts from Tiger Data. The code and outputs are not on GitHub yet.
+
+### 2026-10-17, 18:22: Simone's night report
+
+- Simone: PR #13 merged (J7 `TrendChart.tsx`, the five pending web strings, the six-unit development charges in facts, Devpost and Q&A); PR #16 opened with the last eight hard-coded strings, reviewed and clean.
+- Her asks: Andrew merges #16 and pushes A10; Yuvi switches the ward map to `labels.ward_map` and mounts `TrendChart`; Jayden switches the pending strings and shows the 3D Massing disclaimer. The `Plan/copy.ts` cleanup goes to Jayden, since the plan view is his UI after the merge (decision 17).
+- The batch reached 24 of 25 ward files by 18:18.
+
+### 2026-10-17, 18:18: the ward map is merged
+
+- Andrew had Yuvi's PR #15 (J5, the ward map) merged at 18:17, after checking it still matched the reviewed commit.
+- The citywide batch reached 22 of 25 ward files by 18:17.
+
+### 2026-10-17, 18:15: the ward map is ready, the batch is running
+
+- Yuvi's PR #15 (J5, the ward map) was reviewed: only `WardMap/`, merges cleanly onto `main`, builds and lints clean, follows the map rules in 6.5. Not merged yet.
+- The citywide batch is running in Andrew's main session: 18 of 25 ward files written by 18:13.
+- Yuvi asked whether to raise the `/check` context radius from 150 m to 500 m for his plan view (T24; recommended: keep 150 m).
+
+### 2026-10-17, 18:10: PRs 12 and 13 merged
+
+- Andrew had PRs #12 (Yuvi's 2D plan view, carrying Jayden's four commits) and #13 (Simone's `TrendChart.tsx` and pending strings) merged at 18:08; GitHub marks Jayden's #14 merged through #12.
+- Andrew's 3D session was asked to commit, then merge `origin/main` into its branch, because #12 changed 11 files in `Lot3D/`.
+- Simone pushed the six-unit development-charge wording to the pitch files (d64baa4).
+
+### 2026-10-17, 18:05: Simone's evening report, PRs 12 to 14, development charges settled
+
+- Simone: S8 part one on the 19 real lots (19 of 19 clean after a margin-as-depth fix), the plan-view strings, the 11-slide deck, the Devpost, the demo script with both sponsor walkthroughs, the Q&A, the README draft; PR #13 (J7 `TrendChart.tsx` and the web's five pending strings) is clean.
+- Yuvi: PR #12, a 2D plan view tab that also carries Jayden's four unmerged commits; merged with #13 onto `main` in a test checkout it builds and lints clean. Jayden's PR #14 conflicts and is superseded by #12.
+- T21: By-law 845-2025 (July 24, 2025) waives development charges and parkland cash-in-lieu for multiplexes of up to six units. The 18:00 board said "four, never six"; that was wrong and is corrected.
+- Andrew's 3D session started at 18:00 on its own branch; his A9-A10 session continues on `main`.
+
+### 2026-10-17, 18:00: approvals and merges
+
+- Andrew approved "Your next steps" and the re-plan (Yuvi takes the ward map J5, Simone the trend chart J7); `CLAUDE.md` gained the ownership exceptions.
+- PRs #8 (Simone) and #9 (Yuvi, Y7 closed) were merged after review: Simone's 118 tests and the 37 contract fixtures pass.
+- Andrew took over the 3D scene from Jayden (J8, J10, and two new tasks: A16 the four designs from the elevation sheets, A15 a realism pass); Jayden keeps all UI that is not 3D.
+- The 17:40 board counted 70.4 of 103 planned hours (68%) on the original task split; after the re-plan and the 3D handover it counts 72.4 of 115.5 (63%), including two hours for Andrew's unpushed A10 batch.
+
+### Status as recorded up to 2026-10-17, 17:00
+
+Read this before anything else. Repo: https://github.com/andrewl746/htv26 (branch `main`; all six PRs merged). The engine now runs on real City data: 19 hand-checked Ward 04 lots pin it (`docs/test-lots.md`), `pytest engine api` gives 199 passed and `contracts/validate.py` 37 ok. The citywide batch (A10) has not run yet, so no headline number exists; nothing is locked until Hour 24.
+
+**Done and green on `main`**
+
+| Task | State | How to verify |
+|---|---|---|
+| A1 repo scaffold | done: folders, `CLAUDE.md`, `.gitignore`, `.gitattributes`, `requirements.txt`, `.env.example`, `README.md` stub, `docs/decisions.md`, `contracts/README.md`; root `.venv` on Python 3.14 (the only interpreter on Andrew's machine; 3.12 to 3.14 all work) | `pip install -r requirements.txt` |
+| A2 contracts and fixtures | done: 13 schemas, `types.ts`, `designs.json`, `engine_config.json` (plus `attached.on_lot_m2`, see decisions), `design-tokens.css` v0, `copy/*.json` v0, `tiger/schema.sql`, 15 fixtures, `validate.py` | `python contracts/validate.py` prints "35 ok, 0 failed" |
+| A3 hour-0 checks | done in `docs/decisions.md` (19 m rule, `AVG_HEIGHT`, Ward 04, Python 3.14); the Sixplex Narrow sheet itself was not re-read (T3 still open) | read `docs/decisions.md` |
+| A4 lot geometry | done: `engine/suplex_engine/geometry.py` and `config.py`, 22 tests | `pytest engine/tests/test_geometry.py` |
+| A5 rules, config, designs | done: `rules.py` (every value with its by-law section), `designs.py`, 45 tests | `pytest engine/tests/test_rules.py` |
+| A6 classification, attached, fit, placement | done: `classify.py`, `attached.py`, `fit.py`, `models.py`, `copy.py`, `check.py` with `run_check(LotInput, cfg, designs, data_dates) -> CheckResult` (`.to_dict()` is the `CheckResponse`); the four `check.*.json` fixtures are reproduced; 38 tests | `pytest engine` prints 153 passed (2026-10-17 afternoon count, with A8) |
+| A7 API v1 (plus the `/ward`, `/trend` and `/health` parts of A9) | done 2026-10-17 afternoon: `api/__init__.py`, `api/store.py` (GeoPackage layers with STRtree indexes, single-part MultiPolygons unwrapped, `LotInput` built as `pipeline/smoke_engine.py` does), `api/main.py` (`/health`, `/designs`, `/search`, `/check` by `address_id`, `lot_id` or `lon`+`lat`, `/ward/{id}`, `/ward/{id}/trend` with the 2 s Tiger budget then `trend_cache`, `/static/permits.geojson`, `/static/wards/{id}.geojson`, JSON errors, CORS for localhost, gzip), 44 tests that skip without the data. Measured: `/check` 22 to 43 ms warm, Ward 04 load 0.3 s, citywide load 3.9 s and 2.3 GB; every `validate.py --url` check passes; `/ward/04/trend` says `cache` with `TIGER_DSN` unset; `/ward/{id}` answers 503 `ward_summary_unavailable` until A10 writes `ward_summary.json`. New optional env: `SUPLEX_GPKG` (path override), `SUPLEX_CORS_ORIGINS`. The API converts the pipeline's `data_dates.json` keys and timestamps to the contract's `data_dates` (`api/store.py` `normalise_data_dates`); the batch needs the same, or the pipeline writes contract keys (Yuvi) | `SUPLEX_DATA_DIR=data/out uvicorn api.main:app --port 8000`, then `python contracts/validate.py --url "http://127.0.0.1:8000/check?address_id=7986858"` (326 Quebec Ave); `pytest api` |
+| A8 hand-checked test lots | done 2026-10-17 afternoon: 19 real Ward 04 parcels in `engine/tests/test_lots.py` (loader `engine/tests/real_lots.py`, skips without `data/out/suplex.gpkg`), each measured without the engine and agreeing within 0.05 m on every regular lot; `docs/test-lots.md` lists them with the threshold tables. Thresholds in `engine_config.json`: `attached.cross_lot_m2` 4 → 20, `attached.tolerance_m` 0.3 → 0.05, `larger_building.avg_height_m` 12 → 16 (footprint 350 m² unchanged, now on the clipped footprint). Two engine fixes came out of it: rear lanes are never the frontage (5.2 step 1) and a design wider than the lot reports the lot's depth (5.5). Ward 04 attached share: 60.6% under the old numbers, **41.6%** now (the fixture guessed 35.8%) | `pytest engine/tests/test_lots.py`; `docs/test-lots.md` |
+| Web scaffold (start of J1) | done by Andrew: Vite + React 19 + TypeScript in `/web`, `@contracts/types` alias, dev proxy to :8000 and :8001, three / fiber / drei / maplibre / zustand installed; `App.tsx` renders only a heading (TODO: disclaimer from `contracts/copy/disclaimers.json`) | `cd web && npm install && npm run build` |
+| J1, J2, J3 (Jayden) | done on fixtures: the 3D test scene from `check.fits.json`, the address search, and the 3D sequence v1; branch `jayden`, PR #6, merged into `main` by Jayden on 2026-10-17 (web files only, so no conflict with the engine work) | `cd web && npm run dev` |
+| Landing hero and fly-in (Jayden, PR #7, merged as c3f63f1; web only; `npm run build` passes) | a MapLibre hero map of Toronto on the landing page that flies down into the 3D sequence (the pin-drop and swoop beat of 6.3), with a smooth handoff (no shader stalls, steadier tiles); `context.buildings[]` keyed by array position (Andrew's note); the dev proxy on 127.0.0.1; the "Try:" chips read fixture addresses until S9 supplies the real backup addresses. **Palette:** Jayden's UI palette (Charcoal `#605B56`, Grey `#837A75`, Muted Olive `#ACC18A`, Tea Green `#DAFEB7`) lives in `web/src/styles/palette.css` as a web-only override of the UI tokens, with measured contrast (ink on Tea Green 12.8:1); the locked map colours and the 3D scene tokens are untouched, and the 3D lot keeps the warm off-white so a lime lot never reads as "fits". **Andrew:** move those values into `contracts/design-tokens.css` (6.10) so the briefing page matches, then Jayden deletes `palette.css`; Simone reviews | `cd web && npm run dev`, open the landing page |
+**Simone, four reports on 2026-10-17 (branch `simone`, 17 commits, PR #3 merged into `main` as 8353357; touches only `ai/`, `docs/`, `pitch/` and `contracts/copy/`; `pytest ai/tests` gives 107 passed)**
+
+| Task | State | How to verify |
+|---|---|---|
+| S1 Gemini key and limits | done; recorded in `docs/decisions.md` with the model split (section 7.1) | `docs/decisions.md` |
+| S1 Sixplex Wide bedroom split | recorded (3 and 4 bedrooms in the two upper homes, 12 in total) | `docs/decisions.md` |
+| S1 Hack the Valley 11 rules | **closed (T1):** one project may enter the School of Cities challenge and the MLH prizes; all work must happen during the event, which began 10 p.m. Eastern on 2026-10-16, and every commit is dated after that. **Do not rewrite or squash git history: the timestamps are the evidence.** Section 1 assumption 2 is withdrawn | `docs/decisions.md` |
+| S2 story drafts | done: `pitch/hook.md`, `docs/devpost.md`, `pitch/qa.md` | `pitch/` |
+| S3 `/explain` | done: FastAPI on 8001, `POST /explain`, `GET /health`, structured output, sha256 cache, template fallback; Gemini only ever sees placeholder names, never values | `curl` per 8.4 S3 |
+| S4 validator | done test-first: every 7.4 case; reject, one retry, then template; every rejection logged for the Devpost count; Gemini mocked in tests | `pytest ai/tests` |
+| S5 `/briefing` | done: ward numbers map, the three fixed questions, shared validation policy | `pytest ai/tests` |
+| S6 briefing page | done: `/b/{ward_id}?lang=xx` with linked numbers, language picker, copy and print, a monthly chart, a methodology footer; works with Wi-Fi off; `&fixture=1` shows sample data behind a "made-up numbers" banner. Differences from 7.7: an inline SVG chart instead of Chart.js (no external request), bars in `#B47F00` because the permit gold is 1.5:1 on white | `localhost:8001/b/04?lang=en&fixture=1` |
+| S7 translation and pre-generation | done: all eight languages revalidated per language with the English placeholders required; `pregenerate.py` paces to the model's rate limit and resumes; Ward 04 cached in all eight languages and served with Gemini off; about 25 of the day's 500 requests used. One allowance: translations may write the month of `permits_since` as a digit (Chinese writes "2023年5月"); English stays strict | `python -m ai.pregenerate --ward 04 --langs all` |
+| T13 pitch facts | done: `pitch/facts.md` with page numbers; "216 variance applications" and "guidance is missing" cut; the 48.9% figure confirmed (13,928 starts in 2025 against a 28,500 annual target); costs become "declared value"; the Mayor is not named | `pitch/facts.md` |
+| S10 drafts | done: full Devpost, demo script with both sponsor walkthroughs, 11-slide deck content, sourced Q&A, README draft; Hour-24 numbers marked [LOCKED] | `pitch/`, `docs/devpost.md` |
+| S9 copy | first pass done: no "will be built" even negated, "since May 2023" everywhere, a singular line for one permit; backup-address sheet ready | `contracts/copy/*.json` |
+| S11 | rehearsal log ready for the ten timed runs | `pitch/rehearsal-log.md` |
+| S8, S9 addresses | waiting on A7 (API) and A10 (batch) | — |
+
+**Simone asks of others:** Andrew: `.env.example` updated (done: `GEMINI_MODEL=gemini-3.5-flash-lite`, `SUPLEX_AI_URL`, `AI_LOG_DIR`); fix "1-6 units" in the two fixtures; decide the site-exception policy (T19); pick one percentage unit across fixtures (`pct` in the check rows, `%` in the briefing fixture). Jayden: `/explain` is live on the dev proxy (show `text` and `disclaimer`, badge from `source`, notice from `translation_unavailable`, the singular permit line when the count is 1); "Get the ward briefing" links to `/b/{ward_id}`; add `--suplex-permit-bar: #B47F00` as a shared token so both charts match. Everyone: ten minutes each on a translation review sheet for the language you read. Team: whether the first candidate question should be more neutral (done: the flatter wording is in `questions.json`).
+
+**Simone, PR #5 (`ai/`, `docs/`, `pitch/`, `contracts/copy/`; 112 tests):** the French review applied ("quartier", never "circonscription"; heading 4 fixed); a per-language translation glossary (`ai/prompts/translate_glossary.json`) with forbidden words that trigger a reject-and-retry like an invented number, and fixed strings, part of the cache key; "multiplex" can no longer become "duplex" or "triplex" in any language; the review badge under the language picker ("Reviewed by a speaker" for en and fr, "Machine translation, not yet reviewed" for the rest, driven by `languages.*.reviewed` in `labels.json`); the Hour-30 keep-or-drop checklist in the rehearsal log; the Devpost and `pitch/facts.md` updated with the real Tiger Data numbers and the ward check (fact 15), plus a locked-numbers table (Ward 04 "did" = 81, final after Hour 24). Open question answered by Andrew: the French word for a house lot is "terrains" everywhere, heading included.
+
+**Decision (Simone, 2026-10-17, accepted): `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`.** At 20 requests a day, `gemini-3.8-flash` cannot support development; one clean demo pre-generation alone takes 16 requests. `gemini-3.8-flash` is used only for the one-off pre-generation after the Hour-24 lock, and `gemini-2.5-flash` is dropped. Before committing to the split she compares the validator's rejection rate for the two models; if flash-lite is as clean, it does everything. Touches `/ai/config.py` and `.env` only; no contract changes. Sections 1 (decision 12), 7.1, 7.9, 8.4, 11, 13 and Appendix I were updated to match.
+
+**Yuvi, reported 2026-10-17 (branch `yuvi`, 6 commits, merged into `main` the same day as 2123951; full write-up in `pipeline/REPORT.md`, to go into `docs/decisions.md` through Simone)**
+
+| Task | State | How to verify |
+|---|---|---|
+| Y1 permits fields and rule | done: **Rule A works**, 446 multiplex permits May 2023 to Nov 2024 against the City's 452 (−1.3%); Rule B not needed | `python pipeline/permits.py --report` |
+| Y3 permits file | done: 7,397 projects since 2022; `GEO_ID` join 98.5%, geocode 99.3% with the street fallback; 55 unlocated (counted, not mapped); `permits.parquet`, `permits.geojson` (1.1 MB), `permit_counts.json`, `data_dates.json` on the drive | `python pipeline/checks.py --permits` |
+| Y4, Y6 dev-ward and citywide build | done: `suplex.gpkg` with all 25 wards (507 MB, 193 s build) on the drive; `checks.py --all` passes every check | `python pipeline/checks.py --all` |
+| Y5 Tiger Data code and trend cache | done against a local TimescaleDB 2.30.2 in Docker: `schema.sql`, `load.py`, `queries.py`, `cache_trends.py`, `trend_cache/01..25.json` on the drive, so `/ward/{id}/trend` already works from the cache | `python pipeline/tiger/ping.py` once `TIGER_DSN` exists |
+| Y2 Tiger Data sign-up | **done (T18 closed):** the real service is loaded and checked against `permit_counts.json` for all 25 wards; compression took the hypertable from 3.59 MB to 2.60 MB; the trend cache is rebuilt from the real service. `TIGER_DSN` goes to Andrew privately, never into GitHub; without it the API serves the cache | `python pipeline/tiger/ping.py` with `TIGER_DSN` set |
+| Y7 QA | partly done (PR #2): `pipeline/smoke_engine.py` runs the real engine on real lots. First run failed on every lot because 409,164 of 428,184 massing buildings were single-part `MultiPolygon`s the engine's geometry reader could not take; fixed in `build_lots.py` (single-part shapes are now `Polygon`, the 221 true multi-part buildings keep their largest part) and the data release replaced. After the fix all 21,300 Ward 04 lots run through `run_check` in 163 s (8 ms a lot) with 0 errors; wards 09, 19 and 23 clean on 800-lot samples. Plumbing only, not accuracy: the hand-checked lots (A8) still decide that | `PYTHONPATH=engine python pipeline/smoke_engine.py --ward 04` |
+| Y8 trees, Y9 refresh | done (PR #2): optional `trees` layer, `pipeline/refresh.py`, new `lots` columns (`bldg_count`, `bldg_area_on_lot_m2`, `bldg_max_footprint_m2`, `bldg_avg_height_m`, `is_sliver`), `addresses.is_primary`, a Tiger Data Devpost draft in `pipeline/tiger/devpost_tiger.md` | PR #2 |
+
+Data is distributed as the GitHub release `data-2026-10-17` on the repo: `suplex_ward04.gpkg` (25 MB, for A7), `suplex_citywide.gpkg.gz` (241 MB), and a small permits-and-trend zip. The files were replaced after the MultiPolygon fix, so re-download if fetched before. PR #2 touched only `pipeline/` and is merged into `main` as 3f9ddcc.
+
+**Yuvi, PR #4 (pipeline only; reports 4 and 5):** the real Tiger Data compression numbers are 3,588,096 to 2,596,864 bytes (−27.6% total, indexes −77.7%, 20 quarterly chunks all compressed), recorded in `pipeline/tiger/tiger.md` and `devpost_tiger.md`, with `walkthrough.sql` and `demo.py` for the sponsor walkthrough. **Ward-by-ward check against the City's own table** (council background file 255851, Figure 10): Ward 04 is 42 against 42; all wards 438 against 452, correlation 0.969, mean absolute difference 3.0. That closes the Y3 comparison with the Toronto Multiplex Tracker: our counts are now checked against the City directly.
+
+**Notes for A7 from Yuvi's real-data run:** `pipeline/smoke_engine.py` already builds a `LotInput` from the GPKG, so the API loader can copy it; unwrap single-part MultiPolygons when loading; `parcelid` and `address_point_id` are integers in the file but `LotInput` wants strings; `addresses.is_primary` marks one address per lot for the autocomplete (T7). **For A8 (resolved):** the 59% attached share in the smoke run was mostly eaves crossings and near-touching detached roofs; after the hand-checked lots set the thresholds the share is 41.6% (table above).
+
+**Known data limits (Yuvi, 2026-10-17; this is the material for the Devpost's limitations paragraph, T17, and for the pitch's "say about, never exactly" rule).** The release `data-2026-10-17` matches Yuvi's local files hash for hash; `checks.py --all` passes every check (median lot area equals the City's stated area, 99.9% of addresses join a lot, all 25 wards present, 99.3% of permits geocoded; Tiger Data live with 7,342 permits in 20 chunks, all compressed, per-ward totals equal to `permit_counts.json`).
+
+1. **Permits:** we count 446 multiplex permits for May 2023 to Nov 2024 against the City's 452. Ward 04 matches exactly (42); some wards differ by up to about 11; 17 permits have no ward and are counted but not mapped. Say "about", never "exactly".
+2. **Lot shapes** are not survey-accurate and carry no frontage field; frontage is computed from geometry.
+3. **Streets:** the parcel file has no CORRIDOR parcels, so the street layer is derived; water or rail edges can occasionally read as street.
+4. **Buildings** are the 2025 3D Massing, labelled "illustrative only" by the City; one polygon often covers a row of houses, and about 24,000 lots have no building at all.
+5. **Zoning:** 4.8% of lots have no zone polygon ("older bylaw" is inferred); 88% carry a site-specific exception we do not read; the zoning data is dated February 2026 and the ravine layer 2019.
+6. **Trees** are decoration only.
+
+**Not proven yet:** fit accuracy beyond the 19 hand-checked lots; and the **Hour-24 refresh**, when Yuvi re-runs the data and permit counts may shift slightly. Nobody hard-codes a number before then, and every Devpost number must equal the final `ward_summary.json`.
+
+**What Yuvi found that changes the spec** (each applied to its section; the engine-side actions are Andrew's):
+
+1. **Multiplex means units created 2 to 6.** The step 5 branch that let a structure type naming 2 to 6 units count as a multiplex picks up about 830 one-unit suites and gives 1,278. Units created decide; named counts are reported only. The `permit_rule` string is now "A: permits creating 2-6 units, non-SFD structure, one row per project (Toronto Multiplex Tracker rule), multiplex kind". **Andrew:** change the string in `fixtures/ward.04.json` and `ward_summary.sample.json` (they say 1-6).
+2. **No CORRIDOR parcels exist** in the current Property Boundaries file (COMMON 491,687, CONDO 3,769, RESERVE 2,983). The `corridors` layer is derived: ward area minus every parcel, cut into 250 m tiles, negative synthetic `parcelid`; 98.0% of lots touch it. Water and rail edges can read as street. **Andrew:** the engine uses the layer as-is and keeps the nearest-address-point fallback.
+3. **The height overlay column is `HT_LABEL`** (float metres); coverage is `PRCNT_CVER`. Ward 04 has no coverage overlay polygons; 57% of lots citywide do. T4 closed.
+4. **No zone polygon carries `ZN_STATUS` 5** (values 0 to 3). "Older bylaw" is now inferred: a lot with no zone polygon covering at least 25% of it gets `zn_zone` null and `zn_status` 5 (4.8% of COMMON lots). The engine rule in 5.3 is unchanged.
+5. **Ward 23 is fully in the sixplex overlay.** By-law 654-2025 Diagram 1 is the "Scarborough North (23) Ward Area" and matches the City Wards polygon; Diagram 2 is the eight TEYCC wards. No ward is partial; `pipeline/data/sixplex_overlay_ward23.geojson` is the ward polygon. **Andrew:** `engine_config.json` `sixplex_wards` gains "23" and `partial_sixplex_wards` becomes `[]`; `sixplex_overlay: "partial"` never occurs (the type keeps the value; the web's partial case can go). T11 closed.
+6. **One massing polygon often covers a whole row of houses.** 78% of lots get a building by largest overlap, about 97% intersect one. **Andrew:** use footprint-intersects-lot (clipped to the lot) for `vacant` and for building area; a merged row polygon can exceed the 350 m² `larger_building` threshold without the lot being a larger building, so apply that threshold to the clipped area and tune on the test lots (T8). The cross-lot footprint is still the attached-house signal.
+7. **88% of Ward 04 lots have `zn_exception` = Y** (359,326 zone polygons citywide). A `site_exception` flag on every lot says nothing. ★ **Decision (needs Andrew's confirmation):** the address check keeps one muted line ("this zone has a site-specific exception, x1234, which Suplex does not read"), the map shows no exception icon, and the ward panel's "need extra review" count excludes exceptions; `ward_summary.flags.site_exception` is still reported.
+8. **`permits.geojson` carries all four kinds in `k`;** the web filters to `multiplex` for the dots (section 6.5 already says so). `permit_counts.json` `since_may_2023` and `by_year` are multiplex only; `by_kind_since_may_2023` and `by_year_by_kind` hold every kind; `unlocated` holds the 55.
+9. Checkpoint numbers worth knowing: multiplex permits since May 2023 by ward run from 5 (Ward 13) to 177 (Ward 09); Ward 04 has 81. 35.6% of lots are in the sixplex overlay. Zones: RD 233,604, R 103,487, RM 54,248, RS 29,529, RT 14,739. Flags: heritage register 2.3%, heritage district 2.3%, ravine 6.6%, TRCA 7.2%.
+
+**Andrew, 2026-10-17 afternoon (branch `main`, 12 commits 883c945..0c35ec8; `pytest engine` 153 passed, `pytest api` 44 passed, `validate.py` 37 ok)**
+
+What the real Ward 04 data changed, beyond Yuvi's items (details and tables in `docs/test-lots.md`):
+
+1. **Rear lanes.** The derived street-space layer includes public lanes: 34% of Ward 04 lots have two or more street edges and 78% of those are a street plus a lane behind, not a corner. The shorter-edge corner rule faced the lane on 2,451 house lots (13%); the pairwise walk moves about 258 more, 189 of them house lots. Section 5.2 step 1 now walks the street edges from the one nearest the address point outward and drops every edge opposite an edge already kept, then applies the corner rule; of an opposite pair the edge nearer the address point wins (a corner lot addressed from the street half of its long side loses its lane; one addressed from the lane half keeps it, a known limit). Lots without an address point (33) keep the old rule.
+2. **Eaves are not party walls.** The massing polygons are roof outlines. A detached house's roof crosses the lot line by 4 to 20 m² and sits 0.1 to 0.5 m from the neighbour's, so `cross_lot_m2 = 4` and `tolerance_m = 0.3` called 3,438 detached houses attached. With 20 m² and 0.05 m the attached share of measured house lots is 41.6% (was 60.6%; Yuvi's smoke run said 59%). Known limit: a semi whose party wall the massing splits with a visible gap (602 Indian Rd, 95 Grenadier Rd) reads as detached; those lots still fail on lot width.
+3. **3-storey houses are not larger buildings.** 12 to 16 m average massing heights are almost all small-footprint single-address houses (274 of 318); apartments in the sample all exceed the 350 m² footprint rule anyway. `avg_height_m` is 16.
+4. **Garages.** 343 house lots (1.8%) are `unmeasurable` because a detached garage over 20 m² counts as a second building (5.2 step 6). Left as the spec says; a second-building threshold would be a contract change.
+5. **Depth row when the design does not fit the lot's width** (34 Rexford Rd read 24.6 m on a 33.5 m lot): now the lot's centre-line depth whenever the width row fails. Designs that fit the width are still measured under the placed rectangle; on skewed lots that reads short (542 Ward 04 results, pessimistic: a wider rule was tried and withdrawn because they then read "fits" or "too close to call" while the 3D view drew the building over the side yard). Fix before A10: align the placement to the lot's sides on skewed lots.
+
+Asks: **Simone** — `ai/numbers.py` lines 125 and 132 emit `"%"`; the fixtures now say `"pct"` everywhere and `ai/tests` has one failure (`test_matches_the_english_briefing_fixture`) until that changes; the `site_exception` flag text in `contracts/copy/reasons.json` was edited by Andrew (an `{exception}` placeholder the engine fills, plus `text_without_number`), please read it over; `docs/test-lots.md` is Andrew's A8 deliverable placed in `/docs` as 8.1 says. **Jayden** — `context.buildings[]` can repeat a `building_id` (the on-lot clipped part plus the off-lot remainders of one massing polygon), so key on array position; `lot.existing_building` is the clipped part; the exception line is informational (`site_exception` is never in `f` or in "needs extra review"); use `127.0.0.1` rather than `localhost` for the API on Windows (about 2 s per new connection otherwise). **Yuvi** — `data/out/data_dates.json` carries dataset slugs (`3d-massing`, `_fetched_at`) and timestamps; the API maps them to the contract keys and dates in `api/store.py` `normalise_data_dates`; writing the contract keys from `download.py` would let the batch share it.
+
+A stale `origin/feat/pipeline` branch also exists from before the rename; delete it once `yuvi` is merged.
+
+**Next, in order**
+
+1. Andrew: send each teammate their kickoff prompt (section 8) and this section. Teammates clone, create `.venv`, run `pip install -r requirements.txt`, open branch `yuvi` / `jayden` / `simone` from `main`.
+2. Yuvi: put `suplex.gpkg`, the permit files and `trend_cache/` on the drive (done on his machine); sign up for Tiger Data (Y2) and load it; then Y7 when Andrew sends the test lots.
+3. Andrew: **done 2026-10-17 afternoon** — the engine-side items 1, 5, 6 and 7 from Yuvi's findings (commits ebe4ccd, 6aaea16, 032bd83, a813998, plus 6d32489 for the `pct` unit), A7 (merged as 0c35ec8) and A8 (af59c65, 14d5311, caf3c0c) are on `main`; see the table above. **Next for Andrew:** A10 citywide batch (`engine/suplex_engine/batch.py`: `ward_summary.json`, `wards/{id}.geojson` with `f` from `classify.review_flags`, reuse or move the API's `normalise_data_dates`), A9's `SUPLEX_DEMO_CACHE` mode and A11 demo cache, the deferred review minors listed in `docs/test-lots.md` and the API report (null permit dates, CRS check, malformed optional files, a test that context reaches the engine, CORS on 500s).
+4. Jayden: J1 to J3 and the landing hero are merged; A7 is live, so J8 (the live API switch) can happen alongside J4 (the result panel, with `/explain` on the proxy), then J5 (ward map, which needs A10's per-ward files; fixtures until then) and J6 (transition). Read `levels[]` and `homes[]` from `designs.json` (section 6.3 used to say `floors[]`).
+5. Simone: S1 to S7, S10 drafts and T13 are merged; next are the translation review sheets, then S8 and S9 once the API and the batch exist.
+
+**Decisions made in the first session without Andrew** (full list with reasons in `docs/decisions.md`): `attached.on_lot_m2 = 10` added to `engine_config.json`, its schema and `types.ts`; lot-level `width_m` is the cross-section at the 6.0 m setback line and `depth_m` the centroid line; the band is inclusive (|margin| of 0.5 m is still borderline); street edges under 3 m are never the frontage; the buildable area is the lot clipped by the setback lines; `ward.04.json` `by_year` changed to sum to 41; the city summary entry uses `ward_id: "city"`; `BriefingRequest.ward` also accepts the full `/ward/{id}` response; 8.375 rounds to 8.38; React 19 rather than 18; branches renamed to `main` / `yuvi` / `jayden` / `simone`.
+
+**Open items carried forward**: T1 (HTV 11 rules, Simone), T3 (re-read the Sixplex Narrow zoning matrix), mockups not yet in `/docs/mockups/`, the TRCA flag links to the ArcGIS FeatureServer because there is no City dataset, the `web/src/App.tsx` disclaimer TODO. Closed since the first version: T2 (Gemini limits read; model decision above).

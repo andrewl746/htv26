@@ -231,6 +231,26 @@ class Address:
 
 
 @dataclass
+class NextStepLink:
+    label: str
+    url: str
+
+
+@dataclass
+class NextStep:
+    """One "Your next steps" item (MASTERSPEC 5.10): text from contracts/copy/next_steps.json, `why` filled by
+    the engine. Never written by AI."""
+
+    id: str
+    group: str                          # confirm | approvals | apply | alternatives
+    title: str
+    text: str
+    who: str
+    why: str
+    links: list[NextStepLink]
+
+
+@dataclass
 class CheckResult:
     """The engine's answer; `to_dict()` is the `CheckResponse` JSON."""
 
@@ -241,6 +261,7 @@ class CheckResult:
     permits_nearby: PermitsNearby
     context: Context
     meta: Meta
+    next_steps: list[NextStep] = field(default_factory=list)    # filled last by next_steps.build_next_steps
 
     def to_dict(self) -> dict[str, Any]:
         return _clean(asdict(self))

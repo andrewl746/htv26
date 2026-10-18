@@ -522,3 +522,41 @@ def test_depth_is_measured_under_the_placed_building_when_the_width_fits():
     res = run_check(lot, CFG)
     assert res.lot.depth_m == pytest.approx(40.0, abs=0.05)                      # centre line misses the notch
     assert rule(res, "fourplex_wide", "lot_depth").actual == pytest.approx(25.5, abs=0.05)
+
+
+# ---------- next steps hook (A14, MASTERSPEC 5.10) ----------
+
+def test_run_check_hands_the_finished_result_to_build_next_steps(monkeypatch):
+    from suplex_engine import check as check_mod
+    from suplex_engine.models import NextStep, NextStepLink
+
+    seen = {}
+
+    def fake(result, copy):
+        seen["result"], seen["copy"] = result, copy
+        return [NextStep("zoning_check", "confirm", "t", "x", "who", "why", [NextStepLink("City", "https://www.toronto.ca/")])]
+
+    monkeypatch.setattr(check_mod, "build_next_steps", fake)
+    res = run_check(rect_lot(12.0, 40.0), CFG)
+    assert seen["result"] is res and len(seen["result"].designs) == 4 and isinstance(seen["copy"], dict)
+    assert res.to_dict()["next_steps"] == [{"id": "zoning_check", "group": "confirm", "title": "t", "text": "x",
+                                            "who": "who", "why": "why",
+                                            "links": [{"label": "City", "url": "https://www.toronto.ca/"}]}]
+
+
+def test_next_steps_is_always_in_the_response():
+    """run_check fills next_steps (MASTERSPEC 5.10, Y13). A clean 12 x 40 m RD lot where all four designs fit,
+    with a house on it and no flags, starts with the survey, ends in the apply group and never gets the
+    alternatives. Kept loose on purpose so S14 wording changes don't break it; test_next_steps.py pins each trigger."""
+    steps = run_check(rect_lot(12.0, 40.0), CFG).to_dict()["next_steps"]
+    ids = [s["id"] for s in steps]
+    assert ids[0] == "survey"
+    assert {"zoning_check", "trees", "designer", "permit", "demolition", "fees"} <= set(ids)
+    assert len(ids) == len(set(ids))
+    order = ["confirm", "approvals", "apply", "alternatives"]
+    groups = [order.index(s["group"]) for s in steps]
+    assert groups == sorted(groups) and "alternatives" not in {s["group"] for s in steps}
+    for s in steps:
+        assert {"id", "group", "title", "text", "who", "why", "links"} <= set(s)
+        assert s["title"] and s["text"] and s["why"]
+        assert all(link["url"].startswith("https://") for link in s["links"])

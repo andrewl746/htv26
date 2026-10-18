@@ -1,0 +1,306 @@
+/* ---------- Plan view: the lot and the permits around it, from above ---------- */
+
+.plan-tab {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  background: var(--suplex-paper);
+}
+
+.plan-switch {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--suplex-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.plan-switch:hover {
+  background: var(--suplex-highlight);
+}
+
+.plan-stage {
+  position: absolute;
+  inset: 0 var(--panel-width) 0 0;
+  overflow: hidden;
+}
+
+/* The street map under the drawing, and its attribution. */
+.plan-backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.plan-attribution {
+  position: absolute;
+  right: 68px;
+  bottom: var(--space-2);
+  margin: 0;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: rgba(244, 248, 229, 0.85);
+  color: var(--suplex-ink-muted);
+  font-size: 11px;
+}
+
+.plan-svg {
+  position: relative;
+}
+
+.plan-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.plan-svg[data-dragging] {
+  cursor: grabbing;
+}
+
+.plan-stage:focus-visible {
+  outline-offset: -3px;
+}
+
+/* Marks: shape and pattern carry the meaning, colour only repeats it. */
+.plan-ring {
+  fill: none;
+  stroke: var(--palette-charcoal);
+  opacity: 0.45;
+}
+
+.plan-ring-label {
+  fill: var(--palette-charcoal);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--suplex-surface);
+  stroke-width: 0.35em;
+}
+
+/* Neighbours: one quiet tone, a little darker for big buildings, so the lot is what stands out. */
+.plan-building {
+  stroke: #7d8a5c;
+}
+
+.plan-building-house {
+  fill: #dfe4cb;
+}
+
+.plan-building-large {
+  fill: #c3cba7;
+}
+
+.plan-tree {
+  fill: var(--suplex-tree);
+  opacity: 0.55;
+}
+
+.plan-lot-halo {
+  fill: none;
+  stroke: var(--suplex-accent);
+  stroke-linejoin: round;
+  opacity: 0.22;
+}
+
+.plan-lot {
+  fill: #fff;
+  stroke: var(--suplex-ink);
+  stroke-linejoin: round;
+}
+
+.plan-existing {
+  fill: none;
+  stroke: var(--suplex-ink-muted);
+}
+
+.plan-yard {
+  fill: url(#plan-hatch-yard);
+  stroke: none;
+}
+
+.plan-hatch-yard {
+  stroke: var(--suplex-accent);
+  opacity: 0.55;
+}
+
+.plan-buildable {
+  fill: var(--suplex-buildable);
+  stroke: var(--suplex-fit);
+}
+
+.plan-home {
+  fill: var(--suplex-home-2);
+  stroke: var(--suplex-ink);
+  stroke-linejoin: round;
+}
+
+.plan-fail {
+  fill: url(#plan-hatch-fail);
+  stroke: var(--suplex-fail);
+}
+
+.plan-hatch-fail {
+  stroke: var(--suplex-fail);
+}
+
+.plan-fail-mark {
+  fill: var(--suplex-fail);
+  font-family: var(--font-ui);
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: var(--suplex-surface);
+}
+
+.plan-permit {
+  fill: var(--suplex-permit);
+  stroke: var(--suplex-permit-outline);
+  stroke-linejoin: round;
+}
+
+.plan-pin {
+  fill: none;
+  stroke: var(--suplex-ink);
+}
+
+.plan-pin-dot {
+  fill: var(--suplex-ink);
+  stroke: none;
+}
+
+/* Orientation and scale */
+.plan-north,
+.plan-scalebar {
+  position: absolute;
+  left: var(--space-4);
+  color: var(--suplex-ink-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.plan-north {
+  top: 84px;
+  display: grid;
+  justify-items: center;
+  line-height: 1;
+}
+
+.plan-scalebar {
+  bottom: 72px;
+  box-sizing: border-box;
+  padding-top: var(--space-1);
+  border-top: 2px solid var(--suplex-ink-muted);
+  text-align: center;
+}
+
+/* Zoom in and out */
+.plan-steps {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+
+.plan-step {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  font-size: var(--text-xl);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.plan-step + .plan-step {
+  border-top: 1px solid var(--suplex-line);
+}
+
+.plan-step:hover {
+  background: var(--suplex-highlight);
+}
+
+/* Zoom switch */
+.plan-zoom {
+  position: absolute;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  display: flex;
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+
+.plan-zoom-button {
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.plan-zoom-button:hover {
+  background: var(--suplex-highlight);
+}
+
+.plan-zoom-button[aria-pressed='true'] {
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
+}
+
+/* Panel */
+.plan-panel-body {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.plan-heading {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+}
+
+.plan-permit-line {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.plan-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3) var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: 1.2;
+}
+
+.plan-swatch {
+  flex: none;
+}
+
+.plan-defs {
+  position: absolute;
+}
+
+.plan-note {
+  color: var(--suplex-ink-muted);
+}

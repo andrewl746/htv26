@@ -1,22 +1,12 @@
 import { Color } from 'three'
 import { tokenHex } from '../../styles/tokens'
-import type { Vec3 } from './geometry'
+import { sunPosition } from './sun'
 
-// Golden-hour light (MASTERSPEC 6.3): a low warm-white sun from the south-west with soft shadows,
-// and a hemisphere light with the sky token above and the ground token below.
-const SUN_BEARING_DEG = 225
-const SUN_ELEVATION_DEG = 25
-const SUN_DISTANCE_M = 120
+// Golden-hour light (MASTERSPEC 6.3), the classic look: a low warm-white sun from the south-west
+// with soft shadows, and a hemisphere light with the sky token above and the ground token below.
 const SHADOW_HALF_EXTENT_M = 70
 /** The sun token at full strength tints every surface orange; half of it reads as warm white. */
 const SUN_WHITE_MIX = 0.5
-
-function sunPosition(): Vec3 {
-  const bearing = (SUN_BEARING_DEG * Math.PI) / 180
-  const elevation = (SUN_ELEVATION_DEG * Math.PI) / 180
-  const flat = SUN_DISTANCE_M * Math.cos(elevation)
-  return [flat * Math.sin(bearing), SUN_DISTANCE_M * Math.sin(elevation), -flat * Math.cos(bearing)]
-}
 
 export function Lighting() {
   const sun = new Color(tokenHex('--suplex-sun')).lerp(new Color('white'), SUN_WHITE_MIX)
@@ -37,7 +27,7 @@ export function Lighting() {
         shadow-camera-top={SHADOW_HALF_EXTENT_M}
         shadow-camera-bottom={-SHADOW_HALF_EXTENT_M}
         shadow-camera-near={1}
-        shadow-camera-far={SUN_DISTANCE_M * 2}
+        shadow-camera-far={Math.hypot(...sunPosition()) * 2}
       />
     </>
   )

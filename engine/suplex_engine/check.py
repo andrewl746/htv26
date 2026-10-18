@@ -36,6 +36,7 @@ from .models import (
     Reason,
     ZoneInfo,
 )
+from .next_steps import build_next_steps
 from .rules import FRONT_SETBACK_M, zone_code
 
 EPSG_METRES = "EPSG:2952"
@@ -165,5 +166,8 @@ def run_check(lot: LotInput, cfg: EngineConfig | None = None, designs: DesignsFi
         alon, alat = lon, lat
     meta = Meta(ENGINE_VERSION, designs.version, cfg.version, dict(data_dates or {}), copy_.disclaimer("screening"),
                 datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), False)
-    return CheckResult(Address(lot.address_id, lot.address_full, alon, alat), lot_out, design_results,
-                       copy_.not_checked_labels(), permits, context, meta)
+    result = CheckResult(Address(lot.address_id, lot.address_full, alon, alat), lot_out, design_results,
+                         copy_.not_checked_labels(), permits, context, meta)
+    # Last, from the finished result only (MASTERSPEC 5.10; A14 hook, Y13 fills it in).
+    result.next_steps = build_next_steps(result, copy_.next_steps_copy())
+    return result

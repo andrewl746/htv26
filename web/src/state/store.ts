@@ -3,7 +3,7 @@ import type { CheckResponse, DesignId, Lang } from '@contracts/types'
 import { check as fetchCheck } from '../api/client'
 import { ApiError, type ApiErrorCode } from '../api/errors'
 import { defaultDesign } from '../designs'
-import { setAddressInUrl } from './url'
+import { setAddressInUrl, setViewInUrl } from './url'
 
 // App state (MASTERSPEC 6.1). The ward data, design filter and 2D flag join with J5 and J9.
 
@@ -11,7 +11,7 @@ import { setAddressInUrl } from './url'
  * `flying`: the base map is carrying the camera from the city to the lot. It waits for the check
  * (tens of milliseconds from the local API) so it can fly once, straight to the lot's rest view.
  */
-export type View = 'landing' | 'flying' | 'lot' | 'ward'
+export type View = 'landing' | 'flying' | 'lot' | 'plan' | 'ward'
 export type CheckStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 interface AppState {
@@ -33,6 +33,10 @@ interface AppState {
   /** The map has landed on the lot: hand over to the 3D scene. */
   land: () => void
   showLanding: (options?: { updateUrl?: boolean }) => void
+  /** The plan view: the same check seen from above, with the permits round it. Needs a check. */
+  showPlan: (options?: { updateUrl?: boolean }) => void
+  /** Back from the plan view to the 3D lot. */
+  showLot: (options?: { updateUrl?: boolean }) => void
   setDesign: (designId: DesignId) => void
   setLang: (lang: Lang) => void
 }
@@ -98,6 +102,18 @@ export const useApp = create<AppState>()((set, get) => ({
       checkError: null,
       designId: null,
     })
+  },
+
+  showPlan({ updateUrl = true } = {}) {
+    if (!get().addressId) return
+    if (updateUrl) setViewInUrl('plan')
+    set({ view: 'plan', handoff: false })
+  },
+
+  showLot({ updateUrl = true } = {}) {
+    if (!get().addressId) return
+    if (updateUrl) setViewInUrl(null)
+    set({ view: 'lot' })
   },
 
   setDesign(designId) {

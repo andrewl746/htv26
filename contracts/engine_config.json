@@ -6,6 +6,7 @@
   "attached": { "on_lot_m2": 10, "cross_lot_m2": 20, "shared_edge_m": 3, "tolerance_m": 0.05 },
   "vacant_min_footprint_m2": 20,
   "street_edge": { "corridor_distance_m": 0.5, "merge_angle_deg": 15, "min_length_m": 3 },
+  "placement": { "align_to_sides_deg": 2 },
   "sample_step_m": 0.5,
   "nearby_permits_radius_m": 500,
   "context_radius_m": 150,

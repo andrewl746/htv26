@@ -84,7 +84,9 @@
     "home_bedrooms": "{{bedrooms}} bedrooms",
     "home_bedrooms_one": "{{bedrooms}} bedroom",
     "load_error": "This couldn't load. Please try again in a moment.",
-    "sample_data": "Sample data: made-up addresses and lots for testing, not real Toronto results."
+    "sample_data": "Sample data: made-up addresses and lots for testing, not real Toronto results.",
+    "not_supported_title": "Multiplexes can't be checked here",
+    "not_supported_note": "None of the four free City designs were checked on this lot, so there is no result to show."
   },
   "ward_panel": {
     "could": "Could: {{could_lots}} lots may fit a free City design ({{could_pct}}% of house lots).",
@@ -212,6 +214,247 @@
       ],
       "not_checked_heading": "Ce que Suplex ne vérifie pas",
       "datasets_heading": "Sources de données"
+    }
+  },
+  "multiplexes": {
+    "_note": "The Permitted multiplexes view (decision 20): the map layer (view), its near-me search (search), the search page (browse) and the section under an address check (near). Placeholders {{name}} are filled by fill() in web/src/copy.ts; keys ending in _one are singular. Wording: \"permitted multiplexes\", never \"existing\"; a permit is not a finished building; units are gross; street names only, never a house number; no ranking words. The screening disclaimer, the search placeholder, the outside-Toronto and load-error texts come from disclaimers.json and labels.ui.",
+    "view": {
+      "title": "Permitted multiplexes",
+      "layer_toggle": "Show permitted multiplexes",
+      "empty": "No permitted multiplexes match these filters. Try selecting more options.",
+      "shown": "Showing {{shown}} of {{total}} permitted multiplexes",
+      "fetched": "Data fetched {{date}}",
+      "aria": {
+        "map": "Map of permitted multiplexes by ward. Each dot sits at the middle of the permit’s block, never at the house; house numbers are not shown.",
+        "filters": "Filter permitted multiplexes",
+        "popup": "Details for one permitted multiplex"
+      },
+      "filters": {
+        "title": "Filters",
+        "reset": "Show everything",
+        "units": {
+          "title": "Number of units",
+          "options": {
+            "2": "2 units",
+            "3": "3 units",
+            "4": "4 units",
+            "5": "5 units",
+            "6": "6 units"
+          }
+        },
+        "status": {
+          "title": "Permit status",
+          "options": {
+            "cleared": "Cleared (permit closed)",
+            "active": "Active (permitted)"
+          }
+        },
+        "work": {
+          "title": "Type of work",
+          "options": {
+            "new_build": "New build",
+            "conversion": "Conversion or addition"
+          }
+        }
+      },
+      "structure": {
+        "detached": "Detached house",
+        "semi": "Semi-detached house",
+        "townhouse": "Townhouse",
+        "other": "Other building type"
+      },
+      "popup": {
+        "heading": "On {{street}}",
+        "units": "Units (gross)",
+        "type": "Type",
+        "structure": "Structure",
+        "status": "Status",
+        "issued": "Issued",
+        "status_cleared": "Permit closed (cleared)",
+        "status_active": "Permitted (active)",
+        "work_new_build": "New build",
+        "work_conversion": "Conversion or addition",
+        "note": "A permit is not a finished building."
+      },
+      "legend": {
+        "title": "Legend",
+        "cleared": "Cleared: the City closed the permit (solid dot)",
+        "active": "Active: permitted, not necessarily built (ring)",
+        "cluster_label": "Group of permitted multiplexes"
+      },
+      "ward": {
+        "tooltip": "Ward {{ward}} {{name}}: {{count}} permitted multiplexes, {{units}} units",
+        "tooltip_one": "Ward {{ward}} {{name}}: 1 permitted multiplex, {{units}} units"
+      },
+      "counts": {
+        "title": "Counts by ward",
+        "headers": {
+          "ward": "Ward",
+          "permits": "Permits",
+          "units": "Units",
+          "active": "Active",
+          "cleared": "Cleared"
+        }
+      },
+      "sources": {
+        "title": "Data sources & caveats",
+        "bullets": [
+          "A permit is not a finished building: it shows what the City permitted, not what stands today.",
+          "Unit counts are gross: units lost to demolition are not subtracted.",
+          "Some permits could not be located on the map and are left out.",
+          "Each dot sits at the middle of the permit’s block, never at the house; house numbers are not shown.",
+          "Data: City of Toronto Open Data, active and cleared building permits."
+        ]
+      }
+    },
+    "search": {
+      "label": "Find permitted multiplexes near an address",
+      "use_location": "Use my location",
+      "locating": "Finding your location…",
+      "location_note": "Your location stays in this browser. It is not sent or saved anywhere.",
+      "clear": "Clear",
+      "location_denied": "Location permission was declined. You can type an address instead.",
+      "location_unavailable": "Your location is not available right now. You can type an address instead.",
+      "location_timeout": "Finding your location took too long. You can type an address instead.",
+      "location_unsupported": "This browser cannot share its location. You can type an address instead.",
+      "location_outside": "That looks outside Toronto.",
+      "picked_address": "Map moved to the area around that address.",
+      "picked_location": "Map moved to the area around your location.",
+      "cleared": "Search cleared.",
+      "aria": {
+        "search": "Search for permitted multiplexes near a place",
+        "results": "Matching addresses",
+        "card": "Permitted multiplexes near the chosen place",
+        "circle": "Search area"
+      },
+      "card": {
+        "close": "Close nearby permitted multiplexes",
+        "reopen": "Show nearby permitted multiplexes"
+      }
+    },
+    "browse": {
+      "title": "Search permitted multiplexes",
+      "search": {
+        "label": "Search by street or ward",
+        "placeholder": "Street name, ward name or ward number",
+        "hint": "For example Dundas, Parkdale or 04.",
+        "clear": "Clear search text"
+      },
+      "near": {
+        "title": "Near an address",
+        "active": "Distances are measured from the place you chose."
+      },
+      "filters": {
+        "title": "Filters",
+        "show": "Filters",
+        "show_active": "Filters ({{n}} on)",
+        "clear_all": "Clear all",
+        "units": "Units",
+        "status": "Status",
+        "work": "Work type",
+        "structure": "Structure",
+        "ward": "Ward",
+        "all_wards": "All wards",
+        "ward_option": "{{ward}} {{name}}",
+        "issued": "Issued year",
+        "from": "From",
+        "to": "To",
+        "in_view": "Only show what’s on the map",
+        "unit_option": "{{n}}",
+        "status_options": {
+          "cleared": "Cleared",
+          "active": "Active"
+        },
+        "work_options": {
+          "new_build": "New build",
+          "conversion": "Conversion or addition"
+        },
+        "status_help": "Cleared = the City closed the permit. Active = permitted; work may be under way."
+      },
+      "sort": {
+        "label": "Sort by",
+        "options": {
+          "newest": "Newest first",
+          "units": "Most units",
+          "street": "Street A to Z",
+          "nearest": "Nearest first"
+        },
+        "nearest_hint": "Choose an address or use your location to sort by distance."
+      },
+      "results": {
+        "count": "{{count}} permitted multiplexes",
+        "count_one": "1 permitted multiplex",
+        "units": "{{units}} units, gross",
+        "showing": "Showing {{shown}} of {{total}}",
+        "more": "Show {{n}} more",
+        "list_label": "Permitted multiplexes",
+        "loading": "Loading permitted multiplexes",
+        "selected": "Selected"
+      },
+      "card": {
+        "units_work": "{{units}} units · {{work}}",
+        "ward": "{{name}} (ward {{ward}})",
+        "issued": "Issued {{year}}",
+        "status_cleared": "Cleared",
+        "status_active": "Active",
+        "distance": "about {{distance}} m away",
+        "distance_here": "less than 10 m away",
+        "open": "Show {{street}} on the map"
+      },
+      "empty": {
+        "title": "No permitted multiplexes match these filters",
+        "note": "This says nothing about what has or hasn’t been built.",
+        "clear_all": "Clear all"
+      },
+      "error": {
+        "title": "The permitted multiplexes could not be loaded"
+      },
+      "panes": {
+        "label": "View",
+        "list": "List",
+        "map": "Map"
+      },
+      "entry": {
+        "open": "Search permitted multiplexes",
+        "back": "Back to Suplex",
+        "region": "Search for permitted multiplexes"
+      },
+      "aria": {
+        "page": "Search for permitted multiplexes",
+        "filters": "Filter permitted multiplexes",
+        "results": "Search results",
+        "map": "Map of the permitted multiplexes in the list"
+      }
+    },
+    "near": {
+      "heading": "Permitted multiplexes near this address",
+      "summary": "{{count}} permitted multiplexes within {{radius}} m since {{since}}, with {{units}} units in all.",
+      "summary_one": "1 permitted multiplex within {{radius}} m since {{since}}, with {{units}} units.",
+      "new_build": "{{n}} new builds",
+      "new_build_one": "1 new build",
+      "conversion": "{{n}} conversions or additions",
+      "conversion_one": "1 conversion or addition",
+      "cleared": "{{n}} cleared",
+      "active": "{{n}} active",
+      "breakdown": "{{new_build}} and {{conversion}}; {{cleared}} and {{active}}.",
+      "row_street": "{{street}}",
+      "row_detail": "about {{distance}} m away, {{units}} units, {{work}}, {{status}}, {{year}}",
+      "work_new_build": "new build",
+      "work_conversion": "conversion or addition",
+      "status_cleared": "cleared",
+      "status_active": "active",
+      "empty": "No permitted multiplexes within {{radius}} m since {{since}}.",
+      "empty_note": "This says nothing about whether any were built.",
+      "show_nearest": "Show nearest {{n}}",
+      "show_all": "Show all {{n}}",
+      "capped_note": "Showing the nearest {{n}} of {{total}}.",
+      "caveat": "A permit is not a finished building. Unit counts are gross. Each dot sits at the middle of its block, so a permit near the edge of the circle may fall either side of it.",
+      "fetched": "Data fetched {{date}}",
+      "loading": "Loading permitted multiplexes",
+      "aria": {
+        "list": "Permitted multiplexes near this address, nearest first",
+        "section_busy": "Loading permitted multiplexes near this address"
+      }
     }
   }
 }

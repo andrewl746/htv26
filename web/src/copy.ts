@@ -15,18 +15,6 @@ export const pending = {
   load_error: labels.ui.load_error,
 }
 
-/**
- * Strings contracts/copy does not have yet. Simone owns contracts/copy and has been asked to add
- * them to labels.json `ui`; delete each entry here once it lands there.
- */
-export const missing = {
-  /** The banner while the app runs on /contracts/fixtures (no VITE_API_BASE). */
-  sample_data: 'Sample data: made-up addresses and lots for testing, not real Toronto results.',
-  /** The banner on a lot where none of the four designs could be checked (condo, non-residential zone, older by-law, ...). */
-  not_supported_title: "Multiplexes can't be checked here",
-  not_supported_note: 'None of the four free City designs were checked on this lot, so there is no result to show.',
-}
-
 /** Fills the {{key}} placeholders used throughout contracts/copy. */
 export function fill(template: string, values: Record<string, string | number>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key: string) => (key in values ? String(values[key]) : match))

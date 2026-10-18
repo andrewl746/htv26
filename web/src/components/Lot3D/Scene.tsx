@@ -1,26 +1,38 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Stats } from '@react-three/drei'
-import { NeutralToneMapping } from 'three'
+import { ContactShadows, Stats } from '@react-three/drei'
+import { ACESFilmicToneMapping, NeutralToneMapping } from 'three'
 import type { CheckResponse, DesignId } from '@contracts/types'
 import engineConfig from '@contracts/engine_config.json'
 import { designById } from '../../designs'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { tokenHex } from '../../styles/tokens'
 import { buildingTop } from './buildings'
-import { Camera } from './Camera'
+import { Camera, type FixedPose } from './Camera'
 import { CutawayFocus } from './CutawayFocus'
-import { Design } from './Design'
+import { ELEVATION_VIEW, OFF, STRESS_BUILDINGS, stressed } from './debug'
+import { Effects } from './Effects'
+import { ClassicDesign } from './ClassicDesign'
+import { DrawnDesign } from './DrawnDesign'
+import { failSlab } from './failSlabs'
+import { FailSlices } from './FailSlices'
+import { Frontage } from './Frontage'
 import { FLAT, openRing, toScene, vertexMean } from './geometry'
 import { LabelProjector } from './LabelProjector'
-import { homeLabels, oldHouseLabels } from './labels'
+import { failLabel, homeLabels, oldHouseLabels } from './labels'
 import { Lighting } from './Lighting'
+import { LOOK } from './look'
 import { Lot } from './Lot'
+import { FACADES } from './models'
 import { OldHouse } from './OldHouse'
 import { Pin } from './Pin'
+import { PixelRatio } from './PixelRatio'
+import { QualityMonitor } from './QualityMonitor'
 import { SceneLabels } from './SceneLabels'
+import { SettleWatch, ShadowFreeze } from './Settle'
 import { Sequence } from './Sequence'
 import { Street } from './Street'
+import { Studio } from './Studio'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
 import { lotFraming, type Framing } from './framing'
@@ -33,6 +45,20 @@ const GROUND_SCALE = 4
 const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg: restViewBearingDeg(null) }
 const FOG_NEAR_M = 90
 const FOG_FAR_M = 320
+/** Dev elevation view: how far in front of the design the camera stands. */
+const ELEVATION_DISTANCE_M = 70
+/**
+ * A15: under this frame rate the drawn look steps down, for good: first to one pixel per CSS
+ * pixel (a high-DPI laptop screen draws 2.25 times the pixels), then without ambient occlusion
+ * and shadows.
+ */
+const MIN_FPS = 45
+type Quality = 'high' | 'fewer-pixels' | 'low'
+const STEP_DOWN: Record<Quality, Quality> = { high: 'fewer-pixels', 'fewer-pixels': 'low', low: 'low' }
+/** Contact shadows: just above every flat layer on the ground, over the lot and its neighbours. */
+const CONTACT = { y: 0.09, scaleM: 90, farM: 12, blur: 2.2, opacity: 0.45, resolution: 1024 }
+/** The drawn look renders at most this many pixels per CSS pixel: the ambient occlusion is per pixel. */
+const DRAWN_MAX_DPR = 1.25
 
 /** `?stats=1` in dev shows the frame rate, for the 60 fps check (J1). */
 const SHOW_STATS = import.meta.env.DEV && new URLSearchParams(window.location.search).has('stats')
@@ -46,7 +72,7 @@ const SHOW_STATS = import.meta.env.DEV && new URLSearchParams(window.location.se
  * never lands mid-flight; the scene then fades in over the flight's last stretch.
  */
 export function Scene({
-  check,
+  check: given,
   designId,
   visible,
   rightInsetPx,
@@ -57,6 +83,14 @@ export function Scene({
   rightInsetPx: number
 }) {
   const reduced = useReducedMotion()
+  // Dev only: ?stress=400 swaps in a dense synthetic street (debug.ts).
+  const check = useMemo(() => (given && STRESS_BUILDINGS > 0 ? stressed(given, STRESS_BUILDINGS) : given), [given])
+  // Lowered for good each time the frame rate stays under MIN_FPS (the drawn look only).
+  const [quality, setQuality] = useState<Quality>('high')
+  const drawn = LOOK === 'drawn'
+  const rich = drawn && quality !== 'low'
+  // Once the sequence rests, the drawn look stops redrawing its shadows every frame.
+  const [settled, setSettled] = useState(false)
   const result = check?.designs.find((d) => d.design_id === designId) ?? null
   const placement = result?.placement_local ?? null
   const spec = result && placement ? designById(result.design_id) : null
@@ -64,6 +98,10 @@ export function Scene({
     () => buildTimeline(spec?.levels.length ?? 0, spec?.homes.length ?? 0, reduced),
     [spec, reduced],
   )
+  // A16: the design as the City drew it, unless ?look=classic or it is not modelled yet.
+  const facade = spec && LOOK === 'drawn' ? FACADES[spec.id] : undefined
+  // J8: where the selected design fails, or is too close to call.
+  const slab = useMemo(() => (result && spec ? failSlab(result, spec) : null), [result, spec])
 
   const labels = useMemo(
     () =>
@@ -76,9 +114,10 @@ export function Scene({
               squash: placement !== null,
             }),
             ...(placement && spec ? homeLabels(placement, spec) : []),
+            ...(slab ? [failLabel(slab)] : []),
           ]
         : [],
-    [check, placement, spec],
+    [check, placement, spec, slab],
   )
   const labelElements = useRef<(HTMLDivElement | null)[]>([])
 
@@ -97,29 +136,53 @@ export function Scene({
     return [...ring.flatMap((p) => [toScene(p, 0), toScene(p, top)]), toScene(vertexMean(ring), top / 2)]
   }, [check, placement, spec, pinHeight])
 
+  // Dev only: square to the design's front, at half its height (debug.ts).
+  const fixedPose = useMemo((): FixedPose | null => {
+    if (!ELEVATION_VIEW || !placement || !spec) return null
+    const [fl, fr, , rl] = placement
+    const mid: [number, number] = [(fl[0] + fr[0]) / 2, (fl[1] + fr[1]) / 2]
+    const back = [rl[0] - fl[0], rl[1] - fl[1]]
+    const len = Math.hypot(back[0], back[1])
+    const out: [number, number] = [-back[0] / len, -back[1] / len]
+    const h = spec.height_m / 2
+    return {
+      position: toScene([mid[0] + out[0] * ELEVATION_DISTANCE_M, mid[1] + out[1] * ELEVATION_DISTANCE_M], h),
+      target: toScene(mid, h),
+    }
+  }, [placement, spec])
+
   return (
     <div
       className={visible ? 'scene scene-visible' : 'scene'}
       // The fade lasts the handoff: fully drawn as the map lands. Hiding stays instant.
       style={visible ? { transitionDuration: `${HANDOFF_S}s` } : undefined}
       aria-hidden="true"
+      data-look={LOOK}
+      data-quality={quality}
+      data-settled={settled}
     >
       <Canvas
         frameloop={visible ? 'always' : 'never'}
         shadows="percentage"
-        dpr={[1, 2]}
-        gl={{ antialias: true, toneMapping: NeutralToneMapping }}
+        dpr={[1, drawn ? DRAWN_MAX_DPR : 2]}
+        gl={{ antialias: true, toneMapping: drawn ? ACESFilmicToneMapping : NeutralToneMapping }}
       >
+        {drawn && <PixelRatio max={quality === 'high' ? DRAWN_MAX_DPR : 1} />}
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
           <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
+          {ELEVATION_VIEW && <color attach="background" args={['white']} />}
           <Camera
             lotKey={lotKey}
             distanceM={framing.distanceM}
             viewBearingDeg={framing.viewBearingDeg}
             rightInsetPx={rightInsetPx}
+            fixed={fixedPose}
           />
           <CutawayFocus targets={targets} />
-          <Lighting />
+          {drawn && <SettleWatch onChange={setSettled} />}
+          {drawn && <ShadowFreeze frozen={settled && check !== null} />}
+          {drawn && check && <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={() => setQuality((q) => STEP_DOWN[q])} />}
+          {drawn ? <Studio shadows={rich} /> : <Lighting />}
 
           <mesh rotation={FLAT} receiveShadow>
             <circleGeometry args={[groundRadius * GROUND_SCALE, 96]} />
@@ -130,19 +193,42 @@ export function Scene({
 
           {check && (
             <>
-              <Street key={`street-${lotKey}`} buildings={check.context.buildings} />
-              <Trees key={`trees-${lotKey}`} trees={check.context.trees} />
+              {!ELEVATION_VIEW && <Street key={`street-${lotKey}`} buildings={check.context.buildings} />}
+              {drawn && !ELEVATION_VIEW && check.lot.frontage_edge_local && (
+                <Frontage key={`frontage-${lotKey}`} edge={check.lot.frontage_edge_local} />
+              )}
+              {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={check.context.trees} />}
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
               <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} />
               <Pin restHeight={pinHeight} leaves={placement !== null} />
-              {placement && spec && <Design key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} />}
+              {placement &&
+                spec &&
+                (facade ? (
+                  <DrawnDesign key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} model={facade} />
+                ) : (
+                  <ClassicDesign key={`design-${lotKey}-${spec.id}`} placement={placement} spec={spec} />
+                ))}
+              {slab && spec && <FailSlices key={`fail-${lotKey}-${spec.id}`} slab={slab} />}
             </>
+          )}
+          {/* Mounted before any lot too, so WarmUp's frames compile its shaders. */}
+          {rich && !OFF.has('contact') && (
+            <ContactShadows
+              frames={settled && check ? 1 : Infinity}
+              position={[0, CONTACT.y, 0]}
+              scale={CONTACT.scaleM}
+              far={CONTACT.farM}
+              blur={CONTACT.blur}
+              opacity={CONTACT.opacity}
+              resolution={CONTACT.resolution}
+            />
           )}
           <LabelProjector labels={labels} elements={labelElements} />
         </Sequence>
+        {rich && !OFF.has('ao') && <Effects />}
         {SHOW_STATS && <Stats />}
       </Canvas>
-      <SceneLabels labels={labels} elements={labelElements} />
+      {!ELEVATION_VIEW && <SceneLabels labels={labels} elements={labelElements} />}
     </div>
   )
 }

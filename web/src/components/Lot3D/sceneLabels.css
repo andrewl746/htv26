@@ -1,0 +1,28 @@
+/* The fail slab's label (J8): a result icon, the rule and its numbers, the by-law section below.
+   The rest of .scene-label lives in styles/app.css. */
+
+.scene-label-result {
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.scene-label-no_fit {
+  box-shadow: var(--shadow), inset 3px 0 0 var(--suplex-fail);
+}
+
+.scene-label-borderline {
+  box-shadow: var(--shadow), inset 3px 0 0 var(--suplex-borderline-stripe);
+}
+
+.scene-label-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scene-label-detail {
+  color: var(--suplex-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}

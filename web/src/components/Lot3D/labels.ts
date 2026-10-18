@@ -1,5 +1,6 @@
-import type { ContextBuilding, Design, DesignHome, LocalPoint } from '@contracts/types'
-import { disclaimers, fill, pending } from '../../copy'
+import type { ContextBuilding, Design, DesignHome, LocalPoint, Result, RuleRow } from '@contracts/types'
+import { disclaimers, fill, formatNumber, labels, pending } from '../../copy'
+import { slabAnchor, type FailSlab } from './failSlabs'
 import { midpoint, toScene, type Vec3 } from './geometry'
 import { planFloors, pointOn } from './floors'
 
@@ -15,8 +16,12 @@ export interface SceneLabel {
   muted: boolean
   /** A colour dot before the text: the home's colour token. */
   swatch: string | null
-  /** When it fades in: the old-house step, or a home's slot in the labels step. */
-  appear: { step: 'oldHouse' } | { step: 'labels'; index: number }
+  /** A result icon before the text (the fail slab's label), so the result never rests on colour. */
+  icon: Result | null
+  /** A second, muted line. */
+  detail: string | null
+  /** When it fades in: the old-house step, a home's slot in the labels step, or the fail slab. */
+  appear: { step: 'oldHouse' } | { step: 'labels'; index: number } | { step: 'fail' }
 }
 
 const OLD_HOUSE_LABEL_Y = 0.4
@@ -47,6 +52,8 @@ export function oldHouseLabels({
       align: 'center',
       muted: true,
       swatch: null,
+      icon: null,
+      detail: null,
       appear: { step: 'oldHouse' },
     },
   ]
@@ -79,7 +86,44 @@ export function homeLabels(placement: LocalPoint[], design: Design): SceneLabel[
       align: side,
       muted: false,
       swatch: `var(--suplex-home-${home.id})`,
+      icon: null,
+      detail: null,
       appear: { step: 'labels', index },
     }
   })
+}
+
+/** The fail slab's label floats this far over the slab's top. */
+const FAIL_LABEL_RISE_M = 1.2
+
+function measure(value: number | string, unit: RuleRow['unit']): string {
+  if (typeof value === 'string') return value
+  const number = formatNumber(value)
+  if (!unit) return number
+  return unit === 'pct' ? `${number}${labels.units.pct}` : `${number} ${labels.units[unit]}`
+}
+
+/**
+ * "Doesn't fit · Lot width · Needs 7.6 m · This lot 6.1 m", with the by-law section under it; or
+ * "Too close to call · ..." over the striped slab. Every word comes from contracts/copy.
+ */
+export function failLabel(slab: FailSlab): SceneLabel {
+  const { rule } = slab
+  const parts: string[] = [labels.results[slab.kind]]
+  if (rule) {
+    parts.push(labels.rules[rule.rule_id])
+    if (rule.required !== null) parts.push(`${labels.ui.column_required} ${measure(rule.required, rule.unit)}`)
+    if (rule.actual !== null) parts.push(`${labels.ui.column_actual} ${measure(rule.actual, rule.unit)}`)
+  }
+  return {
+    key: 'fail',
+    text: parts.join(' · '),
+    position: toScene(slabAnchor(slab), slab.top + FAIL_LABEL_RISE_M),
+    align: 'center',
+    muted: false,
+    swatch: null,
+    icon: slab.kind,
+    detail: rule ? `${labels.ui.column_bylaw} ${rule.bylaw_section}` : null,
+    appear: { step: 'fail' },
+  }
 }

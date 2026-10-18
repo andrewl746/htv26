@@ -17,10 +17,10 @@
         { "id": 4, "label": "Third-floor home", "bedrooms": 1, "levels": [2], "accessible": false, "walkout": false }
       ],
       "levels": [
-        { "level": -1, "name": "Basement", "height_m": 2.7, "visible_m": 1.0, "area_m2": 94.0, "stepped_back": false },
-        { "level": 0, "name": "Ground floor", "height_m": 3.4, "visible_m": 3.4, "area_m2": 94.0, "stepped_back": false },
-        { "level": 1, "name": "Second floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 94.0, "stepped_back": false },
-        { "level": 2, "name": "Third floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 77.7, "stepped_back": true }
+        { "level": -1, "name": "Basement", "height_m": 2.84, "visible_m": 1.2, "area_m2": 94.0, "stepped_back": false },
+        { "level": 0, "name": "Ground floor", "height_m": 2.84, "visible_m": 2.84, "area_m2": 94.0, "stepped_back": false },
+        { "level": 1, "name": "Second floor", "height_m": 2.85, "visible_m": 2.85, "area_m2": 94.0, "stepped_back": false },
+        { "level": 2, "name": "Third floor", "height_m": 3.11, "visible_m": 3.11, "area_m2": 77.7, "stepped_back": true }
       ],
       "source": { "file": "COT_Multiplex_FOURPLEX_ Narrow_Comb-Electric.pdf", "sheet": "A011 Site Plan", "page": 10,
                   "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/" }
@@ -40,10 +40,10 @@
         { "id": 4, "label": "Two-storey home B", "bedrooms": 2, "levels": [1, 2], "accessible": false, "walkout": false }
       ],
       "levels": [
-        { "level": -1, "name": "Basement", "height_m": 2.7, "visible_m": 1.0, "area_m2": 110.0, "stepped_back": false },
-        { "level": 0, "name": "Ground floor", "height_m": 3.4, "visible_m": 3.4, "area_m2": 110.0, "stepped_back": false },
-        { "level": 1, "name": "Second floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 110.0, "stepped_back": false },
-        { "level": 2, "name": "Third floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 88.5, "stepped_back": true }
+        { "level": -1, "name": "Basement", "height_m": 2.84, "visible_m": 1.2, "area_m2": 110.0, "stepped_back": false },
+        { "level": 0, "name": "Ground floor", "height_m": 2.84, "visible_m": 2.84, "area_m2": 110.0, "stepped_back": false },
+        { "level": 1, "name": "Second floor", "height_m": 2.85, "visible_m": 2.85, "area_m2": 110.0, "stepped_back": false },
+        { "level": 2, "name": "Third floor", "height_m": 3.11, "visible_m": 3.11, "area_m2": 88.5, "stepped_back": true }
       ],
       "source": { "file": "COT_Multiplex_FOURPLEX_WIDE_Comb-Electric.pdf", "sheet": "A011 Site Plan", "page": 10,
                   "url": "https://www.toronto.ca/ext/digital_comm/pdfs/toronto-building/COT_Multiplex_FOURPLEX%20WIDE_Comb-Electric.pdf" }
@@ -65,10 +65,10 @@
         { "id": 6, "label": "Two-storey home B", "bedrooms": 3, "levels": [1, 2], "accessible": false, "walkout": false }
       ],
       "levels": [
-        { "level": -1, "name": "Basement", "height_m": 2.7, "visible_m": 1.0, "area_m2": 111.0, "stepped_back": false },
-        { "level": 0, "name": "Ground floor", "height_m": 3.4, "visible_m": 3.4, "area_m2": 111.0, "stepped_back": false },
-        { "level": 1, "name": "Second floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 111.0, "stepped_back": false },
-        { "level": 2, "name": "Third floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 91.1, "stepped_back": true }
+        { "level": -1, "name": "Basement", "height_m": 2.84, "visible_m": 1.2, "area_m2": 111.0, "stepped_back": false },
+        { "level": 0, "name": "Ground floor", "height_m": 2.84, "visible_m": 2.84, "area_m2": 111.0, "stepped_back": false },
+        { "level": 1, "name": "Second floor", "height_m": 2.85, "visible_m": 2.85, "area_m2": 111.0, "stepped_back": false },
+        { "level": 2, "name": "Third floor", "height_m": 3.11, "visible_m": 3.11, "area_m2": 91.1, "stepped_back": true }
       ],
       "source": { "file": "COT_Multiplex_SIXPLEX_NARROW_Comb_Electric.pdf", "sheet": "A011 Site Plan", "page": 10,
                   "url": "https://www.toronto.ca/ext/digital_comm/pdfs/toronto-building/COT_Multiplex_SIXPLEX%20NARROW_Comb_Electric.pdf" }
@@ -90,10 +90,10 @@
         { "id": 6, "label": "Two-storey home B", "bedrooms": 4, "levels": [1, 2], "accessible": false, "walkout": false }
       ],
       "levels": [
-        { "level": -1, "name": "Basement", "height_m": 2.7, "visible_m": 1.0, "area_m2": 135.9, "stepped_back": false },
-        { "level": 0, "name": "Ground floor", "height_m": 3.4, "visible_m": 3.4, "area_m2": 133.5, "stepped_back": false },
-        { "level": 1, "name": "Second floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 133.5, "stepped_back": false },
-        { "level": 2, "name": "Third floor", "height_m": 3.3, "visible_m": 3.3, "area_m2": 113.2, "stepped_back": true }
+        { "level": -1, "name": "Basement", "height_m": 2.84, "visible_m": 1.2, "area_m2": 135.9, "stepped_back": false },
+        { "level": 0, "name": "Ground floor", "height_m": 2.84, "visible_m": 2.84, "area_m2": 133.5, "stepped_back": false },
+        { "level": 1, "name": "Second floor", "height_m": 2.85, "visible_m": 2.85, "area_m2": 133.5, "stepped_back": false },
+        { "level": 2, "name": "Third floor", "height_m": 3.11, "visible_m": 3.11, "area_m2": 113.2, "stepped_back": true }
       ],
       "source": { "file": "COT_Multiplex_SIXPLEX_WIDE_Comb_Electric.pdf", "sheet": "A011 Site Plan", "page": 10,
                   "url": "https://www.toronto.ca/ext/digital_comm/pdfs/toronto-building/COT_Multiplex_SIXPLEX%20WIDE_Comb_Electric.pdf" }

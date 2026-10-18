@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   BoxGeometry,
   Color,
@@ -22,7 +22,9 @@ import { useSequenceFrame } from './useSequence'
 
 // The drawn look's gardens, so the street looks lived in. Behind the new building: wooden fences
 // down the sides and across the back, a shed, a patio with a table, chairs and an umbrella, a
-// flower bed, a raised vegetable bed and a row of shrubs; they appear once the floors have landed.
+// flower bed, a raised vegetable bed and a row of shrubs; they appear once the floors have landed,
+// and only behind a design that fits: a lived-in yard behind one that doesn't (or is too close to
+// call) would read as built, and on a width or depth failure the fences would cross the building.
 // Behind the neighbouring houses: shrubs and the odd shed, growing in with the ripple. Decoration
 // only: nothing here is read from data, and none of it hides the design.
 
@@ -49,8 +51,19 @@ interface Plan {
   pieces: { colour: string; geometry: BufferGeometry }[]
   shrubs: Shrub[]
   flowers: Shrub[]
-  /** Sheds behind neighbours, merged per material, each growing on its own distance. */
-  neighbourSheds: { colour: string; geometry: BufferGeometry; distance: number; x: number; z: number }[]
+  /** Sheds behind neighbours, each growing on its own distance during the ripple. */
+  neighbourSheds: { pieces: { colour: string; geometry: BufferGeometry }[]; distance: number; x: number; z: number }[]
+  /** The same sheds merged per material in place, shown once the ripple is over. */
+  shedsMerged: { colour: string; geometry: BufferGeometry }[]
+}
+
+/** One geometry per colour from a list of pieces (the inputs are disposed). */
+function mergeByColour(byColour: Map<string, BufferGeometry[]>): { colour: string; geometry: BufferGeometry }[] {
+  return [...byColour].flatMap(([colour, list]) => {
+    const geometry = mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g)))
+    list.forEach((g) => g.dispose())
+    return geometry ? [{ colour, geometry }] : []
+  })
 }
 
 const toScene = ([x, y]: LocalPoint, up: number) => new Vector3(x, up, -y)
@@ -78,7 +91,7 @@ function plan(lot: LocalPoint[], design: DesignResult | null, buildings: Context
   const angle = Math.atan2(street.along[1], street.along[0])
   const random = seededRandom(street.mid)
 
-  const placement = design?.placement_local
+  const placement = design?.result === 'fits' ? design.placement_local : null
   if (placement) {
     const ring = openRing(lot).map((p) => inFrame(street, p))
     const house = openRing(placement).map((p) => inFrame(street, p))
@@ -150,6 +163,7 @@ function plan(lot: LocalPoint[], design: DesignResult | null, buildings: Context
 
   // Neighbours' back gardens: shrubs behind each nearby house, and the odd shed.
   const neighbourSheds: Plan['neighbourSheds'] = []
+  const shedsByColour = new Map<string, BufferGeometry[]>()
   for (const b of buildings) {
     if (b.on_lot || b.kind !== 'house') continue
     const ring = openRing(b.footprint_local)
@@ -170,22 +184,17 @@ function plan(lot: LocalPoint[], design: DesignResult | null, buildings: Context
     }
     if (r() < NEIGHBOUR.shedShare) {
       const spot = fromFrame(street, c.s + (r() - 0.5) * half, backFace + behind * (5 + r() * 3))
-      const pieces: BufferGeometry[] = []
-      const colours: string[] = []
-      shed([0, 0], angle, Math.floor(r() * 3), (colour, g) => {
-        pieces.push(g)
-        colours.push(colour)
+      const pieces: { colour: string; geometry: BufferGeometry }[] = []
+      shed([0, 0], angle, Math.floor(r() * 3), (colour, geometry) => {
+        pieces.push({ colour, geometry })
+        const placed = geometry.clone().translate(spot[0], 0, -spot[1])
+        shedsByColour.set(colour, [...(shedsByColour.get(colour) ?? []), placed])
       })
-      pieces.forEach((g, i) => neighbourSheds.push({ colour: colours[i], geometry: g, distance, x: spot[0], z: -spot[1] }))
+      neighbourSheds.push({ pieces, distance, x: spot[0], z: -spot[1] })
     }
   }
 
-  const pieces = [...byColour].flatMap(([colour, list]) => {
-    const geometry = mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g)))
-    list.forEach((g) => g.dispose())
-    return geometry ? [{ colour, geometry }] : []
-  })
-  return { pieces, shrubs, flowers, neighbourSheds }
+  return { pieces: mergeByColour(byColour), shrubs, flowers, neighbourSheds, shedsMerged: mergeByColour(shedsByColour) }
 }
 
 const scratch = { matrix: new Matrix4(), scale: new Vector3(), still: new Quaternion() }
@@ -229,7 +238,8 @@ export function Garden({
   useEffect(
     () => () => {
       garden.pieces.forEach((p) => p.geometry.dispose())
-      garden.neighbourSheds.forEach((p) => p.geometry.dispose())
+      garden.neighbourSheds.forEach((s) => s.pieces.forEach((p) => p.geometry.dispose()))
+      garden.shedsMerged.forEach((p) => p.geometry.dispose())
     },
     [garden],
   )
@@ -246,6 +256,9 @@ export function Garden({
   const ownGarden = useRef<Group>(null)
   const sheds = useRef<(Group | null)[]>([])
   const done = useRef(false)
+  // Like Street: once the ripple is over, the sheds switch to one merged mesh per colour.
+  const [shedsSettled, setShedsSettled] = useState(false)
+  const askedSettle = useRef(false)
   useSequenceFrame((t, { timeline }) => {
     // The new building's garden pops in as the floors land; the neighbours' grows with the ripple.
     const own = ease.outBack(progress(t, { start: timeline.fail.start, end: timeline.fail.start + POP_S }))
@@ -254,13 +267,19 @@ export function Garden({
       // Grows up out of the ground, each piece where it stands.
       ownGarden.current.scale.set(1, Math.max(own, 0.001), 1)
     }
-    garden.neighbourSheds.forEach((s, i) => {
-      const g = sheds.current[i]
-      if (!g) return
-      const p = ease.outBack(progress(t, growSpan(timeline, s.distance)))
-      g.visible = p > 0
-      g.scale.setScalar(Math.max(p, 0.001))
-    })
+    if (!askedSettle.current) {
+      garden.neighbourSheds.forEach((s, i) => {
+        const g = sheds.current[i]
+        if (!g) return
+        const p = ease.outBack(progress(t, growSpan(timeline, s.distance)))
+        g.visible = p > 0
+        g.scale.setScalar(Math.max(p, 0.001))
+      })
+      if (t >= timeline.ripple.end) {
+        askedSettle.current = true
+        setShedsSettled(true)
+      }
+    }
     const mesh = instances.current
     const settled = t > timeline.fail.start + POP_S && t > timeline.ripple.end
     if (!mesh || (settled && done.current)) return
@@ -280,18 +299,24 @@ export function Garden({
           <mesh key={p.colour} geometry={p.geometry} material={resources.material(p.colour)} castShadow receiveShadow dispose={null} />
         ))}
       </group>
-      {garden.neighbourSheds.map((s, i) => (
-        <group
-          key={i}
-          ref={(el) => {
-            sheds.current[i] = el
-          }}
-          position={[s.x, 0, s.z]}
-          visible={false}
-        >
-          <mesh geometry={s.geometry} material={resources.material(s.colour)} castShadow receiveShadow dispose={null} />
-        </group>
-      ))}
+      {shedsSettled
+        ? garden.shedsMerged.map((p) => (
+            <mesh key={p.colour} geometry={p.geometry} material={resources.material(p.colour)} castShadow receiveShadow dispose={null} />
+          ))
+        : garden.neighbourSheds.map((s, i) => (
+            <group
+              key={i}
+              ref={(el) => {
+                sheds.current[i] = el
+              }}
+              position={[s.x, 0, s.z]}
+              visible={false}
+            >
+              {s.pieces.map((p, j) => (
+                <mesh key={j} geometry={p.geometry} material={resources.material(p.colour)} castShadow receiveShadow dispose={null} />
+              ))}
+            </group>
+          ))}
       {all.length > 0 && (
         <instancedMesh
           ref={instances}

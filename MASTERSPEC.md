@@ -12,7 +12,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-17, 21:54, about Hour 23 of 36)](#0-status-board-updated-2026-10-17-2154-about-hour-23-of-36)
+- [0. Status board (updated 2026-10-17, 21:54, about Hour 24 of 36)](#0-status-board-updated-2026-10-17-2154-about-hour-24-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
   - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
@@ -109,7 +109,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ---
 
-## 0. Status board (updated 2026-10-17, 21:54, about Hour 23 of 36)
+## 0. Status board (updated 2026-10-17, 21:54, about Hour 24 of 36)
 
 Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 

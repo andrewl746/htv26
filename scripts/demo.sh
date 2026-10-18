@@ -96,8 +96,8 @@ trap cleanup EXIT
 trap 'exit 130' INT TERM
 
 echo; echo "== starting the API, the AI service and vite preview (logs in $LOG_DIR)"
-"$PYTHON" -m uvicorn api.main:app --host 127.0.0.1 --port 8000 >"$LOG_DIR/api.log" 2>&1 & PIDS+=($!)
-"$PYTHON" -m uvicorn ai.main:app --host 127.0.0.1 --port 8001 >"$LOG_DIR/ai.log" 2>&1 & PIDS+=($!)
+"$PYTHON" -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --no-access-log >"$LOG_DIR/api.log" 2>&1 & PIDS+=($!)
+"$PYTHON" -m uvicorn ai.main:app --host 127.0.0.1 --port 8001 --no-access-log >"$LOG_DIR/ai.log" 2>&1 & PIDS+=($!)
 (cd web && exec node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 4173 --strictPort) \
   >"$LOG_DIR/web.log" 2>&1 & PIDS+=($!)
 

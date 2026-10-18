@@ -66,15 +66,22 @@ export const OFF = new Set(import.meta.env.DEV ? (params.get('off') ?? '').split
 declare global {
   interface Window {
     /** Dev only: poke the 3D scene from the console or a test driver. */
-    __suplex3d?: { stepDown: () => void; programs: () => number }
+    __suplex3d?: { stepDown: () => void; programs: () => number; keys: () => string[] }
   }
 }
 
-/** Dev only: `window.__suplex3d` steps the quality down and counts compiled shader programs. */
+/**
+ * Dev only: `window.__suplex3d` steps the quality down, counts compiled shader programs and lists
+ * their cache keys (to name a program that compiles late).
+ */
 export function DebugBridge({ stepDown }: { stepDown: () => void }) {
   const gl = useThree((s) => s.gl)
   useEffect(() => {
-    window.__suplex3d = { stepDown, programs: () => gl.info.programs?.length ?? 0 }
+    window.__suplex3d = {
+      stepDown,
+      programs: () => gl.info.programs?.length ?? 0,
+      keys: () => (gl.info.programs ?? []).map((p) => p.cacheKey),
+    }
     return () => {
       delete window.__suplex3d
     }

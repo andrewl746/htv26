@@ -3,11 +3,13 @@ import { PbfReader } from 'pbf'
 import type { LocalPoint } from '@contracts/types'
 
 // The streets round the lot, from the same OpenStreetMap vector tiles the base map draws
-// (OpenFreeMap's OpenMapTiles): every road, lane and driveway, parking aisles (where a parking lot
-// is), footpaths, sports fields and playgrounds. The City's data carries only the lot's own
-// frontage, so without these the 3D street would have one road. The tiles are the base map's own,
-// usually already in the browser's cache; if they cannot be had (offline), the scene keeps its one
-// street. Read-only decoration: nothing here enters a result.
+// (OpenFreeMap's OpenMapTiles): every road the 2D map draws (lanes, driveways, tracks, and roads
+// through short tunnels, which the map draws too), parking aisles (where a parking lot is), every
+// kind of footpath and steps, sports fields and playgrounds. The City's data carries only the lot's
+// own frontage, so without these the 3D street would have one road. The tiles are the base map's
+// own, usually already in the browser's cache; a tile that cannot be had is asked for once more,
+// and the scene draws the roads of the tiles it has. Read-only decoration: nothing here enters a
+// result.
 
 const TILEJSON_URL = 'https://tiles.openfreemap.org/planet'
 /** The tiles' URL template is versioned weekly; the last one seen is kept for offline use. */
@@ -15,6 +17,8 @@ const TEMPLATE_KEY = 'suplex-osm-tile-template'
 /** OpenMapTiles' most detailed zoom. */
 const ZOOM = 14
 const FETCH_TIMEOUT_MS = 4000
+/** A tile that fails is asked for this many more times. */
+const TILE_RETRIES = 1
 /** WGS84, for metres from degrees about the lot. */
 const WGS84 = { a: 6378137, e2: 0.00669437999014 }
 
@@ -29,6 +33,7 @@ export type RoadClass =
   | 'alley'
   | 'driveway'
   | 'parking_aisle'
+  | 'track'
   | 'path'
 
 export interface MapRoad {
@@ -95,18 +100,51 @@ const tileY = (lat: number, z: number) => {
   return Math.floor(((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 2 ** z)
 }
 
+/**
+ * What a transportation line is drawn as: the classes the base map's style (positron) draws as
+ * roads and paths. A road in a tunnel is drawn on the ground, as the 2D map draws it: the tunnels
+ * here are short underpasses (under a railway, through a building), and leaving them out cut gaps
+ * in the street. A footpath in a tunnel is left out: downtown that is the PATH, under the blocks.
+ */
 function roadKind(props: Record<string, unknown>): RoadClass | null {
   const cls = String(props.class ?? '')
-  if (props.brunnel === 'tunnel') return null
   if (cls === 'service') {
     const service = String(props.service ?? '')
     return service === 'alley' || service === 'driveway' || service === 'parking_aisle' ? service : 'service'
   }
-  if (cls === 'path') return ['footway', 'path', 'cycleway', 'pedestrian'].includes(String(props.subclass ?? '')) ? 'path' : null
-  return ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor'].includes(cls) ? (cls as RoadClass) : null
+  if (cls === 'path') return props.brunnel === 'tunnel' ? null : 'path'
+  return ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor', 'track'].includes(cls) ? (cls as RoadClass) : null
 }
 
-/** The map features within radiusM of the origin, in local metres; null when the tiles cannot be had. */
+/** One tile, asked for again if it fails; null if it cannot be had. */
+async function loadTile(url: string, signal: AbortSignal): Promise<VectorTile | null> {
+  for (let attempt = 0; attempt <= TILE_RETRIES && !signal.aborted; attempt++) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]) })
+      if (response.ok) return new VectorTile(new PbfReader(new Uint8Array(await response.arrayBuffer())))
+    } catch {
+      // Timed out or offline: ask once more.
+    }
+  }
+  return null
+}
+
+/** The nearest a polyline comes to the origin. */
+function reachOf(line: LocalPoint[]): number {
+  let nearest = Infinity
+  for (let i = 0; i < line.length - 1; i++) {
+    const [[ax, ay], [bx, by]] = [line[i], line[i + 1]]
+    const [dx, dy] = [bx - ax, by - ay]
+    const t = Math.max(0, Math.min(1, -(ax * dx + ay * dy) / (dx * dx + dy * dy || 1)))
+    nearest = Math.min(nearest, Math.hypot(ax + dx * t, ay + dy * t))
+  }
+  return nearest
+}
+
+/**
+ * The map features within radiusM of the origin, in local metres, from the tiles that could be
+ * had; null when none could be.
+ */
 export async function loadMapFeatures(origin: { lon: number; lat: number }, radiusM: number, signal: AbortSignal): Promise<MapFeatures | null> {
   const url = await tileTemplate()
   if (!url) return null
@@ -118,16 +156,14 @@ export async function loadMapFeatures(origin: { lon: number; lat: number }, radi
   const tiles: [number, number][] = []
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) tiles.push([x, y])
 
-  const decoded = await Promise.all(
+  const loaded = await Promise.all(
     tiles.map(async ([x, y]) => {
-      const response = await fetch(url.replace('{z}', String(ZOOM)).replace('{x}', String(x)).replace('{y}', String(y)), {
-        signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]),
-      })
-      if (!response.ok) throw new Error(String(response.status))
-      return { x, y, tile: new VectorTile(new PbfReader(new Uint8Array(await response.arrayBuffer()))) }
+      const tile = await loadTile(url.replace('{z}', String(ZOOM)).replace('{x}', String(x)).replace('{y}', String(y)), signal)
+      return tile ? { x, y, tile } : null
     }),
-  ).catch(() => null)
-  if (!decoded) return null
+  )
+  const decoded = loaded.filter((t) => t !== null)
+  if (decoded.length === 0) return null
 
   const n = 2 ** ZOOM
   const near = (p: LocalPoint) => Math.hypot(...p) < radiusM
@@ -148,8 +184,9 @@ export async function loadMapFeatures(origin: { lon: number; lat: number }, radi
         const kind = roadKind(f.properties)
         if (!kind) continue
         for (const part of f.loadGeometry()) {
+          // A long straight road can cross the circle with no point inside it.
           const line = part.map((p) => at(p.x, p.y))
-          if (line.length >= 2 && line.some(near)) roads.push({ kind, line })
+          if (line.length >= 2 && reachOf(line) < radiusM) roads.push({ kind, line })
         }
       }
     }

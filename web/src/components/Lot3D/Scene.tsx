@@ -17,7 +17,7 @@ import { DrawnDesign } from './DrawnDesign'
 import { failSlab } from './failSlabs'
 import { FailSlices } from './FailSlices'
 import { Frontage } from './Frontage'
-import { planCity, type City } from './cityPlan'
+import { groundRadiusM, planCity, type City } from './cityPlan'
 import { Garden } from './Garden'
 import { Yards, YardWarmUp } from './Yards'
 import { Ground } from './Ground'
@@ -42,12 +42,11 @@ import { sunPosition } from './sun'
 import { Studio } from './Studio'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
+import { treeSites } from './treeSites'
 import { lotFraming, type Framing } from './framing'
 import { HANDOFF_S, restDistance, restViewBearingDeg } from './view'
 import { WarmUp } from './WarmUp'
 
-// The ground reaches well past the 150 m context so its edge is always lost in the fog.
-const GROUND_SCALE = 4
 /** Before any lot: where the hidden camera waits. */
 const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg: restViewBearingDeg(null) }
 const FOG_NEAR_M = 90
@@ -154,11 +153,12 @@ export function Scene({
   const street = useMemo(() => (frontage ? streetFrame(frontage, lotRing) : null), [frontage, lotRing])
   // The drawn look's city round the lot (cityPlan.ts): the map's streets, the block continued past
   // the real data (so the street does not stop at 150 m) and every house's yard, planned a step at a
-  // time while the map flies in. The street appears once it is planned.
+  // time while the map flies in. The street appears once it is planned. A lot with no frontage gets
+  // the map's streets alone.
   const [city, setCity] = useState<City | null>(null)
-  const wantCity = drawn && !ELEVATION_VIEW && check !== null && street !== null
+  const wantCity = drawn && !ELEVATION_VIEW && check !== null
   useEffect(() => {
-    if (!wantCity || !check || !street) return
+    if (!wantCity || !check) return
     const controller = new AbortController()
     void planCity(
       check,
@@ -177,8 +177,12 @@ export function Scene({
     () => (check ? [...check.context.buildings, ...(extension?.buildings ?? [])] : []),
     [check, extension],
   )
-  const streetTrees = useMemo(() => (check ? [...check.context.trees, ...(extension?.trees ?? [])] : []), [check, extension])
-  const groundRadius = check?.context.radius_m ?? engineConfig.context_radius_m
+  // None in a house or on the lot (treeSites.ts).
+  const streetTrees = useMemo(
+    () => (check ? treeSites([...check.context.trees, ...(extension?.trees ?? [])], streetBuildings, check.lot.polygon_local) : []),
+    [check, extension, streetBuildings],
+  )
+  const contextRadius = check?.context.radius_m ?? engineConfig.context_radius_m
   const pinHeight = check ? Math.max(0, ...check.context.buildings.filter((b) => b.on_lot).map(buildingTop)) : 0
   // The same rest view the base map's flight ended on.
   const framing = check ? lotFraming(check, designId) : DEFAULT_FRAMING
@@ -254,7 +258,7 @@ export function Scene({
           )}
           {drawn ? <Studio shadows={rich} /> : <Lighting />}
 
-          <Ground radius={groundRadius * GROUND_SCALE} drawn={drawn} />
+          <Ground radius={groundRadiusM(contextRadius)} drawn={drawn} />
 
           <WarmUp />
           {drawn && <YardWarmUp />}

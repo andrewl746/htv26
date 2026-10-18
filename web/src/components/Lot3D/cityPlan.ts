@@ -1,7 +1,7 @@
 import type { BufferGeometry } from 'three'
 import type { CheckResponse, ContextBuilding, LocalPoint } from '@contracts/types'
 import { loadMapFeatures, type MapFeatures } from './osmMap'
-import { placeRoads, roadLayers, type RoadLayers, type RoadPiece } from './roadMesh'
+import { placeRoads, roadLayers, type FrontageStreet, type RoadLayers, type RoadPiece } from './roadMesh'
 import { extendStreet, roadReach } from './streetExtension'
 import type { StreetFrame } from './streetFrame'
 import { Pieces, YardKit, type Plant } from './yardKit'
@@ -10,10 +10,17 @@ import { furnishYard, planYards } from './yardPlan'
 // The drawn look's city round the lot, worked out before the street appears: the map's streets
 // (osmMap.ts), the block continued past the data (streetExtension.ts) and every house's yard
 // (yardPlan.ts). Each step runs as its own short task, between frames, while the base map flies in:
-// done in one go as the lot opened, they held the main thread for about 0.2 s, mid-flight.
+// done in one go as the lot opened, they held the main thread for about 0.2 s, mid-flight. A lot
+// with no frontage (one Suplex does not check) has no street to continue or yards to face it, but
+// still gets the map's streets.
 
-/** The map's streets, within this of the lot: the fog hides what lies further. */
-export const MAP_RADIUS_M = 520
+/** The ground reaches well past the 150 m context so its edge is always lost in the fog. */
+const GROUND_SCALE = 4
+
+/** The ground's radius round the lot; the map's streets run out to its edge. */
+export function groundRadiusM(contextRadiusM: number): number {
+  return contextRadiusM * GROUND_SCALE
+}
 /** The street waits this long for the map; then it is laid out without it (and the roads come late). */
 const MAP_WAIT_MS = 2500
 
@@ -38,10 +45,18 @@ export interface City {
 /** Lets the frame in progress finish before the next step. */
 const nextTask = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 
-async function roadsFrom(map: MapFeatures, check: CheckResponse, street: StreetFrame, buildings: ContextBuilding[]): Promise<CityRoads> {
-  const placed = placeRoads(map, street, roadReach(street, check.context.buildings), check.lot.polygon_local)
+const NO_EXTENSION: City['extension'] = { buildings: [], trees: [] }
+
+/** The lot's own street, which the frontage road draws; none without a frontage. */
+function frontageOf(check: CheckResponse, street: StreetFrame | null): FrontageStreet | null {
+  return street ? { street, reach: roadReach(street, check.context.buildings) } : null
+}
+
+async function roadsFrom(map: MapFeatures, check: CheckResponse, street: StreetFrame | null, buildings: ContextBuilding[]): Promise<CityRoads> {
+  const radiusM = groundRadiusM(check.context.radius_m)
+  const placed = placeRoads(map, frontageOf(check, street), check.lot.polygon_local, radiusM)
   await nextTask()
-  return { pieces: placed.roads, layers: roadLayers(placed.roads, map, placed.shift, buildings, MAP_RADIUS_M) }
+  return { pieces: placed.roads, layers: roadLayers(placed.roads, map, placed.shift, buildings, radiusM) }
 }
 
 /**
@@ -50,13 +65,15 @@ async function roadsFrom(map: MapFeatures, check: CheckResponse, street: StreetF
  */
 export async function planCity(
   check: CheckResponse,
-  street: StreetFrame,
+  /** The street in front of the lot; null when the lot has no frontage. */
+  street: StreetFrame | null,
   signal: AbortSignal,
   ready: (city: City) => void,
   late: (roads: CityRoads) => void,
   withMap: boolean,
 ): Promise<void> {
-  const loading = withMap ? loadMapFeatures(check.context.origin, MAP_RADIUS_M, signal).catch(() => null) : Promise.resolve(null)
+  const radiusM = groundRadiusM(check.context.radius_m)
+  const loading = withMap ? loadMapFeatures(check.context.origin, radiusM, signal).catch(() => null) : Promise.resolve(null)
   const timeout = new Promise<'late'>((resolve) => setTimeout(() => resolve('late'), MAP_WAIT_MS))
   const first = await Promise.race([loading, timeout])
   const map = first === 'late' ? null : first
@@ -64,14 +81,16 @@ export async function planCity(
   await nextTask()
 
   // Placed roads keep the continued block and the yards off them.
-  const placed = map ? placeRoads(map, street, roadReach(street, check.context.buildings), check.lot.polygon_local) : null
+  const placed = map ? placeRoads(map, frontageOf(check, street), check.lot.polygon_local, radiusM) : null
   await nextTask()
-  const extension = extendStreet(street, check.context.buildings, check.context.trees, check.context.radius_m, placed?.roads ?? [])
+  const extension = street
+    ? extendStreet(street, check.context.buildings, check.context.trees, check.context.radius_m, placed?.roads ?? [])
+    : NO_EXTENSION
   const buildings = [...check.context.buildings, ...extension.buildings]
   await nextTask()
-  const layers = map && placed ? roadLayers(placed.roads, map, placed.shift, buildings, MAP_RADIUS_M) : null
+  const layers = map && placed ? roadLayers(placed.roads, map, placed.shift, buildings, radiusM) : null
   await nextTask()
-  const yards = planYards(buildings, street, check.lot.polygon_local, placed?.roads ?? [])
+  const yards = street ? planYards(buildings, street, check.lot.polygon_local, placed?.roads ?? []) : []
   const pieces = new Pieces(true)
   const plants: Plant[] = []
   for (const yard of yards) furnishYard(new YardKit(yard.frame, pieces, plants, yard.distance), yard.width, yard.depth, yard.seed)

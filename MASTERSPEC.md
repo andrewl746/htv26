@@ -12,7 +12,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-17, 21:54, about Hour 24 of 36)](#0-status-board-updated-2026-10-17-2154-about-hour-24-of-36)
+- [0. Status board (updated 2026-10-17, 22:05, about Hour 24 of 36)](#0-status-board-updated-2026-10-17-2205-about-hour-24-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
   - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)

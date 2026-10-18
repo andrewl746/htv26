@@ -10,7 +10,15 @@ import re
 from functools import cache
 from typing import Any
 
-from ai.config import ALLOWED_YEARS, BYLAW_NUMBERS, ELECTION_DAY, PROMPTS_DIR, SOURCE_URLS, contract, load_json
+from ai.config import (
+    ALLOWED_YEARS,
+    BYLAW_NUMBERS,
+    ELECTION_DAY,
+    PROMPTS_DIR,
+    SOURCE_URLS,
+    contract,
+    load_json,
+)
 
 # Which rule-row fields feed which keys: rule_id -> (key for `required`, key for `actual`, key for `margin`).
 # In the units row the engine puts the design's homes in `required` and the lot's allowance in `actual`.
@@ -26,8 +34,15 @@ RULE_KEYS: dict[str, tuple[str | None, str | None, str | None]] = {
 RESULT_ORDER = ("fits", "borderline", "no_fit", "not_checked")
 
 
-def _labels() -> dict[str, str]:
-    return load_json(PROMPTS_DIR / "numbers.json")["labels"]
+def _labels(lang: str = "en") -> dict[str, str]:
+    """The number labels in `lang` where numbers.json has them (labels_fr), English otherwise."""
+    copy = load_json(PROMPTS_DIR / "numbers.json")
+    return {**copy["labels"], **copy.get(f"labels_{lang}", {})}
+
+
+def _top_rule_labels(lang: str = "en") -> dict[str, str]:
+    copy = load_json(PROMPTS_DIR / "numbers.json")
+    return {**copy["top_rule_count"], **copy.get(f"top_rule_count_{lang}", {})}
 
 
 def design_name(design_id: str) -> str:
@@ -51,14 +66,14 @@ def _is_number(value: Any) -> bool:
 
 
 def build_check_numbers(
-    check: dict, design_id: str | None, *, web_url: str, ai_url: str
+    check: dict, design_id: str | None, *, web_url: str, ai_url: str, lang: str = "en"
 ) -> tuple[str, dict[str, dict]]:
-    """Returns (design_id, numbers map) for one design of a CheckResponse."""
+    """Returns (design_id, numbers map) for one design of a CheckResponse, labelled in `lang`."""
     design = pick_design(check, design_id)
     did = design["design_id"]
     name = design_name(did)
     spec = design_spec(did)
-    labels = _labels()
+    labels = _labels(lang)
     cfg = contract("engine_config.json")
     lot = check["lot"]
     address_id = check["address"]["address_id"]
@@ -111,10 +126,9 @@ def build_check_numbers(
     return did, numbers
 
 
-def build_ward_numbers(ward: dict, *, web_url: str) -> dict[str, dict]:
-    """The numbers map for one ward (a WardSummaryEntry, or a WardResponse with its urls)."""
-    copy = load_json(PROMPTS_DIR / "numbers.json")
-    labels = copy["labels"]
+def build_ward_numbers(ward: dict, *, web_url: str, lang: str = "en") -> dict[str, dict]:
+    """The numbers map for one ward (a WardSummaryEntry, or a WardResponse with its urls), labelled in `lang`."""
+    labels = _labels(lang)
     ward_map = f"{web_url}/?ward={ward['ward_id']}"
     permits_url = SOURCE_URLS["building_permits"]
     headline, any_design, permits = ward["headline"], ward["any_design"], ward["permits"]
@@ -135,7 +149,7 @@ def build_ward_numbers(ward: dict, *, web_url: str) -> dict[str, dict]:
     add("attached_pct", ward["attached_share_pct"], "pct", labels["attached_pct"])
     if ward["top_blocking_rules"]:
         top = ward["top_blocking_rules"][0]
-        add("top_rule_count", top["count"], None, copy["top_rule_count"][top["rule_id"]])
+        add("top_rule_count", top["count"], None, _top_rule_labels(lang)[top["rule_id"]])
     add("flagged_fitting_lots", ward["flags"]["any_on_fitting_lots"], None, labels["flagged_fitting_lots"])
     first_year = int(contract("engine_config.json")["permits_since"][:4])
     for year, count in sorted(permits["by_year"].items()):

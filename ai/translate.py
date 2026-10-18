@@ -82,6 +82,8 @@ def translate(
     refresh: bool = False,
 ) -> tuple[dict[str, str] | None, bool]:
     """Returns (translated strings, cached) or (None, False) when English must be served instead."""
+    if lang not in contract("copy/labels.json")["languages"]:
+        return None, False  # a language the request schema allows but Suplex no longer offers
     terms = glossary(lang)
     key = cache_key({
         "endpoint": "translate", "english": english, "lang": lang, "prompt": prompt_file("translate.md"),

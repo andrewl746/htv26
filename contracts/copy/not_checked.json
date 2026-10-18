@@ -1,62 +1,77 @@
 [
   {
     "id": "site_specific_exceptions",
-    "label": "Site-specific exceptions"
+    "label": "Site-specific exceptions",
+    "label_fr": "Exceptions propres à un site"
   },
   {
     "id": "pre_2013_bylaws",
-    "label": "Lots still under pre-2013 bylaws"
+    "label": "Lots still under pre-2013 bylaws",
+    "label_fr": "Terrains encore régis par des règlements antérieurs à 2013"
   },
   {
     "id": "heritage",
-    "label": "Heritage designation or districts"
+    "label": "Heritage designation or districts",
+    "label_fr": "Désignation patrimoniale ou districts de conservation du patrimoine"
   },
   {
     "id": "ravine_protection",
-    "label": "The ravine protection area"
+    "label": "The ravine protection area",
+    "label_fr": "La zone de protection des ravins et des éléments naturels"
   },
   {
     "id": "trca_regulated_area",
-    "label": "The TRCA regulated area"
+    "label": "The TRCA regulated area",
+    "label_fr": "La zone réglementée de l'Office de protection de la nature de Toronto et de la région (TRCA)"
   },
   {
     "id": "protected_trees",
-    "label": "Protected trees (30 cm and over)"
+    "label": "Protected trees (30 cm and over)",
+    "label_fr": "Arbres protégés (30 cm et plus)"
   },
   {
     "id": "sewer_capacity",
-    "label": "Sewer, water and Toronto Hydro service capacity"
+    "label": "Sewer, water and Toronto Hydro service capacity",
+    "label_fr": "Capacité des égouts, de l'eau et du service de Toronto Hydro"
   },
   {
     "id": "topography",
-    "label": "Topography and slope (the lot shape comes from City data, not a survey)"
+    "label": "Topography and slope (the lot shape comes from City data, not a survey)",
+    "label_fr": "Topographie et pente (la forme du terrain provient des données de la Ville, pas d'un levé)"
   },
   {
     "id": "main_wall_height",
-    "label": "Main wall height"
+    "label": "Main wall height",
+    "label_fr": "Hauteur du mur principal"
   },
   {
     "id": "encroachments",
-    "label": "Encroachments"
+    "label": "Encroachments",
+    "label_fr": "Empiètements"
   },
   {
     "id": "bedroom_caps",
-    "label": "Bedroom caps"
+    "label": "Bedroom caps",
+    "label_fr": "Nombre maximal de chambres"
   },
   {
     "id": "sixplex_height_conditions",
-    "label": "The 10.5 m sixplex conditions"
+    "label": "The 10.5 m sixplex conditions",
+    "label_fr": "Les conditions de hauteur de 10,5 m pour les sixplex"
   },
   {
     "id": "neighbour_front_setbacks",
-    "label": "Neighbour-averaged front setbacks"
+    "label": "Neighbour-averaged front setbacks",
+    "label_fr": "Marges avant calculées d'après les voisins"
   },
   {
     "id": "minor_variances",
-    "label": "Minor variances"
+    "label": "Minor variances",
+    "label_fr": "Dérogations mineures"
   },
   {
     "id": "irregular_lot_definitions",
-    "label": "The exact by-law definitions of lot depth and lot frontage on irregular lots (we measure where the building would sit)"
+    "label": "The exact by-law definitions of lot depth and lot frontage on irregular lots (we measure where the building would sit)",
+    "label_fr": "Les définitions exactes de la profondeur et de la façade dans le règlement pour les terrains irréguliers (nous mesurons là où le bâtiment serait placé)"
   }
 ]

@@ -33,7 +33,7 @@ def test_page_injects_the_boot_data(client):
     data = boot(response.text)
     assert data == {
         "apiUrl": "http://localhost:8000", "webUrl": "http://localhost:5173", "wardId": "04", "lang": "fr",
-        "langs": ["en", "fr", "zh-Hans", "zh-Hant", "es", "tl", "ta", "pt"],
+        "langs": ["en", "fr"],
     }
 
 

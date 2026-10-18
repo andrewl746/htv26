@@ -283,7 +283,7 @@ export function Scene({
           )}
           <LabelProjector labels={labels} elements={labelElements} />
         </Sequence>
-        {drawn && !OFF.has('ao') && <Effects ao={rich} />}
+        {drawn && !OFF.has('ao') && <Effects ao={rich} rightInsetPx={rightInsetPx} />}
         {SHOW_STATS && <Stats />}
       </Canvas>
       {!ELEVATION_VIEW && <SceneLabels labels={labels} elements={labelElements} />}

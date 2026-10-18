@@ -57,8 +57,9 @@ export function stressed(check: CheckResponse, buildings: number): CheckResponse
 
 /**
  * `?off=ao,contact,env`: switch parts of the drawn look off, to find what costs frame time. Also
- * `glow` (the sun in the sky), `warm` (the late-afternoon key light) and `monitor` (no quality
- * step-down, so a frame-rate comparison measures one quality throughout).
+ * `glow` (the sun in the sky), `warm` (the late-afternoon key light), `grade` (the colour grade and
+ * vignette) and `monitor` (no quality step-down, so a frame-rate comparison measures one quality
+ * throughout).
  */
 export const OFF = new Set(import.meta.env.DEV ? (params.get('off') ?? '').split(',') : [])
 

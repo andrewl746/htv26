@@ -64,9 +64,11 @@ export async function cachedFile<T>(name: string, signal?: AbortSignal): Promise
   const type = response.headers.get('content-type') ?? ''
   if (!response.ok || type.includes('text/html')) return null
   const body = (await response.json()) as T
-  // A cached check says so in its own meta, as the API's cache does (api/demo_cache.py read).
+  // A cached check says so in its own meta, and a cached trend in its source, as the API's cache does
+  // (api/demo_cache.py read): the trend was written from Tiger Data but now comes from a file.
   const meta = name.startsWith('check.') ? (body as { meta?: { cached?: boolean } }).meta : undefined
   if (meta) meta.cached = true
+  if (name.startsWith('trend.') && body && typeof body === 'object') (body as { source?: string }).source = 'cache'
   for (const listener of listeners) listener()
   return body
 }

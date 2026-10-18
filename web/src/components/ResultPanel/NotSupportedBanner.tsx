@@ -1,5 +1,5 @@
 import type { CheckResponse } from '@contracts/types'
-import { missing } from '../../copy'
+import { labels } from '../../copy'
 import { ResultIcon } from './ResultIcon'
 
 /**
@@ -14,13 +14,13 @@ export function NotSupportedBanner({ reason }: { reason: NonNullable<CheckRespon
       <div className="not-supported-head">
         <ResultIcon result="not_checked" />
         <h3 id="not-supported-title" className="not-supported-title">
-          {missing.not_supported_title}
+          {labels.ui.not_supported_title}
         </h3>
       </div>
       <p className="not-supported-reason">
         <strong>{reason.label}.</strong> {reason.text}
       </p>
-      <p className="not-supported-note">{missing.not_supported_note}</p>
+      <p className="not-supported-note">{labels.ui.not_supported_note}</p>
     </section>
   )
 }

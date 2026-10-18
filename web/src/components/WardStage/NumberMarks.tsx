@@ -1,27 +1,20 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useId, useRef, useState } from 'react'
 
 /**
- * A pencil-crayon underline under each figure in the ward panel's statistics, a little askew, sketched
- * in once the counters have landed. Yuvi's WardPanel.tsx sets its numbers as plain text, so this finds
- * them in the text (never changing it), measures them, and draws the marks into an SVG laid over the
- * panel's content, which scrolls with it. Years ("since May 2023") are left alone. The crayon's colour
- * is in wardStage.css (.ward-marks).
+ * A pencil-crayon underline under each headline number in the ward panel (WardBrief.tsx, every
+ * `.ward-figure`), a little askew, sketched in once the counters have landed. It measures the numbers
+ * where they are set and draws the marks into an SVG laid over the panel's scrolling content, so they
+ * scroll with it. Mount it inside that content; the crayon's colour is in wardStage.css (.ward-marks).
  */
 
-/** The sentences that carry the statistics: the headline, "Near your lot" and the unheaded section. */
-const TARGETS = '.ward-headline p[aria-hidden="true"], .ward-near p, :scope > section:not([class]) p'
-/** A figure: digits with their group and decimal marks (English or French), and a percent sign. */
-const FIGURE = /\d(?:[\d.,  ]*\d)?(?:[  ]?%)?/g
-const YEAR = /^(19|20)\d\d$/
 /** Measured again this long after the panel's text last changed, so the counters have stopped (ms). */
 const SETTLE_MS = 150
-/** Each line runs this far past both ends of its figure (px), sits this far down the text's box, rises
- *  this much per px of its length, and is this share of the text's height wide (at least MIN_WIDTH). */
+/** Each line runs this far past both ends of its number (px), sits this far down the number's box,
+ *  rises this much per px of its length, and is this share of the box's height wide (at least MIN_WIDTH). */
 const OVERSHOOT = 3
 const DROP = 0.9
 const TILT = 0.05
-const WIDTH = 0.11
+const WIDTH = 0.08
 const MIN_WIDTH = 2
 /** The crayon goes over each line twice: the second pass starts this far in and runs this far below. */
 const PASS_INSET = 4
@@ -44,7 +37,7 @@ type Box = { x: number; y: number; width: number; height: number }
 
 const r1 = (n: number) => Math.round(n * 10) / 10
 
-/** The two passes under a figure whose box runs from `left` to `right`, `top` down `height`. */
+/** The two passes under a number whose box runs from `left` to `right`, `top` down `height`. */
 function stroke(left: number, right: number, top: number, height: number): Mark {
   const x0 = left - OVERSHOOT
   const x1 = right + OVERSHOOT
@@ -61,34 +54,23 @@ function stroke(left: number, right: number, top: number, height: number): Mark 
   }
 }
 
-/** Every figure in the panel's statistics, in the panel's content coordinates, and the box round them. */
-function measure(panel: HTMLElement): { marks: Mark[]; region: Box | null } {
-  const box = panel.getBoundingClientRect()
-  const left = box.left + panel.clientLeft - panel.scrollLeft
-  const top = box.top + panel.clientTop - panel.scrollTop
+/** Every number in `content`, in its scrolled coordinates, and the box round them. */
+function measure(content: HTMLElement): { marks: Mark[]; region: Box | null } {
+  const box = content.getBoundingClientRect()
+  const left = box.left + content.clientLeft - content.scrollLeft
+  const top = box.top + content.clientTop - content.scrollTop
   const marks: Mark[] = []
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
-  for (const p of Array.from(panel.querySelectorAll<HTMLElement>(TARGETS))) {
-    const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT)
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      const text = node.nodeValue ?? ''
-      FIGURE.lastIndex = 0
-      for (let m = FIGURE.exec(text); m; m = FIGURE.exec(text)) {
-        if (YEAR.test(m[0])) continue
-        const range = document.createRange()
-        range.setStart(node, m.index)
-        range.setEnd(node, m.index + m[0].length)
-        for (const r of Array.from(range.getClientRects())) {
-          marks.push(stroke(r.left - left, r.right - left, r.top - top, r.height))
-          minX = Math.min(minX, r.left - left)
-          minY = Math.min(minY, r.top - top)
-          maxX = Math.max(maxX, r.right - left)
-          maxY = Math.max(maxY, r.bottom - top)
-        }
-      }
+  for (const figure of Array.from(content.querySelectorAll<HTMLElement>('.ward-figure'))) {
+    for (const r of Array.from(figure.getClientRects())) {
+      marks.push(stroke(r.left - left, r.right - left, r.top - top, r.height))
+      minX = Math.min(minX, r.left - left)
+      minY = Math.min(minY, r.top - top)
+      maxX = Math.max(maxX, r.right - left)
+      maxY = Math.max(maxY, r.bottom - top)
     }
   }
   if (marks.length === 0) return { marks, region: null }
@@ -96,32 +78,27 @@ function measure(panel: HTMLElement): { marks: Mark[]; region: Box | null } {
   return { marks, region: { x: minX - room, y: minY - room, width: maxX - minX + 2 * room, height: maxY - minY + 2 * room } }
 }
 
-/** The marks for the ward panel inside `mapRef`'s map; mounted with the panel. */
-export function NumberMarks({ mapRef }: { mapRef: RefObject<HTMLDivElement | null> }) {
+export function NumberMarks() {
   const id = `ward-marks-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const svg = useRef<SVGSVGElement>(null)
-  const [panel, setPanel] = useState<HTMLElement | null>(null)
   const [drawn, setDrawn] = useState<{ marks: Mark[]; region: Box | null }>({ marks: [], region: null })
 
-  useLayoutEffect(() => {
-    setPanel(mapRef.current?.querySelector<HTMLElement>('.ward-panel') ?? null)
-  }, [mapRef])
-
   useEffect(() => {
-    if (!panel) return
+    const content = svg.current?.parentElement
+    if (!content) return
     let live = true
     let timer = 0
     const settle = () => {
       clearTimeout(timer)
-      timer = window.setTimeout(() => live && setDrawn(measure(panel)), SETTLE_MS)
+      timer = window.setTimeout(() => live && setDrawn(measure(content)), SETTLE_MS)
     }
-    // The counters, a language change or a reflow; the marks' own changes don't count.
+    // The counters, a section opening or a reflow; the marks' own changes don't count.
     const text = new MutationObserver((records) => {
       if (records.some((r) => !svg.current?.contains(r.target))) settle()
     })
-    text.observe(panel, { subtree: true, childList: true, characterData: true })
+    text.observe(content, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['open'] })
     const size = new ResizeObserver(settle)
-    size.observe(panel)
+    size.observe(content)
     document.fonts.ready.then(settle)
     settle()
     return () => {
@@ -130,11 +107,10 @@ export function NumberMarks({ mapRef }: { mapRef: RefObject<HTMLDivElement | nul
       text.disconnect()
       size.disconnect()
     }
-  }, [panel])
+  }, [])
 
-  if (!panel) return null
   const { marks, region } = drawn
-  return createPortal(
+  return (
     <svg ref={svg} className="ward-marks" aria-hidden="true">
       {region && (
         <>
@@ -157,7 +133,6 @@ export function NumberMarks({ mapRef }: { mapRef: RefObject<HTMLDivElement | nul
           </g>
         </>
       )}
-    </svg>,
-    panel,
+    </svg>
   )
 }

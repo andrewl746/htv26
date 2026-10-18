@@ -25,6 +25,8 @@ export const missing = {
   /** The banner on a lot where none of the four designs could be checked (condo, non-residential zone, older by-law, ...). */
   not_supported_title: "Multiplexes can't be checked here",
   not_supported_note: 'None of the four free City designs were checked on this lot, so there is no result to show.',
+  /** The ward map legend's one line under the swatches (the screening line is on the ward panel's footer). */
+  legend_upper_bound: 'Counts are upper bounds',
 }
 
 /** Fills the {{key}} placeholders used throughout contracts/copy. */
@@ -39,13 +41,14 @@ export function formatNumber(value: number, wholeOnly = false): string {
   return (wholeOnly ? whole : number).format(value)
 }
 
-/** A rule row's value with its unit: "7.62 m", "45%", "4 homes"; words such as "detached" as they are. */
+/** A rule row's value with its unit: "7.62 m", "45%", "4 homes"; words such as "detached" as they are.
+ *  A no-break space keeps the unit with its number when the checklist's columns wrap. */
 export function formatValue(value: number | string | null, unit: RuleRow['unit']): string {
   if (value === null) return ''
   if (typeof value === 'string') return value
   const n = formatNumber(value)
   if (unit === 'pct') return `${n}${labels.units.pct}`
-  return unit ? `${n} ${labels.units[unit]}` : n
+  return unit ? `${n} ${labels.units[unit]}` : n
 }
 
 /** A signed margin: "+0.02 m", "−1.5 m", "0 m". */

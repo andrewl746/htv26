@@ -7,8 +7,7 @@ import { boardTexture, brickTexture } from '../textures'
 // CP-1 is drawn with brick coursing, CP-3 as light vertical boards, CP-4 as the darker cladding,
 // PFM is the pre-finished metal flashing. The plan sets give no colours, so these follow the
 // sheets' tones: buff brick, light boards, charcoal panels, dark metal. Each home's windows glow
-// faintly in that home's colour, the colour of the swatch on its label, so the homes still read
-// one by one.
+// faintly in that home's colour, so the homes still read one by one.
 //
 // One shared set for the whole session: the canvas textures and compiled programs are reused by
 // every design and every lot.

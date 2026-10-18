@@ -47,6 +47,27 @@
   gap: var(--space-8);
 }
 
+/* The location note on one line beside the map: it is 377 px at its size, and the list column at
+   Yuvi's 440 px leaves it about 367 once the column's scrollbar is in, so the column takes 24 px
+   more. Phones (below his 720 px breakpoint) still wrap it. */
+.mx-entry-page .mxb {
+  --mxb-side-width: 464px;
+}
+
+@media (min-width: 721px) {
+  .mx-entry-page .mx-search-privacy {
+    white-space: nowrap;
+  }
+}
+
+/* The status line under it takes no room while it has nothing to say (its height and the gap above
+   it), so the box ends as far below the note as it starts above the address box. It stays rendered,
+   so a message still reaches screen readers. */
+.mx-entry-page .mx-search-note:empty {
+  min-height: 0;
+  margin-top: calc(-1 * var(--space-2));
+}
+
 /* Each section's heading in the deep teal, a step up in size, over a rule of the sheet's teal, so it
    stands apart from the labels and help text under it; the filters' heading heads its own box, so
    it takes the colour and size only. */

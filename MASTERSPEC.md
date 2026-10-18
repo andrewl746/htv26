@@ -1,4 +1,4 @@
-# Suplex masterspec, version 3 (status board updated 2026-10-18 03:50, see section 0)
+# Suplex masterspec, version 3 (status board updated 2026-10-18 03:45, see section 0)
 
 **Hack the Valley 11 · Hack the Valley × School of Cities challenge · 4 people · about 36 hours**
 
@@ -12,7 +12,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ## Contents
 
-- [0. Status board (updated 2026-10-18, 03:50, about Hour 30 of 36)](#0-status-board-updated-2026-10-18-0350-about-hour-30-of-36)
+- [0. Status board (updated 2026-10-18, 03:45, about Hour 30 of 36)](#0-status-board-updated-2026-10-18-0345-about-hour-30-of-36)
   - [0.1 How far along we are](#01-how-far-along-we-are)
   - [0.2 Status by person](#02-status-by-person)
   - [0.3 Critical path and the approved re-plan](#03-critical-path-and-the-approved-re-plan)
@@ -109,7 +109,7 @@ This is the single source of truth for the Suplex team. Shared sections (1 to 7 
 
 ---
 
-## 0. Status board (updated 2026-10-18, 03:50, about Hour 30 of 36)
+## 0. Status board (updated 2026-10-18, 03:45, about Hour 30 of 36)
 
 Read this first. Repo: https://github.com/andrewl746/htv26 (branch `main`). This board is rewritten on every update; the full history of reports, word for word, is in Appendix J. Hacking began at 10 p.m. Eastern on 2026-10-16: rehearsals start at Hour 28 (2 a.m.) and the event ends about 10 a.m. on 2026-10-18.
 

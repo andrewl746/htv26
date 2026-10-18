@@ -1,0 +1,145 @@
+/* ---------- Near-me search on the permitted-multiplexes map ---------- */
+
+.mx-search {
+  position: relative;
+  z-index: 4;
+  flex: none;
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+  color: var(--suplex-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+.mx-search-field {
+  position: relative;
+}
+
+.mx-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--suplex-ink-muted);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  color: var(--suplex-ink);
+  font: inherit;
+  font-size: var(--text-md);
+}
+
+.mx-search-input:focus-visible,
+.mx-search-button:focus-visible {
+  outline: 3px solid var(--suplex-accent);
+  outline-offset: 2px;
+}
+
+.mx-search-dropdown {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--suplex-line);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-surface);
+  box-shadow: var(--shadow);
+}
+
+.mx-search-dropdown[hidden] {
+  display: none;
+}
+
+.mx-search-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mx-search-option {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.mx-search-option[aria-selected='true'] {
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
+}
+
+.mx-search-option-address {
+  font-weight: 600;
+}
+
+.mx-search-option-ward {
+  font-size: var(--text-xs);
+  opacity: 0.85;
+}
+
+.mx-search-message {
+  margin: 0;
+  padding: var(--space-3);
+  color: var(--suplex-ink-muted);
+}
+
+.mx-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.mx-search-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--suplex-accent);
+  border-radius: var(--radius-sm);
+  background: var(--suplex-accent);
+  color: var(--suplex-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mx-search-clear {
+  background: var(--suplex-surface);
+  color: var(--suplex-accent);
+}
+
+.mx-search-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.mx-search-privacy,
+.mx-search-note {
+  margin: 0;
+  color: var(--suplex-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.mx-search-note {
+  min-height: 1.2em;
+}
+
+.mx-search-note[data-kind='alert'] {
+  color: var(--suplex-ink);
+  font-weight: 600;
+}
+
+/* Phone: tighter padding; the column's width is set by .mx-top in multiplex.css. */
+@media (max-width: 640px) {
+  .mx-search {
+    padding: var(--space-2) var(--space-3);
+  }
+}

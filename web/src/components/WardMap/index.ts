@@ -1,3 +1,5 @@
 export { WardMap } from './WardMap'
 export type { WardMapProps } from './WardMap'
+export { MultiplexMap } from './MultiplexMap'
+export { MultiplexBrowser } from './MultiplexBrowser'
 export { useNearYourLot } from './useNearYourLot'

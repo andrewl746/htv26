@@ -5,6 +5,7 @@ import { NEIGHBOUR_TOKENS, type PartSlot } from './buildings'
 import { withCutaway } from './cutaway'
 import { HOUSE_STYLE } from './houseStyle'
 import { LOOK } from './look'
+import { OFF } from './debug'
 import { brickTexture, shingleTexture, sidingTexture, type TexturePair } from './textures'
 
 export interface StreetMaterials {
@@ -27,6 +28,10 @@ export function slotMaterial(materials: StreetMaterials, slot: PartSlot, colorIn
 const SHINGLE_BASE = '#d6d6d6'
 const FLAT_ROOF = '#8b8d90'
 const SIDING_BOARD_M = 0.18
+/** Smooth and a little metallic, so the windows mirror the environment rather than read as paint. */
+const GLASS_SHINE = OFF.has('glass')
+  ? { roughness: 0.12, metalness: 0.25, envMapIntensity: 1.3 }
+  : { roughness: 0.06, metalness: 0.35, envMapIntensity: 2.4 }
 
 /** Painted once and shared by every street of the session (the materials still come and go). */
 let textures: { walls: TexturePair[]; shingles: TexturePair } | null = null
@@ -67,8 +72,8 @@ export function useStreetMaterials({ cutaway }: { cutaway: boolean }): StreetMat
         new MeshStandardMaterial({ map: painted.shingles.map, bumpMap: painted.shingles.bump, bumpScale: 1, vertexColors: true, roughness: 0.92 }),
       ),
       flat: cut(new MeshStandardMaterial({ color: FLAT_ROOF, roughness: 0.95 })),
-      // Daytime glass: the sky's blue in it, a little shine from the environment.
-      glass: cut(new MeshStandardMaterial({ color: HOUSE_STYLE.glass, roughness: 0.12, metalness: 0.25, envMapIntensity: 1.3 })),
+      // Daytime glass: the sky's blue in it, and a clear reflection of the sky and the street.
+      glass: cut(new MeshStandardMaterial({ color: HOUSE_STYLE.glass, ...GLASS_SHINE })),
       trim: cut(new MeshStandardMaterial({ color: HOUSE_STYLE.trim, roughness: 0.6 })),
       door: cut(new MeshStandardMaterial({ vertexColors: true, roughness: 0.55 })),
     }

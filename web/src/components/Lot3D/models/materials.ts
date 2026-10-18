@@ -1,5 +1,6 @@
 import { Color, MeshStandardMaterial, type Material } from 'three'
 import { tokenHex } from '../../../styles/tokens'
+import { OFF } from '../debug'
 import { boardTexture, brickTexture } from '../textures'
 
 // Materials for the drawn designs (A16). The cladding follows each sheet's material schedule:
@@ -38,6 +39,10 @@ const PANEL = { colour: '#4b4f55', joint: '#383b40', widthM: 0.6 }
  * mixed toward warm interior light, so a red-orange home never reads like the red fail slab.
  */
 const GLASS = { colour: '#1b252e', glow: 0.2, interior: '#fff1dc', interiorMix: 0.5 }
+/** Smooth and a little metallic: the sky and the street mirror in it over the home's glow. */
+const GLASS_SHINE = OFF.has('glass')
+  ? { roughness: 0.05, metalness: 0.2, envMapIntensity: 1.6 }
+  : { roughness: 0.03, metalness: 0.35, envMapIntensity: 3 }
 
 let cache: Map<MaterialKey, Material> | null = null
 
@@ -68,7 +73,7 @@ function build(): Map<MaterialKey, Material> {
 }
 
 function glass(home: number | null): MeshStandardMaterial {
-  const material = new MeshStandardMaterial({ color: GLASS.colour, roughness: 0.05, metalness: 0.2, envMapIntensity: 1.6 })
+  const material = new MeshStandardMaterial({ color: GLASS.colour, ...GLASS_SHINE })
   if (home !== null) {
     material.emissive = new Color(tokenHex(`--suplex-home-${home}`)).lerp(new Color(GLASS.interior), GLASS.interiorMix)
     material.emissiveIntensity = GLASS.glow

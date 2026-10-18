@@ -12,14 +12,26 @@ import { sunPosition } from './sun'
 const ENV_RESOLUTION = 256
 const ENV_INTENSITY = 0.6
 /** The sun carries the shadows; the environment fills them without washing them out. */
-const SUN_INTENSITY = 3.4
-const SHADOW = { mapSize: 2048, radius: 5, halfExtentM: 70, bias: -0.0004, normalBias: 0.04 }
+const SUN_INTENSITY = OFF.has('warm') ? 3.4 : 3.8
+/**
+ * Shadows: crisp, as on a sunny afternoon (the filter radius is in texels), over a box wide enough
+ * to reach down the street the drawn look continues past the data (streetExtension.ts) with finer
+ * texels than before: ±100 m over 3072 is 6.5 cm a texel, against ±70 m over 2048 (6.8 cm). The
+ * light stands far back along the sun's direction, so the box's depth holds every caster in it;
+ * the bias is in that depth's units, so it shrinks as the depth grows (the same 10 cm). Dev
+ * ?off=shadowbox brings back the old box for comparison.
+ */
+const SHADOW = OFF.has('shadowbox')
+  ? { mapSize: 2048, radius: 5, halfExtentM: 70, lightDistanceM: 120, bias: -0.0004, normalBias: 0.04 }
+  : { mapSize: 3072, radius: 3, halfExtentM: 100, lightDistanceM: 400, bias: -0.00012, normalBias: 0.04 }
 const HEMI_INTENSITY = 0.25
-const SUN_WHITE_MIX = 0.45
+/** Late afternoon: the sun token's warmth mostly kept (the classic look mixes half of it away). */
+const SUN_WHITE_MIX = OFF.has('warm') ? 0.45 : 0.25
 
 export function Studio({ shadows }: { shadows: boolean }) {
   const sun = new Color(tokenHex('--suplex-sun')).lerp(new Color('white'), SUN_WHITE_MIX)
   const [x, y, z] = sunPosition()
+  const back = SHADOW.lightDistanceM / Math.hypot(x, y, z)
   return (
     <>
       {!OFF.has('env') && <Environment frames={1} resolution={ENV_RESOLUTION} environmentIntensity={ENV_INTENSITY}>
@@ -36,7 +48,7 @@ export function Studio({ shadows }: { shadows: boolean }) {
       </Environment>}
       <hemisphereLight args={[tokenHex('--suplex-sky-bottom'), tokenHex('--suplex-ground'), HEMI_INTENSITY]} />
       <directionalLight
-        position={[x, y, z]}
+        position={[x * back, y * back, z * back]}
         color={sun}
         intensity={SUN_INTENSITY}
         // The light always casts, so turning shadows off never changes (and recompiles) a shader.
@@ -51,7 +63,7 @@ export function Studio({ shadows }: { shadows: boolean }) {
         shadow-camera-top={SHADOW.halfExtentM}
         shadow-camera-bottom={-SHADOW.halfExtentM}
         shadow-camera-near={1}
-        shadow-camera-far={Math.hypot(x, y, z) * 2}
+        shadow-camera-far={SHADOW.lightDistanceM * 2}
       />
     </>
   )

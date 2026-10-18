@@ -34,6 +34,13 @@ const boxes: Record<OccluderGroup, Box[]> = { buildings: [], trees: [] }
 const level = new Float32Array(SLOT_COUNT)
 const blocking = new Uint8Array(SLOT_COUNT)
 
+/** Counts the frames in which any slot moved, so a frozen shadow map knows to redraw (Settle.tsx). */
+let moves = 0
+
+export function sinkMoves(): number {
+  return moves
+}
+
 /** The eased sink of every slot, read by the cutaway shader. */
 export const sinkTexture = new DataTexture(new Float32Array(SLOT_COUNT), SLOT_COUNT, 1, RedFormat, FloatType)
 sinkTexture.needsUpdate = true
@@ -69,7 +76,10 @@ export function updateSinks(eye: Vector3, targets: Vec3[], delta: number, reduce
     shown[i] = next * next * (3 - 2 * next)
     changed = true
   }
-  if (changed) sinkTexture.needsUpdate = true
+  if (changed) {
+    sinkTexture.needsUpdate = true
+    moves++
+  }
 }
 
 /** Whether the sight line from the eye to the target passes through the box (a slab test). */

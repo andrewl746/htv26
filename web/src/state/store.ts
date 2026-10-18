@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CheckResponse, DesignId } from '@contracts/types'
+import type { CheckResponse, DesignId, Lang } from '@contracts/types'
 import { check as fetchCheck } from '../api/client'
 import { ApiError, type ApiErrorCode } from '../api/errors'
 import { defaultDesign } from '../designs'
@@ -24,6 +24,8 @@ interface AppState {
   checkStatus: CheckStatus
   checkError: ApiErrorCode | null
   designId: DesignId | null
+  /** The language of the explanation, and of the ward briefing it links to. */
+  lang: Lang
   /** `fly` from the landing page starts the flight; anywhere else the check opens directly. */
   openAddress: (addressId: string, options?: { updateUrl?: boolean; fly?: boolean }) => void
   /** The flight is nearly down: start fading the 3D scene in. */
@@ -32,6 +34,7 @@ interface AppState {
   land: () => void
   showLanding: (options?: { updateUrl?: boolean }) => void
   setDesign: (designId: DesignId) => void
+  setLang: (lang: Lang) => void
 }
 
 let inflight: AbortController | null = null
@@ -44,6 +47,7 @@ export const useApp = create<AppState>()((set, get) => ({
   checkStatus: 'idle',
   checkError: null,
   designId: null,
+  lang: 'en',
 
   openAddress(addressId, { updateUrl = true, fly = false } = {}) {
     if (updateUrl) setAddressInUrl(addressId)
@@ -98,5 +102,9 @@ export const useApp = create<AppState>()((set, get) => ({
 
   setDesign(designId) {
     set({ designId })
+  },
+
+  setLang(lang) {
+    set({ lang })
   },
 }))

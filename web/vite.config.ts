@@ -13,6 +13,8 @@ export default defineConfig({
     alias: [
       { find: /^@contracts\/types$/, replacement: contracts('types.ts') },
       { find: /^@contracts\//, replacement: contracts('') },
+      // Read only: the explanation template strings Simone owns, for the web's own fallback (6.4).
+      { find: /^@prompts\//, replacement: fileURLToPath(new URL('../ai/prompts/', import.meta.url)) },
     ],
   },
   server: {

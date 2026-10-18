@@ -21,7 +21,8 @@
        No baseUrl: it is deprecated in TypeScript 6 and paths resolve from this file. */
     "paths": {
       "@contracts/types": ["../contracts/types.ts"],
-      "@contracts/*": ["../contracts/*"]
+      "@contracts/*": ["../contracts/*"],
+      "@prompts/*": ["../ai/prompts/*"]
     },
 
     /* Linting */

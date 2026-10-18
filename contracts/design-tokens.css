@@ -6,24 +6,43 @@
   --suplex-permit: #FFC83D;          /* multiplex permit dot */
   --suplex-permit-outline: #3A2E00;
 
-  /* v0: result and UI colours */
+  /* Trend bars: a darker step of the permit gold, which is 1.5:1 on white and too faint for bars.
+     #A27100 passes 3:1 on every surface below (decision 11). */
+  --suplex-permit-bar: #A27100;
+
+  /* Result colours */
   --suplex-borderline-base: #DDF3E7; /* pale green under the stripes */
   --suplex-borderline-stripe: #22B573;
   --suplex-fail: #D64545;            /* the red slice; always paired with an icon and text */
-  --suplex-ink: #1C1F26;
-  --suplex-ink-muted: #5B6170;
-  --suplex-paper: #FBF8F2;           /* warm off-white page */
-  --suplex-surface: #FFFFFF;
-  --suplex-line: #E6E2DA;
-  --suplex-accent: #2F6FED;          /* links, focus rings, primary buttons */
-  --suplex-accent-ink: #FFFFFF;
+
+  /* v1: UI colours, Lime + Teal (decision 13, moved from web/src/styles/palette.css).
+     Contrast, measured: ink on the page 13.1:1, ink on a panel 15.1:1, muted ink on the page 6.1:1,
+     panel colour on the accent 6.6:1, input and tab borders against a panel 3.9:1. */
+  --suplex-ink: #14240A;
+  --suplex-ink-muted: #475A1C;
+  --suplex-paper: #DFECBF;           /* the page */
+  --suplex-surface: #F4F8E5;         /* panels, inputs, labels */
+  --suplex-line: #B1CA7C;            /* dividers and card edges */
+  --suplex-line-strong: #69841B;     /* input and tab borders, which need 3:1 */
+  --suplex-accent: #126464;          /* links, focus rings, primary buttons, selection */
+  --suplex-accent-ink: #F7FDE0;
+  --suplex-highlight: #B4D77F;       /* hover and chips, with --suplex-ink text */
   --suplex-searched: #FFFFFF;        /* the searched lot outline */
 
-  /* v0: the 3D scene */
-  --suplex-sky-top: #FFE2B8;
-  --suplex-sky-bottom: #FFF7EA;
-  --suplex-ground: #EFE9DF;
-  --suplex-sun: #FFD9A0;
+  /* v1: base map (low buildings, water and mid-rise, towers, parks) */
+  --palette-olive: #93B852;
+  --palette-grey: #348E8E;
+  --palette-charcoal: #174549;
+  --palette-tea: #C5E09A;
+
+  /* v1: the 3D scene. The ground and its fog take the base map's land colour (--suplex-surface), so
+     the scene fades in over the map with the same ground under it. The new homes (--suplex-home-*)
+     keep their v0 colours, so a result never changes meaning with the palette. */
+  --suplex-lot: #FAFCF2;             /* the searched lot */
+  --suplex-sky-top: #C5DF9E;
+  --suplex-sky-bottom: #F4F8E5;
+  --suplex-ground: #F4F8E5;
+  --suplex-sun: #F7F3D8;
   --suplex-setback: rgba(47, 111, 237, 0.18);
   --suplex-buildable: rgba(34, 181, 115, 0.22);
   --suplex-home-1: #F4A261;
@@ -32,13 +51,13 @@
   --suplex-home-4: #F6BD60;
   --suplex-home-5: #D98E73;
   --suplex-home-6: #F2CC8F;
-  --suplex-neighbour-1: #D7E3F4;
-  --suplex-neighbour-2: #E8DCCB;
-  --suplex-neighbour-3: #DCE8D5;
-  --suplex-neighbour-4: #F0DEE4;
-  --suplex-neighbour-5: #E4E0F0;
-  --suplex-roof: #C9B8A8;
-  --suplex-tree: #7FB069;
+  --suplex-neighbour-1: #D2E3AD;
+  --suplex-neighbour-2: #C1E0DE;
+  --suplex-neighbour-3: #DFEBBF;
+  --suplex-neighbour-4: #CDE6DE;
+  --suplex-neighbour-5: #D7E6B4;
+  --suplex-roof: #7EA05A;
+  --suplex-tree: #599C4D;
   --suplex-trunk: #8C6A4F;
 
   /* Type and shape */

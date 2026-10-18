@@ -633,10 +633,13 @@ function pitchedRoof(plan: RoofPlan, wallHeight: number, tint: string): { slopes
 /** One thin box along each edge, just inside it, standing on the roof. */
 function parapet(ring: LocalPoint[], [cx, cy]: LocalPoint, roofHeight: number): BufferGeometry[] {
   const inward = signedArea(ring) > 0 ? 1 : -1
-  return ring.map(([x, y], i) => {
+  return ring.flatMap(([x, y], i) => {
     const [nx, ny] = ring[(i + 1) % ring.length]
     const [dx, dy] = [nx - x, ny - y]
     const length = Math.hypot(dx, dy)
+    // Some of the City's footprints repeat a corner: that edge has no length and so no normal, and
+    // its box would land at NaN (building 141978, beside 100 Queen St W).
+    if (length === 0) return []
     // The left-hand normal points inside a counter-clockwise ring.
     const [ix, iy] = [(-dy / length) * inward, (dx / length) * inward]
     const half = PARAPET_THICKNESS_M / 2

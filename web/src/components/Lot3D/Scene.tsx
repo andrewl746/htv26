@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, Stats } from '@react-three/drei'
 import { ACESFilmicToneMapping, Color, NeutralToneMapping } from 'three'
@@ -17,6 +17,7 @@ import { DrawnDesign } from './DrawnDesign'
 import { failSlab } from './failSlabs'
 import { FailSlices } from './FailSlices'
 import { Frontage } from './Frontage'
+import { planCity, type City } from './cityPlan'
 import { Garden } from './Garden'
 import { Yards, YardWarmUp } from './Yards'
 import { Ground } from './Ground'
@@ -34,8 +35,8 @@ import { SceneLabels } from './SceneLabels'
 import { SettleWatch, ShadowFreeze } from './Settle'
 import { Sky, type SkyLook } from './Sky'
 import { Sequence } from './Sequence'
+import { Roads } from './Roads'
 import { Street } from './Street'
-import { extendStreet } from './streetExtension'
 import { streetFrame } from './streetFrame'
 import { sunPosition } from './sun'
 import { Studio } from './Studio'
@@ -151,11 +152,27 @@ export function Scene({
   const frontage = check?.lot.frontage_edge_local ?? null
   const lotRing = check?.lot.polygon_local ?? null
   const street = useMemo(() => (frontage ? streetFrame(frontage, lotRing) : null), [frontage, lotRing])
-  // The drawn look continues the block past the real data, so the street does not stop at 150 m.
-  const extension = useMemo(
-    () => (drawn && street && check ? extendStreet(street, check.context.buildings, check.context.trees, check.context.radius_m) : null),
-    [drawn, street, check],
-  )
+  // The drawn look's city round the lot (cityPlan.ts): the map's streets, the block continued past
+  // the real data (so the street does not stop at 150 m) and every house's yard, planned a step at a
+  // time while the map flies in. The street appears once it is planned.
+  const [city, setCity] = useState<City | null>(null)
+  const wantCity = drawn && !ELEVATION_VIEW && check !== null && street !== null
+  useEffect(() => {
+    if (!wantCity || !check || !street) return
+    const controller = new AbortController()
+    void planCity(
+      check,
+      street,
+      controller.signal,
+      (planned) => setCity(planned),
+      (roads) => setCity((c) => (c?.lotKey === check.lot.lot_id ? { ...c, roads } : c)),
+      !OFF.has('roads'),
+    )
+    return () => controller.abort()
+  }, [wantCity, check, street])
+  const cityNow = city?.lotKey === lotKey ? city : null
+  const streetReady = !wantCity || cityNow !== null
+  const extension = cityNow?.extension ?? null
   const streetBuildings = useMemo(
     () => (check ? [...check.context.buildings, ...(extension?.buildings ?? [])] : []),
     [check, extension],
@@ -244,17 +261,16 @@ export function Scene({
 
           {check && (
             <>
-              {!ELEVATION_VIEW && <Street key={`street-${lotKey}`} buildings={streetBuildings} street={street} />}
+              {!ELEVATION_VIEW && streetReady && <Street key={`street-${lotKey}`} buildings={streetBuildings} street={street} />}
+              {cityNow?.roads && <Roads key={`roads-${lotKey}`} layers={cityNow.roads.layers} />}
               {drawn && !ELEVATION_VIEW && check.lot.frontage_edge_local && (
                 <Frontage key={`frontage-${lotKey}`} edge={check.lot.frontage_edge_local} buildings={check.context.buildings} />
               )}
-              {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={streetTrees} />}
-              {drawn && !ELEVATION_VIEW && street && (
+              {!ELEVATION_VIEW && streetReady && <Trees key={`trees-${lotKey}`} trees={streetTrees} />}
+              {drawn && !ELEVATION_VIEW && street && !OFF.has('garden') && (
                 <Garden key={`garden-${lotKey}-${designId ?? ''}`} lot={check.lot.polygon_local} design={result} street={street} />
               )}
-              {drawn && !ELEVATION_VIEW && street && (
-                <Yards key={`yards-${lotKey}`} buildings={streetBuildings} street={street} lot={check.lot.polygon_local} />
-              )}
+              {cityNow && !OFF.has('yards') && <Yards key={`yards-${lotKey}`} yards={cityNow.yards} />}
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
               <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} street={street} />
               <Pin restHeight={pinHeight} leaves={placement !== null} />

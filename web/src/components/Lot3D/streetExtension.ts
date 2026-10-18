@@ -1,5 +1,6 @@
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
 import { openRing, seededRandom } from './geometry'
+import { onRoad, type RoadPiece } from './roadMesh'
 import { fromFrame, inFrame, RIGHT_OF_WAY_M, ROAD_CENTRE_M, STREET, type StreetFrame } from './streetFrame'
 
 // The street beyond the data. The City's buildings come within 150 m of the lot, so looking down
@@ -23,6 +24,8 @@ const MIN_FACING = 3
 const DATA_EDGE_MARGIN_M = 4
 /** Made-up ids, far from the City's. */
 const FIRST_ID = 9_000_000
+/** A made-up house keeps this far off the map's roads. */
+const ROAD_CLEAR_M = 1.5
 
 /** Ray-casting point-in-polygon test. */
 function inside([x, y]: LocalPoint, ring: LocalPoint[]): boolean {
@@ -66,6 +69,8 @@ export function extendStreet(
   buildings: ContextBuilding[],
   trees: LocalPoint[],
   dataRadiusM: number,
+  /** The map's streets (drawn look): no made-up house or tree stands on one. */
+  roads: RoadPiece[] = [],
 ): { buildings: ContextBuilding[]; trees: LocalPoint[] } {
   const reach = roadReach(frame, buildings)
   // Never inside the data's circle (around the lot's centroid, the origin): there an empty stretch
@@ -113,13 +118,15 @@ export function extendStreet(
         const [s0, s1] = sign > 0 ? [s, s + width] : [-s - width, -s]
         const footprint = { s0, s1, o0, o1, height: rhythm.height + (random() - 0.5) * 2 * JITTER.height }
         const centre = fromFrame(frame, (s0 + s1) / 2, (o0 + o1) / 2)
-        if (!overlapsReal(footprint) && outsideData(centre)) {
-          const corners: LocalPoint[] = [
-            fromFrame(frame, s0, o0),
-            fromFrame(frame, s1, o0),
-            fromFrame(frame, s1, o1),
-            fromFrame(frame, s0, o1),
-          ]
+        const corners: LocalPoint[] = [
+          fromFrame(frame, s0, o0),
+          fromFrame(frame, s1, o0),
+          fromFrame(frame, s1, o1),
+          fromFrame(frame, s0, o1),
+        ]
+        // A cross street on the map is a gap in the row, as it is on the street.
+        const probes = [...corners, centre, fromFrame(frame, (s0 + s1) / 2, o0), fromFrame(frame, (s0 + s1) / 2, o1)]
+        if (!overlapsReal(footprint) && outsideData(centre) && !onRoad(probes, roads, ROAD_CLEAR_M)) {
           made.push({
             building_id: FIRST_ID + made.length,
             avg_height_m: Math.max(5.5, footprint.height),
@@ -143,7 +150,7 @@ export function extendStreet(
       const limit = sign > 0 ? reach.ahead : reach.back
       for (let s = realReach + TREE.spacingM; s < limit; s += TREE.spacingM) {
         const at = fromFrame(frame, sign * s, o)
-        if (seededRandom([sign * s, o])() < TREE.skip || !outsideData(at)) continue
+        if (seededRandom([sign * s, o])() < TREE.skip || !outsideData(at) || onRoad([at], roads, 0.5)) continue
         moreTrees.push(at)
       }
     }

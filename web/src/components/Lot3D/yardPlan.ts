@@ -1,13 +1,14 @@
 import type { ContextBuilding, LocalPoint } from '@contracts/types'
 import { openRing, seededRandom, signedArea, vertexMean } from './geometry'
+import { roadRects, type RoadPiece } from './roadMesh'
 import { inFrame, RIGHT_OF_WAY_M, ROAD_CENTRE_M, towardStreet, type StreetFrame } from './streetFrame'
 import { BED, FENCE, PATIO, SHED, type YardKit, type YardFrame } from './yardKit'
 
 // A back yard behind every house that has room for one (drawn look), so the whole street looks
 // lived in, not just the lot being checked. A yard runs from the house's back wall to the block's
 // rear lot line (taken at the checked lot's depth, from the street the house faces), across the
-// house and half of each gap beside it, and stops short of any other building and of the checked
-// lot. Garages and sheds in the City's massing, apartment blocks and houses with no room behind
+// house and half of each gap beside it, and stops short of any other building, of the checked lot
+// and of the map's roads, lanes and driveways. Garages and sheds in the City's massing, apartment blocks and houses with no room behind
 // them get none. Decoration only: nothing here is read as data.
 
 const YARD = {
@@ -30,6 +31,7 @@ const YARD = {
   /** Houses further than this from the lot are in the fog. */
   withinM: 260,
 }
+const GRID_CELL_M = 30
 
 export interface PlannedYard {
   frame: YardFrame
@@ -53,14 +55,35 @@ function shapeOf(building: ContextBuilding): Shape {
   return { building, ring, centre, radius: Math.max(...ring.map(([x, y]) => Math.hypot(x - centre[0], y - centre[1]))) }
 }
 
-export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot: LocalPoint[]): PlannedYard[] {
+export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot: LocalPoint[], roads: RoadPiece[] = []): PlannedYard[] {
   const shapes = buildings.map(shapeOf)
-  const lotRing = openRing(lot)
-  const lotCentre = vertexMean(lotRing)
-  const obstacles: { ring: LocalPoint[]; centre: LocalPoint; radius: number; self?: ContextBuilding }[] = [
+  const around = (ring: LocalPoint[]) => {
+    const centre = vertexMean(ring)
+    return { ring, centre, radius: Math.max(...ring.map(([x, y]) => Math.hypot(x - centre[0], y - centre[1]))) }
+  }
+  // Other buildings, the checked lot, and the map's roads, lanes and driveways.
+  type Obstacle = { ring: LocalPoint[]; centre: LocalPoint; radius: number; self?: ContextBuilding }
+  const obstacles: Obstacle[] = [
     ...shapes.map((s) => ({ ring: s.ring, centre: s.centre, radius: s.radius, self: s.building })),
-    { ring: lotRing, centre: lotCentre, radius: Math.max(...lotRing.map(([x, y]) => Math.hypot(x - lotCentre[0], y - lotCentre[1]))) },
+    around(openRing(lot)),
+    ...roadRects(roads).map(around),
   ]
+  // Filed in a grid, so a house meets only the obstacles round it.
+  const cells = new Map<string, Obstacle[]>()
+  const cellsOver = (centre: LocalPoint, r: number) => {
+    const keys: string[] = []
+    for (let cx = Math.floor((centre[0] - r) / GRID_CELL_M); cx <= Math.floor((centre[0] + r) / GRID_CELL_M); cx++) {
+      for (let cy = Math.floor((centre[1] - r) / GRID_CELL_M); cy <= Math.floor((centre[1] + r) / GRID_CELL_M); cy++) keys.push(`${cx},${cy}`)
+    }
+    return keys
+  }
+  for (const ob of obstacles) {
+    for (const key of cellsOver(ob.centre, ob.radius)) {
+      const cell = cells.get(key)
+      if (cell) cell.push(ob)
+      else cells.set(key, [ob])
+    }
+  }
 
   const yards: PlannedYard[] = []
   for (const { building, ring, centre, radius } of shapes) {
@@ -96,7 +119,8 @@ export function planYards(buildings: ContextBuilding[], street: StreetFrame, lot
 
     // Nearby buildings (and the lot): halfway into the gap beside the house, short of anything behind.
     const reach = radius + YARD.maxDepthM + YARD.sideM
-    const near = obstacles
+    const candidates = new Set(cellsOver(centre, reach).flatMap((key) => cells.get(key) ?? []))
+    const near = [...candidates]
       .filter((ob) => ob.self !== building && Math.hypot(ob.centre[0] - centre[0], ob.centre[1] - centre[1]) < reach + ob.radius)
       .map((ob) => {
         const pts = ob.ring.map(project)

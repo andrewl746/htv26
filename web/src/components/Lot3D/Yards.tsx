@@ -1,26 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BufferAttribute, BufferGeometry, type Mesh, type MeshStandardMaterial } from 'three'
-import type { ContextBuilding, LocalPoint } from '@contracts/types'
+import type { CityYards } from './cityPlan'
 import { Plants } from './Plants'
-import type { StreetFrame } from './streetFrame'
 import { useSequenceFrame } from './useSequence'
-import { DISTANCE_ATTRIBUTE, Pieces, YardKit, type Plant } from './yardKit'
+import { DISTANCE_ATTRIBUTE } from './yardKit'
 import { yardMaterial, type YardUniforms } from './yardMaterial'
-import { furnishYard, planYards } from './yardPlan'
 
-// Every neighbouring house's back yard (yardPlan.ts), drawn as one mesh that grows in with the
-// ripple on the GPU (yardMaterial.ts). Shrubs and flowers are instanced puffs. Shadows join once
-// the ripple is over: the shadow pass would draw the yards ungrown.
+// Every neighbouring house's back yard (yardPlan.ts, planned in cityPlan.ts), drawn as one mesh that
+// grows in with the ripple on the GPU (yardMaterial.ts). Shrubs and flowers are instanced puffs.
+// Shadows join once the ripple is over: the shadow pass would draw the yards ungrown.
 
-export function Yards({ buildings, street, lot }: { buildings: ContextBuilding[]; street: StreetFrame; lot: LocalPoint[] }) {
-  const yards = useMemo(() => {
-    const pieces = new Pieces(true)
-    const plants: Plant[] = []
-    for (const yard of planYards(buildings, street, lot)) {
-      furnishYard(new YardKit(yard.frame, pieces, plants, yard.distance), yard.width, yard.depth, yard.seed)
-    }
-    return { geometry: pieces.empty ? null : pieces.geometry(), plants }
-  }, [buildings, street, lot])
+export function Yards({ yards }: { yards: CityYards }) {
   useEffect(() => () => yards.geometry?.dispose(), [yards])
   const material = useMemo(() => yardMaterial(false), [])
   useEffect(() => () => material.dispose(), [material])

@@ -2,7 +2,8 @@ import type { CheckResponse } from '@contracts/types'
 import { disclaimers, formatNumber, labels } from '../../copy'
 
 /** The address, the ward, the lot's size on one line, and the disclaimer (MASTERSPEC 6.4). */
-export function Header({ check }: { check: CheckResponse }) {
+/** `hideReason` leaves out the lot's reason when the not-supported banner already shows it. */
+export function Header({ check, hideReason = false }: { check: CheckResponse; hideReason?: boolean }) {
   const { address, lot } = check
   const m = labels.units.m
   const area = `${formatNumber(lot.area_m2, true)} ${labels.units.m2}`
@@ -17,7 +18,7 @@ export function Header({ check }: { check: CheckResponse }) {
       <p className="panel-ward">{lot.ward_name}</p>
       <p className="panel-size">{size}</p>
       {check.meta.cached && <span className="badge badge-cached">{disclaimers.cached}</span>}
-      {lot.reason && (
+      {lot.reason && !hideReason && (
         <p className="panel-reason">
           <strong>{lot.reason.label}.</strong> {lot.reason.text}
         </p>

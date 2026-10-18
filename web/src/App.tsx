@@ -5,6 +5,7 @@ import { Scene } from './components/Lot3D/Scene'
 import { PlanTab } from './components/Plan/PlanTab'
 import { ResultPanel } from './components/ResultPanel/ResultPanel'
 import { Search } from './components/Search/Search'
+import { MultiplexSearchEntry } from './components/WardMap/MultiplexSearchEntry'
 import { labels } from './copy'
 import { PANEL_WIDTH_PX } from './layout'
 import { useApp } from './state/store'
@@ -34,6 +35,7 @@ export default function App() {
       {(view === 'landing' || view === 'flying') && <Landing leaving={view === 'flying'} />}
       {inLot && <LotChrome />}
       {view === 'plan' && <PlanTab />}
+      <MultiplexSearchEntry showButton={view === 'landing'} />
     </main>
   )
 }

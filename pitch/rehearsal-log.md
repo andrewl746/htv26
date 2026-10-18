@@ -28,17 +28,11 @@ How to run one: start a timer, follow [`demo-script.md`](demo-script.md) end to 
 
 ## Hour 30: translation check (Andrew's rule)
 
-For each language still marked "Machine translation, not yet reviewed" (`reviewed: false` in `contracts/copy/labels.json`): if anyone has flagged wording in it and no speaker has reviewed it, **drop that one language** (remove its code from `AI_LANGS` in the demo laptop's `.env`). Keep the feature and every other language.
+Suplex now offers English and French only (`AI_LANGS=en,fr`), both reviewed, so the check is French alone.
 
 | Language | Reviewed? | Wording flagged? | Keep or drop |
 |---|---|---|---|
 | French | yes (Andrew) | fixed | keep |
-| Simplified Chinese | | | |
-| Traditional Chinese | | | |
-| Spanish | | | |
-| Tagalog | | | |
-| Tamil | | question 1 drops "if anything" | |
-| Portuguese | | | |
 
 After the Hour-24 regeneration, read the **French** Ward 04 briefing once more: it is the one translated on stage.
 

@@ -42,7 +42,7 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 1. Click **Get the ward briefing** (opens `/b/04`).
 2. "Gemini writes this from the engine's numbers. Every number is a link." Click one number and show its source (the ward map or the City dataset).
-3. Switch the language picker to French (or the language a judge speaks; all eight are cached). "Translated in one click; the numbers are checked again after translation."
+3. Switch the language picker to French (cached, and the page's own buttons and labels switch with it). "Translated in one click; the numbers are checked again after translation."
 4. "Three neutral questions for candidates, the same in every ward."
 
 ## 3:20–4:00 · How it works and limits (Simone)
@@ -60,8 +60,8 @@ End on the one-liner: *"Before you build, before you vote."*
 
 1. **(0:00)** Briefing page, English: "Gemini writes from placeholders, never digits."
 2. **(0:08)** Click a number: it opens its source.
-3. **(0:14)** Switch to Simplified Chinese: "A second Gemini pass translates; every number is re-validated."
-4. **(0:20)** Open `ai/logs/rejections.jsonl`: "Here the validator rejected a Chinese draft that wrote '2023年5月', a digit we hadn't supplied. It's regenerated or replaced by a template. Nothing unvalidated reaches a user."
+3. **(0:14)** Switch to French: "A second Gemini pass translates; every number is re-validated."
+4. **(0:20)** Open `ai/logs/rejections.jsonl`: "While we were testing more languages, the validator rejected a Chinese draft that wrote '2023年5月', a digit we hadn't supplied. It's regenerated or replaced by a template. Nothing unvalidated reaches a user."
 
 ### Tiger Data (Yuvi)
 

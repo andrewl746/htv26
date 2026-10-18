@@ -2,7 +2,7 @@
 
 *Before you build, before you vote.* A Hack the Valley 11 project for the Hack the Valley × School of Cities challenge.
 
-Suplex checks any Toronto address against the City's four free pre-approved multiplex designs and shows the result in 3D, compares the lots in your ward where a design may fit ("could") with the multiplex permits actually issued since May 2023 ("did"), and writes a plain-language ward briefing in eight languages.
+Suplex checks any Toronto address against the City's four free pre-approved multiplex designs and shows the result in 3D, compares the lots in your ward where a design may fit ("could") with the multiplex permits actually issued since May 2023 ("did"), and writes a plain-language ward briefing in English and French.
 
 **Screening only, not a permit or legal advice.** Counts of lots where a design may fit are upper bounds.
 

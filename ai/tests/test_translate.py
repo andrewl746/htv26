@@ -117,10 +117,11 @@ def drop_title_token(english):
 
 
 @pytest.mark.parametrize("translator", [drop_placeholder, invent_number, drop_title_token])
-def test_a_bad_translation_is_rejected_twice_then_english_is_served(client, settings, translator):
+def test_a_bad_translation_is_rejected_twice_then_the_french_template_is_served(client, settings, translator):
     fake = use(FakeGemini(translator))
     body = briefing(client)
-    assert body["translation_unavailable"] is True and body["lang"] == "fr"
+    assert body["translation_unavailable"] is False and body["lang"] == "fr"
+    assert body["source"] == "template" and body["title"].startswith("Quartier")
     assert not body["sections"][0]["template_text"].startswith("FR ")
     assert fake.calls == ["BriefingDraft", "Translation", "Translation"]
     log = [json.loads(line) for line in (settings.log_dir / "rejections.jsonl").read_text().splitlines()]
@@ -194,7 +195,8 @@ def test_the_glossary_rules_reach_the_prompt(client):
 
 def test_duplex_is_forbidden_in_every_language(client):
     use(FakeGemini(lambda english: {k: v.replace("multiplexes", "duplexes") for k, v in french(english).items()}))
-    assert briefing(client, "fr")["translation_unavailable"] is True
+    body = briefing(client, "fr")
+    assert body["source"] == "template" and "duplex" not in json.dumps(body["sections"])
 
 
 def test_french_numbers_carry_french_labels(client):
@@ -229,17 +231,18 @@ def test_every_language_has_a_review_status():
 
 def test_gemini_error_during_translation_is_not_cached(client):
     fake = use(FakeGemini(lambda english: GeminiError("quota")))
-    assert briefing(client)["translation_unavailable"] is True
+    assert briefing(client)["source"] == "template"
     briefing(client)
     assert fake.calls == ["BriefingDraft", "Translation", "Translation"]  # tried again
 
 
-def test_template_english_is_not_translated(client):
+def test_template_english_is_not_translated_but_the_french_template_is_served(client):
     fake = FakeGemini()
     use(lambda prompt, schema, *, model=None: (_ for _ in ()).throw(GeminiError("down"))
         if schema.__name__ == "BriefingDraft" else fake(prompt, schema, model=model))
     body = briefing(client)
-    assert body["source"] == "template" and body["translation_unavailable"] is True
+    assert body["source"] == "template" and body["translation_unavailable"] is False
+    assert body["title"].startswith("Quartier")
     assert "Translation" not in fake.calls
 
 

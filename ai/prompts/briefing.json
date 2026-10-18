@@ -1,5 +1,5 @@
 {
-  "_note": "Fixed copy for the ward briefing (MASTERSPEC 2.4, 7.5, 7.7). {ward_id} and {ward_name} come from the ward entry. Template sentences are the plain fallback: English only, same placeholders and tone as the AI text; a sentence is used only when every placeholder in it is in the numbers map. The three questions are fixed copy in contracts/copy/questions.json, never generated.",
+  "_note": "Fixed copy for the ward briefing (MASTERSPEC 2.4, 7.5, 7.7). {ward_id} and {ward_name} come from the ward entry. Template sentences are the plain fallback, in English and in each language under translations (served when Gemini's own translation is not available), same placeholders and tone as the AI text; a sentence is used only when every placeholder in it is in the numbers map. The three questions are fixed copy in contracts/copy/questions.json, never generated.",
   "title": "Ward {ward_id}, {ward_name}: multiplexes, before you vote",
   "headings": {
     "what_may_fit": "What may fit",
@@ -9,10 +9,22 @@
     "questions": "Questions to ask candidates"
   },
   "datasets": [
-    {"label": "Building Permits – Active Permits", "url": "https://open.toronto.ca/dataset/building-permits-active-permits/"},
-    {"label": "Building Permits – Cleared Permits", "url": "https://open.toronto.ca/dataset/building-permits-cleared-permits/"},
-    {"label": "Property Boundaries", "url": "https://open.toronto.ca/dataset/property-boundaries/"},
-    {"label": "Zoning By-law", "url": "https://open.toronto.ca/dataset/zoning-by-law/"}
+    {
+      "label": "Building Permits – Active Permits",
+      "url": "https://open.toronto.ca/dataset/building-permits-active-permits/"
+    },
+    {
+      "label": "Building Permits – Cleared Permits",
+      "url": "https://open.toronto.ca/dataset/building-permits-cleared-permits/"
+    },
+    {
+      "label": "Property Boundaries",
+      "url": "https://open.toronto.ca/dataset/property-boundaries/"
+    },
+    {
+      "label": "Zoning By-law",
+      "url": "https://open.toronto.ca/dataset/zoning-by-law/"
+    }
   ],
   "methodology": "#methodology",
   "template": {
@@ -48,5 +60,57 @@
       "It also does not check heritage rules, trees, sewers or site-specific exceptions.",
       "This is a screening, not a permit or legal advice."
     ]
+  },
+  "translations": {
+    "fr": {
+      "title": "Quartier {ward_id}, {ward_name} : les multiplexes, avant de voter",
+      "headings": {
+        "what_may_fit": "Ce qui peut convenir",
+        "blocking_rule": "Pourquoi les terrains ne conviennent pas",
+        "permits": "Permis de multiplex délivrés",
+        "not_checked": "Ce qui n'a pas été vérifié",
+        "questions": "Questions à poser aux candidats"
+      },
+      "questions": [
+        "Que devrait faire la Ville, le cas échéant, au sujet de ses plans gratuits de multiplex sur les terrains où ils peuvent convenir ?",
+        "La Ville devrait-elle en faire plus pour informer les résidents de ce que les règles sur les multiplexes autorisent dans leur rue, et de quelle manière ?",
+        "Les plans gratuits sont destinés aux terrains de maisons individuelles. Que devrait-il se passer dans les rues où la plupart des habitations sont des maisons jumelées ou en rangée ?"
+      ],
+      "disclaimer": "Vérification préliminaire seulement, et non un permis ou un avis juridique.",
+      "template": {
+        "what_may_fit": [
+          "Dans ce quartier, {{could_lots}} terrains résidentiels peuvent convenir à au moins un des quatre plans gratuits de multiplex de la Ville.",
+          "Cela représente {{could_pct}} % des terrains résidentiels.",
+          "Ce décompte est une limite supérieure : il montre où un plan peut convenir, et non ce qui sera construit."
+        ],
+        "blocking_rule": {
+          "detached_building": [
+            "La raison la plus fréquente est que la maison est jumelée ou en rangée : c'est le cas de {{top_rule_count}} terrains.",
+            "Au total, {{attached_pct}} % des terrains résidentiels sont des maisons jumelées ou en rangée, alors que les plans gratuits de la Ville sont destinés aux maisons individuelles."
+          ],
+          "other": [
+            "La raison la plus fréquente pour laquelle les terrains ne conviennent pas est que {rule_plain} : {{top_rule_count}} terrains résidentiels.",
+            "Par ailleurs, {{attached_pct}} % des terrains résidentiels sont des maisons jumelées ou en rangée, où les plans gratuits ne s'appliquent pas."
+          ]
+        },
+        "rule_plain": {
+          "units_allowed": "les plans de sixplex ne sont pas permis dans ce quartier",
+          "lot_width": "le terrain est trop étroit pour les marges latérales",
+          "lot_depth": "le terrain est trop peu profond pour les cours avant et arrière",
+          "building_length": "le terrain n'est pas assez profond pour le bâtiment plus long",
+          "height": "la hauteur permise est inférieure à celle du plan",
+          "lot_coverage": "le bâtiment couvrirait une trop grande partie du terrain"
+        },
+        "permits": [
+          "Depuis mai 2023, {{did_permits}} permis de multiplex ont été délivrés dans ce quartier, avant l'existence des plans gratuits.",
+          "Cela représente environ un permis pour {{lots_per_permit}} terrains où un plan peut convenir."
+        ],
+        "not_checked": [
+          "Suplex n'a pas vérifié {{not_checked_lots}} terrains : les copropriétés, les terrains hors des zones résidentielles, les terrains régis par un ancien règlement, les grands immeubles et les terrains trop irréguliers pour être mesurés.",
+          "Suplex ne vérifie pas non plus les règles patrimoniales, les arbres, les égouts ni les exceptions propres à un site.",
+          "Il s'agit d'une vérification préliminaire, et non d'un permis ou d'un avis juridique."
+        ]
+      }
+    }
   }
 }

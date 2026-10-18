@@ -18,6 +18,7 @@ from ai.gemini import GeminiError
 from ai.main import app, get_generate, get_settings
 from ai.models import BriefingDraft
 from ai.numbers import allowed_numbers, build_ward_numbers, render
+from ai.translate import forbidden_found, glossary
 from ai.validator import validate
 
 REQUEST = contract("fixtures/briefing.request.json")
@@ -143,10 +144,20 @@ def test_model_never_sees_the_values(client):
     assert "3900" not in model_input and "could_lots" in model_input
 
 
-def test_failed_translation_serves_english_with_the_notice(client):
+def test_failed_translation_serves_the_french_template(client):
     use(FakeGemini(GOOD, GeminiError("quota")))
     body = post(client, {**REQUEST, "lang": "fr"})
-    assert body["lang"] == "fr" and body["translation_unavailable"] is True
+    assert body["lang"] == "fr" and body["translation_unavailable"] is False
+    assert body["source"] == "template" and body["model"] is None
+    assert body["title"].startswith("Quartier 04")
+    assert not list(SCHEMA.iter_errors(body))
+
+
+def test_no_gemini_still_serves_french(client):
+    use(FakeGemini(GeminiError("no key")))
+    body = post(client, {**REQUEST, "lang": "fr"})
+    assert body["translation_unavailable"] is False and body["title"].startswith("Quartier 04")
+    assert "terrains" in body["sections"][0]["text"]
     assert not list(SCHEMA.iter_errors(body))
 
 
@@ -195,3 +206,16 @@ def test_every_template_section_passes_the_validator(top_rule):
         assert "{" not in render(text, numbers, "en") and "}" not in text.replace("}}", ""), (section_id, text)
         for word in ("will be built", "threat", "opportunity", "best", "worst"):
             assert word not in text.lower(), (section_id, word)
+
+
+@pytest.mark.parametrize("top_rule", ["detached_building", "lot_width", "lot_depth", "building_length", "height",
+                                      "lot_coverage", "units_allowed"])
+def test_every_french_template_section_passes_the_validator_and_glossary(top_rule):
+    ward = json.loads(json.dumps(REQUEST["ward"]))
+    ward["top_blocking_rules"][0]["rule_id"] = top_rule
+    numbers = build_ward_numbers(ward, web_url="w")
+    sections = briefing_template(ward, numbers, "fr")
+    for section_id, text in sections.items():
+        assert validate(text, numbers, allowed_numbers(numbers)).ok, (section_id, text)
+        assert "{" not in render(text, numbers, "fr") and "}" not in text.replace("}}", ""), (section_id, text)
+    assert not forbidden_found(sections, glossary("fr", "briefing")["forbidden"])

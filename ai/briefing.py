@@ -36,9 +36,16 @@ def _sentences(sentences: list[str], numbers: dict) -> str:
     return " ".join(s for s in sentences if placeholders(s) <= numbers.keys())
 
 
-def briefing_template(ward: dict, numbers: dict) -> dict[str, str]:
-    """The plain English fallback, one text per section (MASTERSPEC 7.5)."""
-    t = _copy()["template"]
+def template_langs() -> set[str]:
+    """Languages with a reviewed template of their own in ai/prompts/briefing.json, English included."""
+    return {"en", *_copy().get("translations", {})}
+
+
+def briefing_template(ward: dict, numbers: dict, lang: str = "en") -> dict[str, str]:
+    """The plain fallback, one text per section (MASTERSPEC 7.5), in English or a language under translations."""
+    copy = _copy()
+    t = copy["template"] if lang == "en" else copy["translations"][lang]["template"]
+    questions = _questions("en") if lang == "en" else copy["translations"][lang]["questions"]
     top = ward["top_blocking_rules"][0]["rule_id"] if ward["top_blocking_rules"] else None
     if top == "detached_building":
         blocking = _sentences(t["blocking_rule"]["detached_building"], numbers)
@@ -53,7 +60,20 @@ def briefing_template(ward: dict, numbers: dict) -> dict[str, str]:
         "blocking_rule": blocking,
         "permits": _sentences(t["permits"], numbers),
         "not_checked": _sentences(t["not_checked"], numbers),
-        "questions": "\n".join(_questions("en")),
+        "questions": "\n".join(questions),
+    }
+
+
+def _template_strings(ward: dict, numbers: dict, lang: str) -> dict[str, str]:
+    """The whole page in a language's own template: fixed copy plus the template sections, no model involved."""
+    fixed = _copy()["translations"][lang]
+    sections = briefing_template(ward, numbers, lang)
+    return {
+        "title": fixed["title"],
+        **{f"heading_{sid}": fixed["headings"][sid] for sid in SECTION_IDS},
+        **{f"section_{sid}": sections[sid] for sid in WRITTEN},
+        **{f"question_{i}": q for i, q in enumerate(fixed["questions"], start=1)},
+        "disclaimer": fixed["disclaimer"],
     }
 
 
@@ -128,17 +148,24 @@ def briefing(
     }
     strings, text_lang, translation_unavailable = english, "en", False
     if lang != "en":
-        # The template fallback stays English (MASTERSPEC 7.5); a Gemini result is translated.
+        # A Gemini result is translated. Without one (no key, quota, a rejected translation) the language's
+        # own template is served, so a ward never shown in English for want of a model; English only for a
+        # language with no template.
         translated, translation_cached = (None, False)
         if source == "gemini":
             translated, translation_cached = translate(
                 english, lang, numbers=numbers, allowed=allowed_numbers(numbers), settings=settings, cache=cache,
                 generate=generate, endpoint="briefing", refresh=refresh,
             )
-        if translated is None:
-            translation_unavailable = True
-        else:
+        if translated is not None:
             strings, text_lang, cached = translated, lang, cached and translation_cached
+        elif lang in template_langs():
+            strings, text_lang = _template_strings(ward, numbers, lang), lang
+            check_template({k: v for k, v in strings.items() if k.startswith(("section_", "question_"))},
+                           numbers, allowed_numbers(numbers))
+            source, model = "template", None
+        else:
+            translation_unavailable = True
 
     questions = [strings[f"question_{i}"] for i in range(1, len(_questions("en")) + 1)]
     texts = {**{sid: strings[f"section_{sid}"] for sid in WRITTEN}, "questions": "\n".join(questions)}

@@ -53,27 +53,35 @@ export function NextSteps({ steps, copy = nextStepsCopy as NextStepsCopy }: Next
           <h4 className="next-steps-group-title">{copy.groups[group]}</h4>
           <ol className="next-steps-list">
             {items.map((step) => (
+              // Closed to its title, so the list reads at a glance; the rest opens on a click.
               <li className="next-step" key={step.id} data-step={step.id}>
-                <h5 className="next-step-title">{step.title}</h5>
-                <p className="next-step-text">{step.text}</p>
-                <p className="next-step-who">
-                  {copy.who_label && <span className="next-step-who-label">{copy.who_label}: </span>}
-                  {step.who}
-                </p>
-                {step.links.length > 0 && (
-                  <ul className="next-step-links">
-                    {step.links.map((link) => (
-                      <li key={link.url}>
-                        <a href={link.url} target="_blank" rel="noopener noreferrer">
-                          {link.label}
-                          <span aria-hidden="true"> ↗</span>
-                          {copy.new_tab && <span className="next-step-sr"> ({copy.new_tab})</span>}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <p className="next-step-why">{step.why}</p>
+                <details>
+                  <summary className="next-step-summary">
+                    <span className="next-step-title">{step.title}</span>
+                    <span className="next-step-chevron" aria-hidden="true" />
+                  </summary>
+                  <div className="next-step-body">
+                    <p className="next-step-text">{step.text}</p>
+                    <p className="next-step-who">
+                      {copy.who_label && <span className="next-step-who-label">{copy.who_label}: </span>}
+                      {step.who}
+                    </p>
+                    {step.links.length > 0 && (
+                      <ul className="next-step-links">
+                        {step.links.map((link) => (
+                          <li key={link.url}>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer">
+                              {link.label}
+                              <span aria-hidden="true"> ↗</span>
+                              {copy.new_tab && <span className="next-step-sr"> ({copy.new_tab})</span>}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <p className="next-step-why">{step.why}</p>
+                  </div>
+                </details>
               </li>
             ))}
           </ol>

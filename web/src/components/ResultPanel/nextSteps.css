@@ -46,19 +46,73 @@
   gap: var(--space-3);
 }
 
-.next-step {
-  display: grid;
+.next-steps-list {
   gap: var(--space-2);
-  padding: var(--space-4);
+}
+
+.next-step {
   border: 1px solid var(--suplex-line);
   border-radius: var(--radius-sm);
   background: var(--suplex-lot, var(--suplex-surface));
 }
 
+/* Closed, a step is one line: its title and a chevron that turns when it opens. */
+.next-step-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: inherit;
+  cursor: pointer;
+  list-style: none;
+}
+
+.next-step-summary::-webkit-details-marker {
+  display: none;
+}
+
+.next-step-summary:hover {
+  background: color-mix(in srgb, var(--suplex-highlight) 35%, transparent);
+}
+
+.next-step-summary:focus-visible {
+  outline: 2px solid var(--suplex-accent);
+  outline-offset: 2px;
+}
+
 .next-step-title {
-  margin: 0;
-  font-size: var(--text-md);
-  line-height: 1.25;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.next-step-chevron {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-right: 1.5px solid var(--suplex-accent);
+  border-bottom: 1.5px solid var(--suplex-accent);
+  transform: rotate(45deg);
+  transition: transform 150ms ease-out, margin-top 150ms ease-out;
+}
+
+details[open] > .next-step-summary .next-step-chevron {
+  margin-top: 4px;
+  transform: rotate(-135deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .next-step-chevron {
+    transition: none;
+  }
+}
+
+.next-step-body {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
 }
 
 .next-step-text,

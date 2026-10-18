@@ -70,8 +70,8 @@ button {
 
 /* A translucent drafting sheet (Landing/Blueprint.tsx) on the panel beige: at 70% the ink stays 8.8:1
    or better even over the darkest towers behind it. No overflow clip here: the search dropdown hangs
-   out below the card, so the drawing clips itself. The extra bottom padding leaves the sheet's
-   dimension line a clear strip under the disclaimer. */
+   out below the card, so the drawing clips itself. The bottom padding keeps the text a little above
+   the bottom rule; the sheet's chalk skyline (Landing/skyline.ts) sits faint behind it. */
 .landing-card {
   position: relative;
   isolation: isolate;
@@ -135,6 +135,12 @@ button {
   fill: color-mix(in srgb, var(--suplex-accent) 65%, transparent);
   font-family: var(--font-ui);
   font-size: 9px;
+}
+
+/* The skyline's chalk: the palette's deep teal, dark enough to read against the pale sheet while the
+   grain keeps it behind the text. */
+.blueprint-chalk {
+  fill: color-mix(in srgb, var(--palette-charcoal) 70%, transparent);
 }
 
 .landing-title {

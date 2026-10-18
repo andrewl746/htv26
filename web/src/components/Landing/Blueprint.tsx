@@ -1,11 +1,13 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { drawSkyline } from './skyline'
 
 /**
  * The landing card's backdrop: a drafting sheet in teal lines on the card's translucent beige, after
  * the cutting mat on jaydenchen.dev's Skills page. A quarter-unit grid, a double-ruled frame with ticks
- * on every edge and numerals along the top and bottom, registration marks at the corners and one
- * dimension line along the foot. Drawn once to the card's measured size; nothing moves, so the map
- * flight behind the card costs nothing extra. Colours come from app.css (`.blueprint-*`).
+ * on every edge and numerals along the top and bottom, registration marks at the corners, and, faint
+ * behind the text, a chalk sketch of downtown Toronto standing on the bottom rule (skyline.ts).
+ * Drawn once to the card's measured size; nothing moves, so the map flight behind the card costs
+ * nothing extra. Colours come from app.css (`.blueprint-*`).
  */
 
 /** The outer rule's inset from the card's edge (px). */
@@ -23,9 +25,15 @@ const TICK_MAJOR = 7
 /** The corner registration marks: the circle's radius and the cross's half-length. */
 const MARK_R = 5
 const MARK_ARM = 10
-/** The dimension line: its height above the bottom rule, and its slash end-ticks' half-length. */
-const DIM_RISE = 10
-const SLASH = 4
+/** The skyline's chalk: one width for every line, drawn in two passes that a slow noise bends by up
+ *  to CHALK_WOBBLE px each, like a hand going over the line twice; then a fine grain rubs specks of
+ *  it away (alpha = GAIN × noise − CUT). */
+const CHALK_WIDTH = 1.6
+const CHALK_BEND = 0.035
+const CHALK_WOBBLE = 4
+const CHALK_GRAIN = 1.1
+const CHALK_GAIN = 3
+const CHALK_CUT = 1
 
 const r2 = (n: number) => Math.round(n * 100) / 100
 
@@ -56,11 +64,9 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
   const corners = [x0 + 0.5, x1 - 0.5].flatMap((x) => [y0 + 0.5, y1 - 0.5].map((y) => [x, y]))
   const marks = corners.map(([x, y]) => `M${x - MARK_ARM} ${y}h${2 * MARK_ARM}M${x} ${y - MARK_ARM}v${2 * MARK_ARM}`).join('')
 
-  const dimY = y1 - DIM_RISE + 0.5
-  const dimA = x0 + UNIT
-  const dimB = x1 - UNIT
-  const slash = (x: number) => `M${x - SLASH} ${dimY + SLASH}l${2 * SLASH} ${-2 * SLASH}`
-  const dimension = `M${dimA} ${dimY}H${dimB}M${dimA} ${y1}V${dimY - SLASH}M${dimB} ${y1}V${dimY - SLASH}${slash(dimA)}${slash(dimB)}`
+  // The skyline stands on the bottom rule's line, half a pixel in.
+  const skyline = drawSkyline(x0, x1, y1 - 0.5)
+  const ruled = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }
 
   const cols = Math.floor((x1 - x0) / UNIT + 0.01)
   const topRow = (OUTER + y0 - TICK_MAJOR) / 2
@@ -73,6 +79,34 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
           <path className="blueprint-minor" d={minor} />
           <path className="blueprint-major" d={`M0.5 0V${UNIT}M0 0.5H${UNIT}`} />
         </pattern>
+        {/* Every skyline line in white, in drawing order: each building's black fill hides the lines
+            behind it, and nothing else, so the grid still shows through. */}
+        <mask id={`${id}-sky`} maskUnits="userSpaceOnUse" {...ruled}>
+          <g stroke="white" strokeWidth={CHALK_WIDTH} strokeLinecap="round" strokeLinejoin="round">
+            {skyline.parts.map((part, i) => (
+              <g key={i}>
+                <path d={part.outline} fill="black" />
+                {part.detail && <path d={part.detail} fill="none" />}
+              </g>
+            ))}
+            <path d={skyline.dimension} fill="none" />
+          </g>
+        </mask>
+        <filter id={`${id}-chalk`} filterUnits="userSpaceOnUse" {...ruled}>
+          {/* Two hand passes over the same lines, each bent its own way. */}
+          <feTurbulence type="fractalNoise" baseFrequency={CHALK_BEND} numOctaves={2} seed={3} result="bendA" />
+          <feDisplacementMap in="SourceGraphic" in2="bendA" scale={CHALK_WOBBLE} xChannelSelector="R" yChannelSelector="G" result="passA" />
+          <feTurbulence type="fractalNoise" baseFrequency={CHALK_BEND} numOctaves={2} seed={11} result="bendB" />
+          <feDisplacementMap in="SourceGraphic" in2="bendB" scale={CHALK_WOBBLE} xChannelSelector="R" yChannelSelector="G" result="passB" />
+          <feMerge result="sketch">
+            <feMergeNode in="passA" />
+            <feMergeNode in="passB" />
+          </feMerge>
+          {/* The grain of chalk on paper. */}
+          <feTurbulence type="fractalNoise" baseFrequency={CHALK_GRAIN} numOctaves={2} seed={7} result="grain" />
+          <feColorMatrix in="grain" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${CHALK_GAIN} 0 0 0 ${-CHALK_CUT}`} result="dust" />
+          <feComposite in="sketch" in2="dust" operator="in" />
+        </filter>
       </defs>
       <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill={`url(#${id}-grid)`} />
       <g className="blueprint-rule" fill="none">
@@ -80,12 +114,14 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
         <rect x={x0 + 0.5} y={y0 + 0.5} width={x1 - x0 - 1} height={y1 - y0 - 1} />
         <path d={ticks} />
       </g>
+      <g filter={`url(#${id}-chalk)`}>
+        <rect className="blueprint-chalk" {...ruled} mask={`url(#${id}-sky)`} />
+      </g>
       <g className="blueprint-mark" fill="none">
         <path d={marks} />
         {corners.map(([x, y]) => (
           <circle key={`${x} ${y}`} cx={x} cy={y} r={MARK_R} />
         ))}
-        <path d={dimension} />
       </g>
       <g className="blueprint-numeral" textAnchor="middle" dominantBaseline="central">
         {Array.from({ length: cols + 1 }, (_, k) => (

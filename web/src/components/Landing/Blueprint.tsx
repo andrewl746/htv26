@@ -5,7 +5,8 @@ import { drawSkyline } from './skyline'
  * The landing card's backdrop: a drafting sheet in teal lines on the card's translucent beige, after
  * the cutting mat on jaydenchen.dev's Skills page. A quarter-unit grid, a double-ruled frame with ticks
  * on every edge and numerals along the top and bottom, registration marks at the corners, and, faint
- * behind the text, a chalk sketch of downtown Toronto standing on the bottom rule (skyline.ts).
+ * behind the text, a chalk sketch of downtown Toronto standing on the bottom rule (skyline.ts; off
+ * for now, see SHOW_SKYLINE).
  * Drawn once to the card's measured size; nothing moves, so the map flight behind the card costs
  * nothing extra. Colours come from app.css (`.blueprint-*`).
  */
@@ -34,51 +35,21 @@ const CHALK_WOBBLE = 4
 const CHALK_GRAIN = 1.1
 const CHALK_GAIN = 3
 const CHALK_CUT = 1
+/** The chalk sketch of downtown Toronto, set aside for now: true puts it back. */
+const SHOW_SKYLINE = false
 
 const r2 = (n: number) => Math.round(n * 100) / 100
 
-function BlueprintDrawing({ w, h }: { w: number; h: number }) {
-  const id = `blueprint-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
-  const x0 = INNER
-  const y0 = INNER
-  const x1 = w - INNER
-  const y1 = h - INNER
-  if (x1 - x0 < UNIT || y1 - y0 < UNIT) return null
-
-  // Like a real sheet, everything counts from the ruled area's bottom-left corner.
-  const tickLen = (i: number) => (i % 4 === 0 ? TICK_MAJOR : TICK)
-  let ticks = ''
-  for (let i = 0; x0 + i * MINOR <= x1 + 0.01; i++) {
-    const x = r2(x0 + i * MINOR) + 0.5
-    ticks += `M${x} ${y0}v${-tickLen(i)}M${x} ${y1}v${tickLen(i)}`
-  }
-  for (let i = 0; y1 - i * MINOR >= y0 - 0.01; i++) {
-    const y = r2(y1 - i * MINOR) + 0.5
-    ticks += `M${x0} ${y}h${-tickLen(i)}M${x1} ${y}h${tickLen(i)}`
-  }
-
-  let minor = ''
-  for (let i = 1; i < 4; i++) minor += `M${i * MINOR + 0.5} 0V${UNIT}M0 ${i * MINOR + 0.5}H${UNIT}`
-
-  // On the inner rule's corners, which sit half a pixel in.
-  const corners = [x0 + 0.5, x1 - 0.5].flatMap((x) => [y0 + 0.5, y1 - 0.5].map((y) => [x, y]))
-  const marks = corners.map(([x, y]) => `M${x - MARK_ARM} ${y}h${2 * MARK_ARM}M${x} ${y - MARK_ARM}v${2 * MARK_ARM}`).join('')
-
+/** The chalk skyline over the ruled area: every line goes into a mask in drawing order, so each
+ *  building hides the lines behind it and nothing else; the mask cuts the chalk colour, and the
+ *  filter roughens it. */
+function ChalkSkyline({ id, x0, y0, x1, y1 }: { id: string; x0: number; y0: number; x1: number; y1: number }) {
   // The skyline stands on the bottom rule's line, half a pixel in.
   const skyline = drawSkyline(x0, x1, y1 - 0.5)
   const ruled = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }
-
-  const cols = Math.floor((x1 - x0) / UNIT + 0.01)
-  const topRow = (OUTER + y0 - TICK_MAJOR) / 2
-  const bottomRow = (y1 + TICK_MAJOR + h - OUTER) / 2
-
   return (
-    <svg width={w} height={h}>
+    <>
       <defs>
-        <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={x0} y={y1} width={UNIT} height={UNIT}>
-          <path className="blueprint-minor" d={minor} />
-          <path className="blueprint-major" d={`M0.5 0V${UNIT}M0 0.5H${UNIT}`} />
-        </pattern>
         {/* Every skyline line in white, in drawing order: each building's black fill hides the lines
             behind it, and nothing else, so the grid still shows through. */}
         <mask id={`${id}-sky`} maskUnits="userSpaceOnUse" {...ruled}>
@@ -108,15 +79,59 @@ function BlueprintDrawing({ w, h }: { w: number; h: number }) {
           <feComposite in="sketch" in2="dust" operator="in" />
         </filter>
       </defs>
+      <g filter={`url(#${id}-chalk)`}>
+        <rect className="blueprint-chalk" {...ruled} mask={`url(#${id}-sky)`} />
+      </g>
+    </>
+  )
+}
+
+function BlueprintDrawing({ w, h }: { w: number; h: number }) {
+  const id = `blueprint-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  const x0 = INNER
+  const y0 = INNER
+  const x1 = w - INNER
+  const y1 = h - INNER
+  if (x1 - x0 < UNIT || y1 - y0 < UNIT) return null
+
+  // Like a real sheet, everything counts from the ruled area's bottom-left corner.
+  const tickLen = (i: number) => (i % 4 === 0 ? TICK_MAJOR : TICK)
+  let ticks = ''
+  for (let i = 0; x0 + i * MINOR <= x1 + 0.01; i++) {
+    const x = r2(x0 + i * MINOR) + 0.5
+    ticks += `M${x} ${y0}v${-tickLen(i)}M${x} ${y1}v${tickLen(i)}`
+  }
+  for (let i = 0; y1 - i * MINOR >= y0 - 0.01; i++) {
+    const y = r2(y1 - i * MINOR) + 0.5
+    ticks += `M${x0} ${y}h${-tickLen(i)}M${x1} ${y}h${tickLen(i)}`
+  }
+
+  let minor = ''
+  for (let i = 1; i < 4; i++) minor += `M${i * MINOR + 0.5} 0V${UNIT}M0 ${i * MINOR + 0.5}H${UNIT}`
+
+  // On the inner rule's corners, which sit half a pixel in.
+  const corners = [x0 + 0.5, x1 - 0.5].flatMap((x) => [y0 + 0.5, y1 - 0.5].map((y) => [x, y]))
+  const marks = corners.map(([x, y]) => `M${x - MARK_ARM} ${y}h${2 * MARK_ARM}M${x} ${y - MARK_ARM}v${2 * MARK_ARM}`).join('')
+
+  const cols = Math.floor((x1 - x0) / UNIT + 0.01)
+  const topRow = (OUTER + y0 - TICK_MAJOR) / 2
+  const bottomRow = (y1 + TICK_MAJOR + h - OUTER) / 2
+
+  return (
+    <svg width={w} height={h}>
+      <defs>
+        <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={x0} y={y1} width={UNIT} height={UNIT}>
+          <path className="blueprint-minor" d={minor} />
+          <path className="blueprint-major" d={`M0.5 0V${UNIT}M0 0.5H${UNIT}`} />
+        </pattern>
+      </defs>
       <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill={`url(#${id}-grid)`} />
       <g className="blueprint-rule" fill="none">
         <rect x={OUTER + 0.5} y={OUTER + 0.5} width={w - 2 * OUTER - 1} height={h - 2 * OUTER - 1} rx={OUTER_RX} />
         <rect x={x0 + 0.5} y={y0 + 0.5} width={x1 - x0 - 1} height={y1 - y0 - 1} />
         <path d={ticks} />
       </g>
-      <g filter={`url(#${id}-chalk)`}>
-        <rect className="blueprint-chalk" {...ruled} mask={`url(#${id}-sky)`} />
-      </g>
+      {SHOW_SKYLINE && <ChalkSkyline id={id} x0={x0} y0={y0} x1={x1} y1={y1} />}
       <g className="blueprint-mark" fill="none">
         <path d={marks} />
         {corners.map(([x, y]) => (

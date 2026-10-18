@@ -5,6 +5,7 @@ import '@contracts/design-tokens.css'
 import './styles/palette.css'
 import './styles/typography.css'
 import './styles/app.css'
+import './styles/multiplex-theme.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(

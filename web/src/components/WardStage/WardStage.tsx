@@ -1,7 +1,8 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { fill, formatNumber, labels } from '../../copy'
 import { PANEL_WIDTH_PX } from '../../layout'
 import { useApp } from '../../state/store'
+import { Blueprint } from '../Landing/Blueprint'
 import { wardCopy } from '../WardMap/copy'
 import { DesignFilterControl } from '../WardMap/DesignFilterControl'
 import { isDisabled, type DesignFilter } from '../WardMap/designs'
@@ -10,6 +11,8 @@ import { useNearYourLot } from '../WardMap/useNearYourLot'
 import { WardMapCanvas } from '../WardMap/WardMapCanvas'
 import { WardPanel } from '../WardMap/WardPanel'
 import '../WardMap/wardMap.css'
+import { NumberMarks } from './NumberMarks'
+import './wardStage.css'
 
 /**
  * The ward view (MASTERSPEC 6.5, 6.6): Yuvi's ward map, put together from its parts the way his
@@ -37,6 +40,29 @@ function useIdleArmed(wanted: boolean, now: boolean): boolean {
   return armed || now
 }
 
+/** The drafting sheet behind Yuvi's ward panel, where wardMap.css puts the panel (wardStage.css). */
+function WardSheet() {
+  return (
+    <div className="ward-sheet">
+      <Blueprint logo={false} edge />
+    </div>
+  )
+}
+
+/**
+ * Sets the ward panel's scrollbar width on the map as --scrollbar, so wardStage.css can run the
+ * scrollbar down the sheet's band, as ResultPanel.tsx does for the result panel.
+ */
+function useScrollbarWidth() {
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const map = ref.current
+    const panel = map?.querySelector<HTMLElement>('.ward-panel')
+    if (map && panel) map.style.setProperty('--scrollbar', `${panel.offsetWidth - panel.clientWidth}px`)
+  })
+  return ref
+}
+
 export function WardStage() {
   const view = useApp((s) => s.view)
   const wardId = useApp((s) => s.wardId)
@@ -53,6 +79,7 @@ export function WardStage() {
   const { nearRing, near } = useNearYourLot(check?.lot.ward_id === wardId ? check : null, data)
   const active = view !== 'landing' && view !== 'flying'
   const armed = useIdleArmed(active && data !== null, view === 'toWard' || view === 'ward')
+  const mapRef = useScrollbarWidth()
 
   if (!wardId || !active) return null
   const shown = view === 'ward'
@@ -62,7 +89,8 @@ export function WardStage() {
     if (!shown) return null
     return (
       <div className="ward-stage ward-stage-shown">
-        <div className="ward-map" style={style}>
+        <div ref={mapRef} className="ward-map" style={style}>
+          <WardSheet />
           <aside className="ward-panel" aria-busy={wardStatus !== 'error'}>
             {wardStatus === 'error' ? (
               <p role="alert">{labels.ui.load_error}</p>
@@ -89,11 +117,13 @@ export function WardStage() {
 
   return (
     <div className={shown ? 'ward-stage ward-stage-shown' : 'ward-stage'} aria-hidden={!shown}>
-      <div className="ward-map" style={style}>
+      <div ref={mapRef} className="ward-map" style={style}>
         <WardMapCanvas data={data} filter={design} searchedLotId={searched} onSelectLot={(lotId) => openLot(lotId)} ariaLabel={mapLabel} nearRing={nearRing} />
         <DesignFilterControl value={design} onChange={setFilter} overlay={data.ward.sixplex_overlay} />
         <Legend />
+        {shown && <WardSheet />}
         {shown && <WardPanel ward={data.ward} lang={lang} trend={data.trend} near={near} onBack={hasLot ? backToLot : undefined} />}
+        {shown && <NumberMarks mapRef={mapRef} />}
       </div>
     </div>
   )

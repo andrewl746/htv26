@@ -1,0 +1,82 @@
+/*
+ * Touches of the landing card's drafting sheet on "Search for Suplex" (WardMap/MultiplexSearchEntry.tsx)
+ * and the page it opens (WardMap/MultiplexBrowser.tsx): the button is a strip of the sheet, and on
+ * the page the text boxes are rulers, the larger boxes graph paper, and the list's section headings
+ * ruled off with more room between sections; the rest keeps the page's own look. Those components
+ * and their CSS are Yuvi's, so this sits over them from here: one class more
+ * specific than theirs (their CSS loads later, with the lazy page), and only inside the page
+ * (.mx-entry-page), so the ward map's own .mx- boxes keep their look.
+ */
+
+/* ---------- The button: a strip of the drafting sheet, like the top bar across from it ---------- */
+
+.app .mx-entry {
+  border-color: var(--blueprint-edge);
+  background-color: color-mix(in srgb, var(--suplex-surface) 70%, transparent);
+  background-image: var(--graph-paper);
+  background-size: var(--graph-paper-size);
+  backdrop-filter: blur(8px);
+  color: var(--palette-charcoal);
+}
+
+.app .mx-entry:hover {
+  border-color: var(--suplex-accent);
+}
+
+/* ---------- The page ---------- */
+
+/* Every box you type or pick in is a ruler, as in app.css (.search-input). */
+.mx-entry-page .mxb-input,
+.mx-entry-page .mxb-select,
+.mx-entry-page .mx-search-input {
+  padding-top: calc(var(--space-2) + 2px);
+  background-color: var(--suplex-surface);
+  background-image:
+    repeating-linear-gradient(to right, var(--blueprint-rule) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to right, var(--blueprint-rule) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(to right, var(--blueprint-rule) 0 1px, transparent 1px 8px);
+  background-repeat: no-repeat;
+  background-size:
+    100% 7px,
+    100% 5px,
+    100% 3px;
+}
+
+/* More room between the list's sections. */
+.mx-entry-page .mxb-side {
+  gap: var(--space-8);
+}
+
+/* Each section's heading in the deep teal, a step up in size, over a rule of the sheet's teal, so it
+   stands apart from the labels and help text under it; the filters' heading heads its own box, so
+   it takes the colour and size only. */
+.mx-entry-page .mxb-search .mxb-field-label,
+.mx-entry-page .mxb-near .mxb-subtitle {
+  margin: 0 0 var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--blueprint-rule);
+  color: var(--palette-charcoal);
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.mx-entry-page .mxb-filters > summary {
+  color: var(--palette-charcoal);
+  font-size: var(--text-md);
+}
+
+/* The larger boxes on graph paper: near an address, the filters, the permitted multiplexes and the
+   sources in the list, and the filter panel and legend floating on the map. A card under the pointer
+   keeps its plain highlight. */
+.mx-entry-page .mxb .mx-search,
+.mx-entry-page .mxb-filters,
+.mx-entry-page .mxb-card,
+.mx-entry-page .mxb-sources,
+.mx-entry-page .mx-panel,
+.mx-entry-page .mx-legend {
+  background-color: var(--suplex-surface);
+  background-image: var(--graph-paper);
+  background-size: var(--graph-paper-size);
+}

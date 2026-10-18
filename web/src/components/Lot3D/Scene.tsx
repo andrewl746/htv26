@@ -17,7 +17,9 @@ import { DrawnDesign } from './DrawnDesign'
 import { failSlab } from './failSlabs'
 import { FailSlices } from './FailSlices'
 import { Frontage } from './Frontage'
-import { FLAT, openRing, toScene, vertexMean } from './geometry'
+import { Garden } from './Garden'
+import { Ground } from './Ground'
+import { openRing, toScene, vertexMean } from './geometry'
 import { LabelProjector } from './LabelProjector'
 import { failLabel, homeLabels, oldHouseLabels } from './labels'
 import { Lighting } from './Lighting'
@@ -29,8 +31,11 @@ import { Pin } from './Pin'
 import { QualityMonitor } from './QualityMonitor'
 import { SceneLabels } from './SceneLabels'
 import { SettleWatch, ShadowFreeze } from './Settle'
+import { Sky } from './Sky'
 import { Sequence } from './Sequence'
 import { Street } from './Street'
+import { extendStreet } from './streetExtension'
+import { streetFrame } from './streetFrame'
 import { Studio } from './Studio'
 import { buildTimeline } from './timeline'
 import { Trees } from './Trees'
@@ -44,6 +49,10 @@ const GROUND_SCALE = 4
 const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg: restViewBearingDeg(null) }
 const FOG_NEAR_M = 90
 const FOG_FAR_M = 320
+/** The drawn look sees further down the street, which it continues past the data (streetExtension.ts). */
+const DRAWN_FOG = { near: 150, far: 540 }
+/** The drawn look's daytime sky: haze at the horizon (also the fog) and blue overhead. */
+const SKY = { horizon: '#dfe7ec', zenith: '#8fb6dc' }
 /** Dev elevation view: how far in front of the design the camera stands. */
 const ELEVATION_DISTANCE_M = 70
 /**
@@ -125,6 +134,20 @@ export function Scene({
   const labelElements = useRef<(HTMLDivElement | null)[]>([])
 
   const lotKey = check?.lot.lot_id ?? ''
+  // The street in front of the lot: doors face it, the road runs along it.
+  const frontage = check?.lot.frontage_edge_local ?? null
+  const lotRing = check?.lot.polygon_local ?? null
+  const street = useMemo(() => (frontage ? streetFrame(frontage, lotRing) : null), [frontage, lotRing])
+  // The drawn look continues the block past the real data, so the street does not stop at 150 m.
+  const extension = useMemo(
+    () => (drawn && street && check ? extendStreet(street, check.context.buildings, check.context.trees, check.context.radius_m) : null),
+    [drawn, street, check],
+  )
+  const streetBuildings = useMemo(
+    () => (check ? [...check.context.buildings, ...(extension?.buildings ?? [])] : []),
+    [check, extension],
+  )
+  const streetTrees = useMemo(() => (check ? [...check.context.trees, ...(extension?.trees ?? [])] : []), [check, extension])
   const groundRadius = check?.context.radius_m ?? engineConfig.context_radius_m
   const pinHeight = check ? Math.max(0, ...check.context.buildings.filter((b) => b.on_lot).map(buildingTop)) : 0
   // The same rest view the base map's flight ended on.
@@ -172,8 +195,19 @@ export function Scene({
       >
         {import.meta.env.DEV && <DebugBridge stepDown={stepQuality} />}
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
-          <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
-          {ELEVATION_VIEW && <color attach="background" args={['white']} />}
+          <fog
+            attach="fog"
+            args={[
+              drawn ? SKY.horizon : tokenHex('--suplex-sky-bottom'),
+              drawn ? DRAWN_FOG.near : FOG_NEAR_M,
+              drawn ? DRAWN_FOG.far : FOG_FAR_M,
+            ]}
+          />
+          {ELEVATION_VIEW ? (
+            <color attach="background" args={['white']} />
+          ) : (
+            <Sky horizon={drawn ? SKY.horizon : tokenHex('--suplex-sky-bottom')} zenith={drawn ? SKY.zenith : null} />
+          )}
           <Camera
             lotKey={lotKey}
             distanceM={framing.distanceM}
@@ -188,22 +222,28 @@ export function Scene({
           {drawn && check && <QualityMonitor key={`quality-${lotKey}`} minFps={MIN_FPS} onDecline={stepQuality} />}
           {drawn ? <Studio shadows={rich} /> : <Lighting />}
 
-          <mesh rotation={FLAT} receiveShadow>
-            <circleGeometry args={[groundRadius * GROUND_SCALE, 96]} />
-            <meshStandardMaterial color={tokenHex('--suplex-ground')} roughness={1} />
-          </mesh>
+          <Ground radius={groundRadius * GROUND_SCALE} drawn={drawn} />
 
           <WarmUp />
 
           {check && (
             <>
-              {!ELEVATION_VIEW && <Street key={`street-${lotKey}`} buildings={check.context.buildings} />}
+              {!ELEVATION_VIEW && <Street key={`street-${lotKey}`} buildings={streetBuildings} street={street} />}
               {drawn && !ELEVATION_VIEW && check.lot.frontage_edge_local && (
                 <Frontage key={`frontage-${lotKey}`} edge={check.lot.frontage_edge_local} buildings={check.context.buildings} />
               )}
-              {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={check.context.trees} />}
+              {!ELEVATION_VIEW && <Trees key={`trees-${lotKey}`} trees={streetTrees} />}
+              {drawn && !ELEVATION_VIEW && street && (
+                <Garden
+                  key={`garden-${lotKey}-${designId ?? ''}`}
+                  lot={check.lot.polygon_local}
+                  design={result}
+                  buildings={check.context.buildings}
+                  street={street}
+                />
+              )}
               <Lot key={`lot-${lotKey}`} polygon={check.lot.polygon_local} design={result} />
-              <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} />
+              <OldHouse key={`old-${lotKey}`} buildings={check.context.buildings} squash={placement !== null} street={street} />
               <Pin restHeight={pinHeight} leaves={placement !== null} />
               {placement &&
                 spec &&

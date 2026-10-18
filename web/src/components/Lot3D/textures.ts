@@ -232,3 +232,63 @@ export function sidewalkTexture(colour: string, joint: string, slabM: number): T
   }
   return finish(map, bump, [slabM, slabM])
 }
+
+/** Horizontal lap siding: boards `boardM` tall, each with a shadow line under its lap. */
+export function sidingTexture(colour: string, shadow: string, boardM: number): TexturePair {
+  const px = 64
+  const [map, m] = canvas(px, px)
+  const [bump, b] = canvas(px, px)
+  const lapShare = 0.16
+  if (m && b) {
+    const grad = m.createLinearGradient(0, 0, 0, px)
+    grad.addColorStop(0, colour)
+    grad.addColorStop(1 - lapShare, colour)
+    grad.addColorStop(1, shadow)
+    m.fillStyle = grad
+    m.fillRect(0, 0, px, px)
+    const bg = b.createLinearGradient(0, 0, 0, px)
+    bg.addColorStop(0, '#ffffff')
+    bg.addColorStop(1 - lapShare, '#bbbbbb')
+    bg.addColorStop(1, '#000000')
+    b.fillStyle = bg
+    b.fillRect(0, 0, px, px)
+  }
+  return finish(map, bump, [1, boardM])
+}
+
+/** A lawn: green with darker and lighter tufts and a few broad patches, one tile `tileM` square. */
+export function grassTexture(colour: string, tileM: number, seed = 9): TexturePair {
+  const px = 256
+  const [map, m] = canvas(px, px)
+  const [bump, b] = canvas(px, px)
+  const random = seeded(seed)
+  const base = new Color(colour)
+  if (m && b) {
+    m.fillStyle = colour
+    m.fillRect(0, 0, px, px)
+    b.fillStyle = '#808080'
+    b.fillRect(0, 0, px, px)
+    // Broad patches, wrapped so the tile repeats without a seam.
+    for (let i = 0; i < 14; i++) {
+      const [x, y, r] = [random() * px, random() * px, 20 + random() * 50]
+      const tint = base.clone().offsetHSL((random() - 0.5) * 0.02, (random() - 0.5) * 0.08, (random() - 0.5) * 0.06)
+      for (const [ox, oy] of [[0, 0], [-px, 0], [px, 0], [0, -px], [0, px]]) {
+        const g = m.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r)
+        g.addColorStop(0, `#${tint.getHexString()}`)
+        g.addColorStop(1, `#${tint.getHexString()}00`)
+        m.fillStyle = g
+        m.fillRect(x + ox - r, y + oy - r, 2 * r, 2 * r)
+      }
+    }
+    // Tufts.
+    for (let i = 0; i < 5000; i++) {
+      const [x, y] = [random() * px, random() * px]
+      const tint = base.clone().offsetHSL(0, 0, (random() - 0.5) * 0.16)
+      m.fillStyle = `#${tint.getHexString()}`
+      m.fillRect(x, y, 1.2, 2.2)
+      b.fillStyle = random() < 0.5 ? '#a0a0a0' : '#606060'
+      b.fillRect(x, y, 1.2, 2.2)
+    }
+  }
+  return finish(map, bump, [tileM, tileM])
+}

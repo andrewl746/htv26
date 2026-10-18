@@ -1,6 +1,7 @@
 {
   "checked_on": "2026-10-17",
   "heading": "Your next steps",
+  "intro": "Suplex checks zoning only. These are the steps that usually come next after a screening like this.",
   "who_label": "Who to contact",
   "new_tab": "opens in a new tab",
   "groups": {
@@ -9,7 +10,7 @@
     "apply": "Apply with a City design",
     "alternatives": "If the free designs don't fit"
   },
-  "footer": "Screening only, not a permit or legal advice. Steps and contacts come from City of Toronto pages checked on {checked_on}; confirm with the City before you rely on them.",
+  "footer": "Every project is different, and Suplex can't tell you what your project will need. Screening only, not a permit or legal advice. Steps and contacts come from City of Toronto pages checked on {checked_on}; confirm with the City before you rely on them.",
   "steps": {
     "survey": {
       "group": "confirm",
@@ -40,7 +41,7 @@
     "zoning_check": {
       "group": "confirm",
       "title": "Check the zoning with the City",
-      "text": "Toronto Building staff can answer zoning questions about this specific property: 416-397-5330, Monday to Friday, 8:30 a.m. to 4:30 p.m. For a written answer before you apply, a Zoning Applicable Law Certificate reviews your drawings (up to three reviews); if you apply for the building permit with the certificate, its fee is credited against the building permit fees.",
+      "text": "Toronto Building staff can answer zoning questions about this specific property: 416-397-5330, Monday to Friday, 8:30 a.m. to 4:30 p.m. For a written answer before you apply, a Zoning Applicable Law Certificate reviews your drawings (up to three reviews); if you apply for the building permit with the certificate, its fee is credited against the building permit fees. A Property Information Report ($214.79) lists the building permits issued for an address, the status of their inspections and any outstanding orders.",
       "who": "Toronto Building",
       "links": [
         {
@@ -50,6 +51,10 @@
         {
           "label": "Zoning Applicable Law Certificate",
           "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/"
+        },
+        {
+          "label": "Property Information Report",
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/property-information-reports/"
         }
       ],
       "sources": [
@@ -64,15 +69,19 @@
         {
           "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/apply-for-a-zoning-review/zoning-applicable-law-certificate/",
           "quote": "the fee paid for the Zoning Applicable Law Certificate will be credited to the building permit application such that the building permit fees will be reduced by the amount of the Zoning Applicable Law Certificate fee."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/preliminary-zoning-reviews-information/property-information-reports/",
+          "quote": "provides information for a specific municipal address regarding issued building permits on file"
         }
       ]
     },
     "site_exception": {
       "group": "confirm",
       "title": "Look up site-specific exception x{number}",
-      "text": "Your zone label carries site-specific exception x{number}. A Chapter 900 exception can set limits that still apply to a multiplex, such as a maximum floor space index or lot coverage. Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff on 416-397-5330.",
+      "text": "Your zone label carries site-specific exception x{number}. A Chapter 900 exception may set limits that still apply to a multiplex, such as a maximum floor space index or lot coverage. Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff on 416-397-5330.",
       "title_without_number": "Look up your site-specific exception",
-      "text_without_number": "Your zone label carries a site-specific exception. A Chapter 900 exception can set limits that still apply to a multiplex, such as a maximum floor space index or lot coverage. Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff on 416-397-5330.",
+      "text_without_number": "Your zone label carries a site-specific exception. A Chapter 900 exception may set limits that still apply to a multiplex, such as a maximum floor space index or lot coverage. Suplex does not read exceptions. Look it up on the City's Interactive Zoning By-law Map or ask zoning staff on 416-397-5330.",
       "who": "Toronto Building",
       "links": [
         {
@@ -98,7 +107,7 @@
     "heritage": {
       "group": "approvals",
       "title": "Talk to Heritage Planning",
-      "text": "This property is on the City's Heritage Register or in a Heritage Conservation District. In a district, new construction, exterior alterations and additions need a heritage permit. On an individually designated property, altering or demolishing a building needs heritage permission, and some decisions go to City Council. A listed property is not protected, but its owner must give Council at least 60 days' notice before demolishing. Email Heritage Planning before you design.",
+      "text": "This property is on the City's Heritage Register or in a Heritage Conservation District. In a district, new construction, exterior alterations and additions need a heritage permit. On an individually designated property, altering or demolishing a building needs heritage permission, and some decisions go to City Council. A listed property has no protection under the Ontario Heritage Act, except that its owner must give City Council at least 60 days' notice before demolishing. Heritage Planning can advise before you design.",
       "who": "Heritage Planning (heritageplanning@toronto.ca)",
       "links": [
         {
@@ -132,7 +141,7 @@
     "ravine": {
       "group": "approvals",
       "title": "Check ravine and natural feature protection",
-      "text": "Part of this lot is in a ravine or natural feature protection area. Without a ravine permit you cannot harm or remove any tree there regardless of size, change the natural land topography (dig, or add soil on slopes), place fill, or build or replace structures or retaining walls.",
+      "text": "Part of this lot is in a ravine or natural feature protection area. The City requires a ravine permit before anyone harms or removes a tree there of any size, changes the natural land topography (digging, or adding soil on slopes), places fill, or builds or replaces structures or retaining walls.",
       "who": "Tree and Ravine Protection, City of Toronto",
       "links": [
         {
@@ -141,6 +150,10 @@
         }
       ],
       "sources": [
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
+          "quote": "Harming or removing any trees, regardless of size"
+        },
         {
           "url": "https://www.toronto.ca/services-payments/building-construction/tree-ravine-protection-permits/when-to-apply-for-a-tree-or-ravine-permit/",
           "quote": "Changing the natural land topography, by excavation or adding soil or other materials on slopes"
@@ -154,7 +167,7 @@
     "trca": {
       "group": "approvals",
       "title": "Ask the conservation authority",
-      "text": "If your lot is in the Toronto and Region Conservation Authority's regulated area, building or replacing a home usually needs a TRCA permit under Ontario Regulation 41/24, and the City cannot issue a building permit until TRCA has issued a permit or clearance. Talk to a TRCA planner before you apply.",
+      "text": "If your lot is in the Toronto and Region Conservation Authority's regulated area, building or replacing a home usually needs a TRCA permit under Ontario Regulation 41/24, and the City cannot issue a building permit until TRCA has issued a permit or clearance. TRCA encourages talking to one of its planners before you apply.",
       "who": "Toronto and Region Conservation Authority (TRCA)",
       "links": [
         {
@@ -252,13 +265,21 @@
         {
           "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
           "quote": "When applying for a building permit, enter the pre-approved plan number on the Application to Construct or Demolish form. You do not need to submit the pre-approved drawing."
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "Required Forms, \"Infill Public Notice Declaration Form\": \"This is a declaration form to be submitted to Toronto Building in order for the Owner or authorised agent of the owner to request an electronic copy of the Residential Infill Public Notice from Toronto Building\""
+        },
+        {
+          "url": "https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/pre-approved-building-plans/pre-approved-multiplex-building-plans/",
+          "quote": "Required Forms, \"Municipal Road Damage Form\": \"Applicant/owner is required to pay a damage deposit as a protection guarantee against damage to the curb, sidewalk, road, public laneway, boulevard and other services as well as tracking mud on City streets, or failing to clear snow and ice from sidewalks while construction is in progress.\""
         }
       ]
     },
     "demolition": {
       "group": "apply",
       "title": "Add a demolition permit",
-      "text": "Replacing the existing house means a demolition permit as well. When you apply online, you can add the demolition permit after you submit the building permit application, using the reference number and access code from your confirmation email.",
+      "text": "Replacing the existing house also needs a demolition permit. When you apply online, you can add the demolition permit after you submit the building permit application, using the reference number and access code from your confirmation email.",
       "who": "Toronto Building",
       "links": [
         {
@@ -276,7 +297,7 @@
     "fees": {
       "group": "apply",
       "title": "Check development charges",
-      "text": "A multiplex of up to six units pays no development charges on its second, third and fourth units, and the fifth and sixth are reduced to $0. Parkland cash-in-lieu is waived for the second to sixth unit. These apply when the parcel has no more than six units (a garden or laneway suite on the City's development charges deferral program does not count toward that six; for parkland, a garden or laneway suite allows up to seven in total). Some City web pages still say four units; By-law 845-2025 (July 24, 2025) is the current rule.",
+      "text": "Under By-law 845-2025 (July 24, 2025), a multiplex of up to six units pays no development charges on its second, third and fourth units, and the fifth and sixth are reduced to $0. Parkland cash-in-lieu is waived for the second to sixth unit. These apply when the parcel has no more than six units (a garden or laneway suite on the City's development charges deferral program does not count toward that six; for parkland, a garden or laneway suite allows up to seven in total). Some City web pages still say four units; the by-law is the current rule.",
       "who": "Toronto Building",
       "links": [
         {
@@ -322,6 +343,18 @@
         {
           "url": "https://www.toronto.ca/legdocs/bylaws/2023/law0474.pdf",
           "quote": "In the Residential Zone category, a portion of a semi-detached house located on one lot may be converted to contain up to four dwelling units"
+        },
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2023/law0474.pdf",
+          "quote": "(A) the original building was constructed prior to May 15, 2023 and the additional dwelling units are contained entirely within the lawfully existing building"
+        },
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2023/law0474.pdf",
+          "quote": "In the Residential Zone category, a portion of a townhouse located on one lot may be converted to contain up to four dwelling units and may continue to be considered as a townhouse despite the building type definitions in Chapter 800 provided:"
+        },
+        {
+          "url": "https://www.toronto.ca/legdocs/bylaws/2023/law0474.pdf",
+          "quote": "(A) if the original building was constructed prior to May 15, 2023 and the additional dwelling units are contained entirely within the lawfully existing building"
         },
         {
           "url": "https://www.toronto.ca/legdocs/bylaws/2025/law0654.pdf",

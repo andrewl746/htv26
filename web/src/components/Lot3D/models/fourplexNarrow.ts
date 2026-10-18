@@ -160,6 +160,16 @@ export const fourplexNarrow = {
     { points: [[0.145, 15.589], [0.145, 17.44], [3.05, 17.44], [3.05, 16.85], [4.24, 16.85]], z: 6.3, height: 0.46 },
     // Rear sunken area at grade (assumed).
     { points: [[0.213, 17.587], [0.213, 20.52], [3.2, 20.52]], z: -1.2, height: 1.07 },
+    // Rear exterior stair (A201): the open sides of each landing, in line with the flights' guards.
+    { points: [[3.225, 17.587], [3.225, 18.19]], z: 0, height: 1.07 },
+    { points: [[5.17, 17.0], [5.17, 18.19]], z: 0, height: 1.07 },
+    { points: [[3.225, 20.48], [3.225, 21.48], [5.17, 21.48], [5.17, 20.48]], z: 1.3, height: 1.07 },
+    { points: [[3.225, 17.587], [3.225, 18.19]], z: 2.84, height: 1.07 },
+    { points: [[5.17, 17.0], [5.17, 18.19]], z: 2.84, height: 1.07 },
+    { points: [[3.225, 20.48], [3.225, 21.48], [5.17, 21.48], [5.17, 20.48]], z: 4.2, height: 1.07 },
+    // The top landing, where no flight goes on up: its left side and the open half of its far edge.
+    { points: [[3.225, 17.44], [3.225, 18.14], [4.125, 18.14]], z: 5.86, height: 1.07 },
+    { points: [[5.17, 17.0], [5.17, 18.19]], z: 5.86, height: 1.07 },
   ],
   stairs: [
     // Entry stair (7 risers) from grade to the porch.

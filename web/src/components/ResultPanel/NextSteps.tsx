@@ -16,6 +16,7 @@ export interface NextStepsCopy {
   groups: Record<NextStepGroup, string>
   footer: string
   heading?: string // suggested addition to the copy file; falls back to FALLBACK_HEADING
+  intro?: string // one line under the heading ("Suplex checks zoning only ..."); omitted when absent
   who_label?: string // optional, e.g. "Who to contact"
   new_tab?: string // optional, spoken after each link, e.g. "opens in a new tab"
 }
@@ -46,6 +47,7 @@ export function NextSteps({ steps, copy = nextStepsCopy as NextStepsCopy }: Next
       <h3 className="next-steps-heading" id="next-steps-heading">
         {heading}
       </h3>
+      {copy.intro && <p className="next-steps-intro">{copy.intro}</p>}
       {groups.map(({ group, items }) => (
         <div className="next-steps-group" key={group} data-group={group}>
           <h4 className="next-steps-group-title">{copy.groups[group]}</h4>

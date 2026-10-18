@@ -497,6 +497,11 @@ def test_real_copy_file_covers_every_step_and_fixtures_match():
         assert step["group"] == STEP_GROUPS[sid]
         assert step["title"] and step["text"] and step["who"] and step["links"]
         assert all(link["label"] and link["url"].startswith("https://") for link in step["links"])
+    # S14: the intro and footer come from the copy file; every step keeps its own sources
+    assert copy["intro"] and "Suplex checks zoning only" in copy["intro"]
+    assert "Screening only, not a permit or legal advice." in copy["footer"] and "{checked_on}" in copy["footer"]
+    for step in copy["steps"].values():
+        assert step["sources"] and all(src["url"].startswith("https://") and src["quote"] for src in step["sources"])
     for key in ("borderline", "any_fit", "flag", "has_building", "attached", "no_fit", "not_checked"):
         assert key in copy["why"]
     # every step at once, then every fixture: ids and why lines

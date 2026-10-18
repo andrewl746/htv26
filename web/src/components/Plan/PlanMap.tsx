@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react'
 import type { CheckResponse, DesignResult } from '@contracts/types'
 import { fill, labels } from '../../copy'
+import { useApp } from '../../state/store'
 import { planCopy } from './copy'
 import { PlanBackdrop } from './PlanBackdrop'
 import { centre, niceLength, permitRadius, ringPath, viewBoxFor, type Preset, type ViewBox } from './geometry'
@@ -50,6 +51,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 /** The lot, the design on it, the buildings around it and the multiplex permits nearby, seen from above. */
 export function PlanMap({ check, design, preset, onManual }: Props) {
   const stage = useRef<HTMLDivElement>(null)
+  const graphics = useApp((s) => s.graphics)
   const size = useSize(stage)
   const target = useMemo(() => viewBoxFor(preset.scale, check), [preset, check])
   const [box, setBox] = useViewBox(target)
@@ -167,7 +169,8 @@ export function PlanMap({ check, design, preset, onManual }: Props) {
 
   return (
     <div className="plan-stage" ref={stage} tabIndex={0} role="group" aria-label={planCopy.aria_plan} onKeyDown={onKeyDown}>
-      <PlanBackdrop origin={context.origin} box={box} mPerPx={px} />
+      {/* The street map behind the plan needs WebGL; without it the plan stands on its own. */}
+      {graphics && <PlanBackdrop origin={context.origin} box={box} mPerPx={px} />}
       <svg
         className="plan-svg"
         viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}

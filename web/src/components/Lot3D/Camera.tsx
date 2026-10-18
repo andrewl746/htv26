@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, type ComponentRef } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, type ComponentRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import { Spherical, Vector3 } from 'three'
@@ -9,8 +9,8 @@ import { FOV_DEG, REST_TILT_DEG, TARGET_HEIGHT_M } from './view'
 
 // Steps 1 and 7 (MASTERSPEC 6.3). The swoop is the base map's flight: over its last stretch this
 // camera follows the map's (cameraBridge) while the scene fades in, then comes to rest with it on
-// the rest view. Then a slow orbit, 24 s per turn, that stops while someone drags and resumes 5 s
-// after.
+// the rest view. Then a slow orbit, 24 s per turn, that stops while someone holds the pointer down
+// on the scene (still or dragging) and resumes 5 s after they let go.
 const TARGET = new Vector3(0, TARGET_HEIGHT_M, 0)
 const ORBIT_PERIOD_S = 24
 const ORBIT_IDLE_S = 5
@@ -69,21 +69,14 @@ export function Camera({
     user.current = { dragging: false, releasedAt: -Infinity }
   }, [lotKey, distanceM, viewBearingDeg])
 
-  useLayoutEffect(() => {
-    const ctl = controls.current
-    if (!ctl) return
-    const start = () => {
-      user.current.dragging = true
-    }
-    const end = () => {
-      user.current = { dragging: false, releasedAt: clock.elapsedTime }
-    }
-    ctl.addEventListener('start', start)
-    ctl.addEventListener('end', end)
-    return () => {
-      ctl.removeEventListener('start', start)
-      ctl.removeEventListener('end', end)
-    }
+  // Drei makes the controls again once this camera becomes the default (right after mount), so
+  // listen through its props, which follow the current controls, not on the first ones. 'start'
+  // comes as the pointer goes down, before any move.
+  const onStart = useCallback(() => {
+    user.current.dragging = true
+  }, [])
+  const onEnd = useCallback(() => {
+    user.current = { dragging: false, releasedAt: clock.elapsedTime }
   }, [clock])
 
   // Before the labels and the cutaway read the camera this frame, and after the controls (-1).
@@ -129,6 +122,8 @@ export function Camera({
         minDistance={15}
         maxDistance={120}
         maxPolarAngle={1.35}
+        onStart={onStart}
+        onEnd={onEnd}
       />
     </>
   )

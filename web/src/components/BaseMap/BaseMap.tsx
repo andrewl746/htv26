@@ -8,8 +8,18 @@ import { useApp } from '../../state/store'
 import { cameraBridge, type BridgedPose } from '../Lot3D/cameraBridge'
 import { lotFraming } from '../Lot3D/framing'
 import { FOV_DEG, HANDOFF_S, MAP_FADE_S, REST_TILT_DEG } from '../Lot3D/view'
+import type { Bounds } from '../WardMap/data'
 import { distanceForZoom, zoomForDistance } from './handoff'
-import { applyPalette, fadeBuildings } from './mapStyle'
+import { applyPalette, fadeBuildings, setWardBase } from './mapStyle'
+import {
+  hideWardLayers,
+  playHide,
+  playReveal,
+  preloadWardLayers,
+  prepareWardLayers,
+  showWardLayers,
+  type RevealTiming,
+} from './wardTransition'
 
 // One map behind the whole app. On the landing page it is a slowly swaying 3D Toronto. A search
 // flies it, in one move, to the lot's rest view: the 3D camera's own pose (tilt, heading toward the
@@ -17,7 +27,9 @@ import { applyPalette, fadeBuildings } from './mapStyle'
 // stretch the 3D scene fades in with its camera locked to this one and the map's buildings fade
 // away, so the street rises in their place while the camera is still descending, and the flight's
 // ease-out is the end of a single move.
-// The ward map (J5) and the lot-to-ward transition (J6) will reuse it.
+// "See your ward" (MASTERSPEC 6.6) pulls the same map out from the lot to the whole ward, the lots
+// rippling in and the permit dots dropping, and the ward map takes over on the view it ends on;
+// "Back to your lot" flies it back down, the 3D scene fading in over the last stretch again.
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron'
 /**
@@ -44,6 +56,25 @@ const FLY_MIN_ZOOM = 14
 const TILE_ZOOM_LEVELS_ON_SCREEN = 1
 const TILE_COUNT_MAX_MIN_RATIO = 4
 const RETURN_MS = 2000
+/** Lot to ward (MASTERSPEC 6.6): the flight out, and the ripple and the dots timed from its start. */
+const WARD_FLY_MS = 2000
+const REVEAL: RevealTiming = { rippleDelayMs: 300, rippleMs: 1500, dotsWindowMs: 300, dropMs: 150 }
+/** The ground eases to the ward map's neutral colours over the first part of the flight out. */
+const WARD_BASE_MS = 1200
+/** Ward to lot: under 2 s (J6); the 3D scene fades in over the last HANDOFF_S of it. */
+const BACK_FLY_MS = 1500
+/** On the way back the lots go from the ward's edge inward over this share of the flight. */
+const BACK_HIDE_SHARE = 0.7
+/** How the ward map frames its ward (WardMap/WardMapCanvas.tsx FIT_PADDING_PX, beside its panel). */
+const WARD_FIT_PADDING_PX = 40
+const WARD_PADDING: Required<PaddingOptions> = {
+  top: WARD_FIT_PADDING_PX,
+  bottom: WARD_FIT_PADDING_PX,
+  left: WARD_FIT_PADDING_PX,
+  right: PANEL_WIDTH_PX + WARD_FIT_PADDING_PX,
+}
+/** MapLibre's world is 512 px wide at zoom 0. */
+const WORLD_PX_AT_ZOOM_0 = 512
 // MapLibre looks for its worker next to its own file, which Vite moves. Hand it the worker as Vite
 // builds workers (a plain ?url import gets Vite's dev client injected, which cannot run in a worker).
 setWorkerUrl(workerUrl)
@@ -87,6 +118,24 @@ function restView(map: MapLibreMap, check: CheckResponse, designId: DesignId | n
   }
 }
 
+/**
+ * The view the ward map's `fitBounds` gives its ward, flat and north up, worked out the same way
+ * (MapLibre's cameraForBounds on a map with no padding of its own), so this map can fly to it
+ * while it still has the lot view's tilt, heading and padding.
+ */
+function wardView(map: MapLibreMap, bounds: Bounds) {
+  const { clientWidth: width, clientHeight: height } = map.getContainer()
+  const sw = MercatorCoordinate.fromLngLat(bounds[0])
+  const ne = MercatorCoordinate.fromLngLat(bounds[1])
+  const p = WARD_PADDING
+  const worldPx = Math.min((width - p.left - p.right) / (ne.x - sw.x), (height - p.top - p.bottom) / (sw.y - ne.y))
+  const zoom = Math.min(Math.log2(worldPx / WORLD_PX_AT_ZOOM_0), map.getMaxZoom())
+  const world = WORLD_PX_AT_ZOOM_0 * 2 ** zoom
+  const x = (sw.x + ne.x) / 2 - (p.left - p.right) / 2 / world
+  const y = (sw.y + ne.y) / 2 - (p.top - p.bottom) / 2 / world
+  return { center: new MercatorCoordinate(x, y).toLngLat(), zoom, bearing: 0, pitch: 0, padding: NO_PADDING }
+}
+
 export function BaseMap() {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -99,6 +148,11 @@ export function BaseMap() {
   const checkStatus = useApp((s) => s.checkStatus)
   const designId = useApp((s) => s.designId)
   const land = useApp((s) => s.land)
+  const wardData = useApp((s) => s.wardData)
+  const wardStatus = useApp((s) => s.wardStatus)
+  const arriveWard = useApp((s) => s.arriveWard)
+  /** The ward's layers and colours are on this map (from "See your ward" until back at a lot). */
+  const onWard = useRef(false)
 
   useEffect(() => {
     if (!container.current) return
@@ -187,6 +241,90 @@ export function BaseMap() {
     if (!map || view !== 'lot' || !check) return
     map.jumpTo(restView(map, check, designId))
   }, [view, check, designId])
+
+  // While the address check rests, hand the ward's lots to this map too (hidden), in its own idle
+  // moment after the ward map's, so the flight out starts without copying them.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || view !== 'lot' || !ready.current || !wardData || wardData.ward.ward_id !== check?.lot.ward_id) return
+    const idle = 'requestIdleCallback' in window
+    const handle = idle ? window.requestIdleCallback(() => preloadWardLayers(map, wardData), { timeout: 3000 }) : 0
+    if (!idle) preloadWardLayers(map, wardData)
+    return () => {
+      if (idle) window.cancelIdleCallback(handle)
+    }
+  }, [view, check, wardData])
+
+  // "See your ward": once the ward data is in (it usually is, loaded during the check), fly out to
+  // the ward, rippling the lots in from this lot and dropping the dots, then hand over to the ward map.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || view !== 'toWard') return
+    if (wardStatus === 'loading' || wardStatus === 'idle') return
+    const data = wardData?.ward.ward_id === check?.lot.ward_id ? wardData : null
+    if (!ready.current || !check || !data) {
+      arriveWard()
+      return
+    }
+    onWard.current = true
+    setWardBase(map, true, reduced ? 0 : WARD_BASE_MS)
+    if (reduced) {
+      showWardLayers(map, data, check.lot.lot_id)
+      map.jumpTo(wardView(map, data.bounds))
+      arriveWard()
+      return
+    }
+    prepareWardLayers(map, data, check.lot.lot_id)
+    map.flyTo({ ...wardView(map, data.bounds), duration: WARD_FLY_MS })
+    return playReveal(map, data, check.context.origin, REVEAL, arriveWard)
+  }, [view, check, wardData, wardStatus, reduced, arriveWard])
+
+  // "Back to your lot": fly back down to the lot's rest view as the ward fades; over the last
+  // stretch the 3D scene, its street still built, fades in with its camera on this one's.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || view !== 'toLot') return
+    if (!ready.current || !check) {
+      land()
+      return
+    }
+    const origin = check.context.origin
+    const duration = reduced ? 0 : BACK_FLY_MS
+    setWardBase(map, false, duration)
+    const { wardData: data } = useApp.getState()
+    const stopHide = onWard.current && data ? playHide(map, data, origin, duration * BACK_HIDE_SHARE) : () => {}
+    const landed = () => {
+      cameraBridge.read = null
+      hideWardLayers(map)
+      onWard.current = false
+      land()
+    }
+    map.once('moveend', landed)
+    map.flyTo({ ...restView(map, check, useApp.getState().designId), duration })
+    const handoff = window.setTimeout(
+      () => {
+        cameraBridge.read = () => bridgedPose(map, origin)
+        useApp.getState().beginHandoff()
+      },
+      Math.max(0, duration - HANDOFF_S * 1000),
+    )
+    return () => {
+      window.clearTimeout(handoff)
+      stopHide()
+      map.off('moveend', landed)
+      cameraBridge.read = null
+    }
+  }, [view, check, reduced, land])
+
+  // Anywhere else (a lot clicked on the ward map, a new search, the landing page): the ward's layers
+  // and colours go at once.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !onWard.current || view === 'toWard' || view === 'ward' || view === 'toLot') return
+    onWard.current = false
+    hideWardLayers(map)
+    setWardBase(map, false, 0)
+  }, [view])
 
   return <div ref={container} className="basemap" aria-hidden="true" />
 }

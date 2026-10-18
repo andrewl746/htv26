@@ -77,14 +77,22 @@ export interface Guard {
   height: number
 }
 
-/** A straight flight of steps from its bottom nosing to its top, centred on the line between them. */
+/**
+ * A straight flight of steps from its bottom nosing to its top, centred on the line between them,
+ * with a picket guard (keynote 06) up each side.
+ */
 export interface Stair {
   from: [number, number, number]
   to: [number, number, number]
   width: number
 }
 
-/** The unenclosed vertical platform lift (keynote 07): its footprint and travel. */
+export type Side = 'front' | 'rear' | 'left' | 'right'
+
+/**
+ * The unenclosed vertical platform lift (keynote 07, CSA B355): its footprint and travel. It is
+ * entered from the front at grade and opens onto the porch on its `exit` side at the top.
+ */
 export interface Lift {
   u0: number
   u1: number
@@ -92,6 +100,8 @@ export interface Lift {
   v1: number
   z0: number
   z1: number
+  /** The side facing the porch; rear when not given. */
+  exit?: Side
 }
 
 /** A downspout (keynotes 08 and 09) at a point on a wall, from z0 to z1. */

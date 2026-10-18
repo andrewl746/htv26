@@ -5,6 +5,7 @@ import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, setSlot, streetG
 import { cutawayDepthMaterial } from './cutaway'
 import { LOOK } from './look'
 import { setOccluders, slotOf, SLOTS } from './occlusion'
+import type { StreetFrame } from './streetFrame'
 import { growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { slotMaterial, useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
@@ -42,18 +43,18 @@ export function GrowingBuilding({ building, materials }: { building: BuiltBuildi
  * The neighbouring buildings. They grow one by one in the ripple, then the street switches to one
  * merged mesh per colour so a full 150 m street costs a handful of draw calls (MASTERSPEC 6.3).
  */
-export function Street({ buildings }: { buildings: ContextBuilding[] }) {
+export function Street({ buildings, street }: { buildings: ContextBuilding[]; street: StreetFrame | null }) {
   // MASTERSPEC 6.3 performance: at most 400 buildings, the nearest ones.
   const built = useMemo(() => {
     const grid = streetGrid(buildings)
     const nearest = buildings
       .filter((b) => !b.on_lot)
-      .map((b) => buildBuilding(b, grid, LOOK))
+      .map((b) => buildBuilding(b, grid, LOOK, street))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, SLOTS.buildings)
     nearest.forEach((b, i) => setSlot(b, slotOf('buildings', i)))
     return nearest
-  }, [buildings])
+  }, [buildings, street])
   useEffect(() => () => disposeBuilt(built), [built])
   useLayoutEffect(() => {
     setOccluders('buildings', built.map((b) => b.box))
@@ -84,12 +85,13 @@ export function Street({ buildings }: { buildings: ContextBuilding[] }) {
 
 function MergedStreet({ built, materials }: { built: BuiltBuilding[]; materials: StreetMaterials }) {
   const merged = useMemo(() => mergeStreet(built), [built])
-  useEffect(() => () => [...merged.walls, merged.roof, merged.flat].forEach((g) => g?.dispose()), [merged])
+  useEffect(() => () => [...merged.walls, ...merged.shared.map((p) => p.geometry)].forEach((g) => g?.dispose()), [merged])
   return (
     <group>
       {merged.walls.map((g, i) => g && <StreetMesh key={i} geometry={g} material={materials.walls[i]} />)}
-      {merged.roof && <StreetMesh geometry={merged.roof} material={materials.roof} />}
-      {merged.flat && <StreetMesh geometry={merged.flat} material={materials.flat} />}
+      {merged.shared.map((p) => (
+        <StreetMesh key={p.slot} geometry={p.geometry} material={slotMaterial(materials, p.slot, 0)} />
+      ))}
     </group>
   )
 }

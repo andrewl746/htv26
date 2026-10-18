@@ -10,8 +10,6 @@ import { useApp } from '../../state/store'
 // after the result is on screen, behind a skeleton. The AI only phrases the engine's numbers: it
 // writes {{placeholders}} and the service fills them, so here each number carries its label.
 
-const LANGS = Object.keys(labels.languages) as (keyof typeof labels.languages)[]
-
 /** Answers for this session, so switching tabs back and forth never asks twice. */
 const answers = new Map<string, ExplainResponse>()
 
@@ -55,8 +53,8 @@ function Text({ response }: { response: ExplainResponse }) {
 }
 
 export function Explanation({ check, designId }: { check: CheckResponse; designId: DesignId }) {
+  // English only here: the picker came out (the ward briefing page keeps its own).
   const lang = useApp((s) => s.lang)
-  const setLang = useApp((s) => s.setLang)
   const response = useExplanation(check, designId, lang)
 
   return (
@@ -69,16 +67,6 @@ export function Explanation({ check, designId }: { check: CheckResponse; designI
         ) : (
           <span className="panel-muted">{labels.ui.explanation_loading}</span>
         )}
-        <label className="lang-picker">
-          <span className="visually-hidden">{labels.ui.translate}</span>
-          <select value={lang} onChange={(e) => setLang(e.target.value as Lang)}>
-            {LANGS.map((l) => (
-              <option key={l} value={l}>
-                {labels.languages[l].native}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
       <div aria-live="polite">
         {response ? (

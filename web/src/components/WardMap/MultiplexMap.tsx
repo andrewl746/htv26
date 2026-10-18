@@ -1,3 +1,4 @@
+import type { Feature, Point } from 'geojson'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   LngLatBounds,
@@ -79,8 +80,21 @@ const FIT_BOTTOM_PHONE_SHARE = 0.5
 const FIT_MAX_PAD_SHARE = 0.6
 const FIT_EASE_MS = 900
 
+/** Bounds changes (drags, zooms, fits) are reported once the map has been still this long. */
+const BOUNDS_DEBOUNCE_MS = 150
+/** A list's "show on map" zooms here, never closer than the privacy cap. */
+const FOCUS_ZOOM = 15
+/** Highlight rings round a permit dot: the selected one is larger and thicker than the hovered one. */
+const SELECT_GAP_PX = 5
+const SELECT_LINE_PX = 3.5
+const HOVER_GAP_PX = 2
+const HOVER_LINE_PX = 1.5
+
 const WARDS = 'mx-wards'
 const PERMITS = 'mx-permits'
+const PICK = 'mx-pick'
+const PICK_SELECTED = 'mx-pick-selected'
+const PICK_HOVER = 'mx-pick-hover'
 const WARD_FILL = 'mx-ward-fill'
 const WARD_LINE = 'mx-ward-line'
 const WARD_HOVER = 'mx-ward-hover'
@@ -94,7 +108,7 @@ const NEAR_FILL = 'mx-near-fill'
 const NEAR_LINE = 'mx-near-line'
 const NEAR_PIN_RING = 'mx-near-pin-ring'
 const NEAR_PIN = 'mx-near-pin'
-const PERMIT_LAYERS = [CLUSTERS, CLUSTER_COUNT, DOT_EDGE, DOT, DOT_HOLE]
+const PERMIT_LAYERS = [CLUSTERS, CLUSTER_COUNT, DOT_EDGE, DOT, DOT_HOLE, PICK_SELECTED, PICK_HOVER]
 const CLICKABLE = [CLUSTERS, DOT_EDGE]
 
 interface Tip {
@@ -103,16 +117,60 @@ interface Tip {
   text: string
 }
 
-interface Props {
+type Near = { lon: number; lat: number }
+
+export interface MapBounds {
+  west: number
+  south: number
+  east: number
+  north: number
+}
+
+export interface MultiplexMapProps {
   /** A ward was clicked (not a dot or a cluster); `ward` is "01".."25". */
   onSelectWard?: (ward: string) => void
   /** Open the near-me view on this point (the dev harness reads it from ?near=lon,lat). */
-  initialNear?: { lon: number; lat: number }
+  initialNear?: Near
+  /** 'bare' draws only the map, zoom control, near circle, permit dots and popup (no ward layers, panels, search or legend). */
+  chrome?: 'full' | 'bare'
+  /** Draw exactly this set (already filtered by the parent) instead of filtering the loaded data. */
+  permits?: MultiplexCollection
+  /** Controlled near point for the radius circle and pin. In bare mode it is the only near state. */
+  near?: Near | null
+  selectedId?: number | null
+  hoverId?: number | null
+  /** A dot was clicked (its id) or the map background was (null). */
+  onSelectPermit?: (id: number | null) => void
+  /** The pointer entered a dot (its id) or left it (null). */
+  onHoverPermit?: (id: number | null) => void
+  /** The view changed (debounced) and once after the first fit. */
+  onBoundsChange?: (bounds: MapBounds) => void
+  /** When focusNonce changes and focusId is set, the map eases to that permit and opens its popup. */
+  focusId?: number | null
+  focusNonce?: number
+  /** 'results' refits to the bounds of `permits` whenever fitNonce changes (and starts there). */
+  fitTo?: 'all' | 'results'
+  fitNonce?: number
 }
 
-type Near = { lon: number; lat: number }
-
 const EMPTY_NEAR: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
+
+/** The selected and hovered permits as one small collection, each tagged with its kind. */
+function pickCollection(byId: Map<number, Feature<Point, MultiplexProps>>, selectedId: number | null, hoverId: number | null): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = []
+  const add = (id: number | null, kind: 'selected' | 'hover') => {
+    const f = id === null ? undefined : byId.get(id)
+    if (f) features.push({ type: 'Feature', properties: { kind }, geometry: f.geometry })
+  }
+  add(hoverId, 'hover')
+  add(selectedId, 'selected')
+  return { type: 'FeatureCollection', features }
+}
+
+function viewBounds(map: MapLibreMap): MapBounds {
+  const b = map.getBounds()
+  return { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() }
+}
 
 /** The circle and its centre pin as one collection. */
 function nearCollection(near: Near): GeoJSON.FeatureCollection {
@@ -157,9 +215,11 @@ function showNear(map: MapLibreMap, near: Near | null): void {
 }
 
 /** Padding that keeps the circle clear of the cards, clamped so the fit always has room. */
-function fitPadding(map: MapLibreMap): { top: number; right: number; bottom: number; left: number } {
+function fitPadding(map: MapLibreMap, bare: boolean): { top: number; right: number; bottom: number; left: number } {
   const { clientWidth: w, clientHeight: h } = map.getContainer()
   let pad = { top: FIT_PADDING_PX, right: FIT_PADDING_PX, bottom: FIT_PADDING_PX, left: FIT_PADDING_PX }
+  // Bare mode has no cards over the map, so the whole canvas is free.
+  if (bare) return pad
   if (w <= NARROW_PX) pad = { ...pad, top: FIT_TOP_PHONE_PX, bottom: Math.round(h * FIT_BOTTOM_PHONE_SHARE) }
   else if (w >= WIDE_PX) pad = { ...pad, right: FIT_SIDE_CARD_PX }
   const fitAxis = (a: number, b: number, size: number): [number, number] => {
@@ -237,7 +297,7 @@ function boundsOf(permits: MultiplexCollection): LngLatBounds | null {
   return bounds
 }
 
-function addLayers(map: MapLibreMap, shapes: WardShapeCollection, permits: MultiplexCollection, classes: RampClass[], visible: boolean): void {
+function addLayers(map: MapLibreMap, shapes: WardShapeCollection | null, permits: MultiplexCollection, classes: RampClass[], visible: boolean, pick: GeoJSON.FeatureCollection): void {
   // The ward shading goes under the base map's labels so street names stay readable.
   const firstLabel = map.getStyle().layers.find((l) => l.type === 'symbol')?.id
   const ink = tokenHex('--suplex-ink')
@@ -246,15 +306,17 @@ function addLayers(map: MapLibreMap, shapes: WardShapeCollection, permits: Multi
   const outline = tokenHex('--suplex-permit-outline')
   const surface = tokenHex('--suplex-surface')
 
-  map.addSource(WARDS, { type: 'geojson', data: shapes })
+  if (shapes) map.addSource(WARDS, { type: 'geojson', data: shapes })
   map.addSource(PERMITS, { type: 'geojson', data: permits, cluster: true, clusterMaxZoom: CLUSTER_MAX_ZOOM, clusterRadius: CLUSTER_RADIUS_PX })
 
-  map.addLayer({ id: WARD_FILL, type: 'fill', source: WARDS, paint: { 'fill-color': wardFill(classes) } }, firstLabel)
-  map.addLayer({ id: WARD_LINE, type: 'line', source: WARDS, paint: { 'line-color': ink, 'line-opacity': WARD_LINE_OPACITY, 'line-width': WARD_LINE_PX } }, firstLabel)
-  map.addLayer(
-    { id: WARD_HOVER, type: 'line', source: WARDS, filter: ['==', ['get', 'ward'], ''], paint: { 'line-color': accent, 'line-width': WARD_HOVER_PX } },
-    firstLabel,
-  )
+  if (shapes) {
+    map.addLayer({ id: WARD_FILL, type: 'fill', source: WARDS, paint: { 'fill-color': wardFill(classes) } }, firstLabel)
+    map.addLayer({ id: WARD_LINE, type: 'line', source: WARDS, paint: { 'line-color': ink, 'line-opacity': WARD_LINE_OPACITY, 'line-width': WARD_LINE_PX } }, firstLabel)
+    map.addLayer(
+      { id: WARD_HOVER, type: 'line', source: WARDS, filter: ['==', ['get', 'ward'], ''], paint: { 'line-color': accent, 'line-width': WARD_HOVER_PX } },
+      firstLabel,
+    )
+  }
 
   const visibility = visible ? 'visible' : 'none'
   const [zoomA, radiusA, zoomB, radiusB] = DOT_RADIUS
@@ -303,6 +365,31 @@ function addLayers(map: MapLibreMap, shapes: WardShapeCollection, permits: Multi
     layout: { visibility },
     paint: { 'circle-color': surface, 'circle-radius': radius(HOLE_SHARE) },
   })
+
+  // Highlight rings above the dots: hover is a thin close ring, selected a larger, thicker one, so the two
+  // differ by size and weight and not by colour. They draw nothing inside (the dot stays visible).
+  map.addSource(PICK, { type: 'geojson', data: pick })
+  const ring = (gap: number): ExpressionSpecification => ['interpolate', ['linear'], ['zoom'], zoomA, radiusA + DOT_EDGE_PX + gap, zoomB, radiusB + DOT_EDGE_PX + gap]
+  const ringPaint = (gap: number, width: number) => ({ 'circle-opacity': 0, 'circle-radius': ring(gap), 'circle-stroke-color': ink, 'circle-stroke-width': width })
+  map.addLayer({ id: PICK_HOVER, type: 'circle', source: PICK, filter: ['==', ['get', 'kind'], 'hover'], layout: { visibility }, paint: ringPaint(HOVER_GAP_PX, HOVER_LINE_PX) })
+  map.addLayer({ id: PICK_SELECTED, type: 'circle', source: PICK, filter: ['==', ['get', 'kind'], 'selected'], layout: { visibility }, paint: ringPaint(SELECT_GAP_PX, SELECT_LINE_PX) })
+}
+
+/** Shows a permit's popup (street only, never an address) and remembers which permit it belongs to. */
+function showPopup(map: MapLibreMap, popupRef: { current: Popup | null }, popupId: { current: number | null }, props: MultiplexProps, at: [number, number], focus: boolean): void {
+  popupRef.current?.remove()
+  const popup = new Popup({ closeButton: true, maxWidth: '280px', className: 'mx-popup', focusAfterOpen: focus, offset: DOT_RADIUS[3] + DOT_EDGE_PX })
+    .setLngLat(at)
+    .setDOMContent(popupBody(props))
+    .addTo(map)
+  popup.on('close', () => {
+    if (popupRef.current === popup) {
+      popupRef.current = null
+      popupId.current = null
+    }
+  })
+  popupRef.current = popup
+  popupId.current = props.id
 }
 
 /** The popup's body: the street only, the facts and the note. Built with textContent, never HTML. */
@@ -333,12 +420,30 @@ function popupBody(props: MultiplexProps): HTMLElement {
   return body
 }
 
-export function MultiplexMap({ onSelectWard, initialNear }: Props) {
+export function MultiplexMap({
+  onSelectWard,
+  initialNear,
+  chrome = 'full',
+  permits,
+  near: nearProp,
+  selectedId = null,
+  hoverId = null,
+  onSelectPermit,
+  onHoverPermit,
+  onBoundsChange,
+  focusId = null,
+  focusNonce,
+  fitTo = 'all',
+  fitNonce,
+}: MultiplexMapProps) {
+  const bare = chrome === 'bare'
   const load = useMultiplexData()
   const data = load.status === 'ready' ? load.data : null
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const popupRef = useRef<Popup | null>(null)
+  /** The permit the open popup shows. */
+  const popupId = useRef<number | null>(null)
   const fitted = useRef(false)
   /** True from a style's load until the style is swapped; false while no style is usable. */
   const styleReady = useRef(false)
@@ -347,20 +452,40 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
   const [tip, setTip] = useState<Tip | null>(null)
   const [filters, setFilters] = useState<MultiplexFilters>(DEFAULT_FILTERS)
   const [showPermits, setShowPermits] = useState(true)
-  const [near, setNear] = useState<Near | null>(initialNear ?? null)
+  const [nearState, setNear] = useState<Near | null>(initialNear ?? null)
   const [cardOpen, setCardOpen] = useState(true)
   const reduced = useReducedMotion()
 
-  const filtered = useMemo(() => (data ? applyFilters(data.permits, filters) : null), [data, filters])
-  const counts = useMemo(() => (data ? wardCounts(data.permits, filters) : null), [data, filters])
+  // Bare mode owns no near state; in full mode a given `near` prop takes over from the search box.
+  const near: Near | null = bare ? (nearProp ?? null) : nearProp !== undefined ? nearProp : nearState
+
+  const filtered = useMemo(() => (data && !bare ? applyFilters(data.permits, filters) : null), [data, filters, bare])
+  const counts = useMemo(() => (data && !bare ? wardCounts(data.permits, filters) : null), [data, filters, bare])
   const shapes = useMemo(() => (data && counts ? shapesWithCounts(data.wards, counts) : null), [data, counts])
   const classes = useMemo(() => rampClasses(counts ? Object.values(counts).map((c) => c.permits) : []), [counts])
+  /** What the map draws: the parent's set when given, else every permit (bare) or the filtered ones. */
+  const shown = permits ?? (bare ? (data?.permits ?? null) : filtered)
+  const byId = useMemo(() => new Map((shown?.features ?? []).map((f) => [f.properties.id, f])), [shown])
+  const pick = useMemo(() => pickCollection(byId, selectedId, hoverId), [byId, selectedId, hoverId])
 
   // The map's event handlers are made once; they read the latest props from here.
-  const live = useRef({ onSelectWard, reduced, showPermits, near })
+  const live = useRef({ onSelectWard, reduced, showPermits, near, bare, onSelectPermit, onHoverPermit, onBoundsChange })
   useEffect(() => {
-    live.current = { onSelectWard, reduced, showPermits, near }
+    live.current = { onSelectWard, reduced, showPermits, near, bare, onSelectPermit, onHoverPermit, onBoundsChange }
   })
+
+  /** Reports the current view to the parent, unless it is the one already reported. */
+  const lastBounds = useRef<string>('')
+  const emitBounds = useCallback(() => {
+    const map = mapRef.current
+    const report = live.current.onBoundsChange
+    if (!map || !report) return
+    const b = viewBounds(map)
+    const key = `${b.west},${b.south},${b.east},${b.north}`
+    if (key === lastBounds.current) return
+    lastBounds.current = key
+    report(b)
+  }, [])
 
   const onPick = useCallback((place: PickedPlace) => {
     setNear({ lon: place.lon, lat: place.lat })
@@ -413,6 +538,7 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
     const closePopup = () => {
       popupRef.current?.remove()
       popupRef.current = null
+      popupId.current = null
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || !popupRef.current) return
@@ -420,6 +546,13 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
       map.getCanvas().focus()
     }
     document.addEventListener('keydown', onKey)
+
+    // Moves and zooms, the user's and the program's alike, are reported once the map has been still a moment.
+    let boundsTimer: number | undefined
+    map.on('moveend', () => {
+      window.clearTimeout(boundsTimer)
+      boundsTimer = window.setTimeout(emitBounds, BOUNDS_DEBOUNCE_MS)
+    })
 
     const hitSlop = window.matchMedia('(pointer: coarse)').matches ? HIT_SLOP_TOUCH_PX : HIT_SLOP_MOUSE_PX
     const dotsAt = (point: { x: number; y: number }): MapGeoJSONFeature[] => {
@@ -436,9 +569,20 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
     const setHoverWard = (ward: string) => {
       if (map.getLayer(WARD_HOVER)) map.setFilter(WARD_HOVER, ['==', ['get', 'ward'], ward])
     }
+    const permitIdOf = (hit: MapGeoJSONFeature | undefined): number | null =>
+      hit && hit.layer.id !== CLUSTERS ? ((hit.properties as { id: number }).id ?? null) : null
+    // The permit the pointer is over, so enter and leave are reported once each.
+    let hovered: number | null = null
+    const setHovered = (id: number | null) => {
+      if (id === hovered) return
+      hovered = id
+      live.current.onHoverPermit?.(id)
+    }
 
     map.on('mousemove', (e) => {
-      if (dotsAt(e.point).length > 0) {
+      const dots = dotsAt(e.point)
+      setHovered(permitIdOf(dots[0]))
+      if (dots.length > 0) {
         map.getCanvas().style.cursor = 'pointer'
         setHoverWard('')
         setTip(null)
@@ -461,6 +605,7 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
       })
     })
     map.getCanvas().addEventListener('mouseleave', () => {
+      setHovered(null)
       setHoverWard('')
       setTip(null)
     })
@@ -480,18 +625,12 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
             .catch(() => {})
           return
         }
-        closePopup()
-        const coordinates = (hit.geometry as GeoJSON.Point).coordinates as [number, number]
-        const popup = new Popup({ closeButton: true, maxWidth: '280px', className: 'mx-popup', focusAfterOpen: true, offset: DOT_RADIUS[3] + DOT_EDGE_PX })
-          .setLngLat(coordinates)
-          .setDOMContent(popupBody(hit.properties as unknown as MultiplexProps))
-          .addTo(map)
-        popup.on('close', () => {
-          if (popupRef.current === popup) popupRef.current = null
-        })
-        popupRef.current = popup
+        const props = hit.properties as unknown as MultiplexProps
+        showPopup(map, popupRef, popupId, props, (hit.geometry as GeoJSON.Point).coordinates as [number, number], true)
+        live.current.onSelectPermit?.(props.id)
         return
       }
+      live.current.onSelectPermit?.(null)
       const ward = wardAt(e.point)
       if (ward && live.current.onSelectWard) live.current.onSelectWard((ward.properties as { ward: string }).ward)
     })
@@ -499,35 +638,57 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
     mapRef.current = map
     return () => {
       window.clearTimeout(timer)
+      window.clearTimeout(boundsTimer)
       document.removeEventListener('keydown', onKey)
       closePopup()
       mapRef.current = null
       fitted.current = false
+      lastBounds.current = ''
       map.remove()
     }
-  }, [])
+  }, [emitBounds])
 
   // Data, filters or a swapped style: add the layers, or hand the sources the new data (the clusters
   // recompute on their own).
   useEffect(() => {
     const map = mapRef.current
-    if (!map || styleTick === 0 || !styleReady.current || !data || !shapes || !filtered) return
-    if (!map.getSource(WARDS)) {
-      addLayers(map, shapes, filtered, classes, live.current.showPermits)
+    if (!map || styleTick === 0 || !styleReady.current || !data || !shown) return
+    if (!bare && !shapes) return
+    const wardShapes = bare ? null : shapes
+    if (!map.getSource(PERMITS)) {
+      addLayers(map, wardShapes, shown, classes, live.current.showPermits, pick)
     } else {
-      ;(map.getSource(WARDS) as GeoJSONSource).setData(shapes)
-      ;(map.getSource(PERMITS) as GeoJSONSource).setData(filtered)
-      map.setPaintProperty(WARD_FILL, 'fill-color', wardFill(classes))
+      const wardSource = map.getSource(WARDS) as GeoJSONSource | undefined
+      if (wardShapes && wardSource) {
+        wardSource.setData(wardShapes)
+        map.setPaintProperty(WARD_FILL, 'fill-color', wardFill(classes))
+      }
+      ;(map.getSource(PERMITS) as GeoJSONSource).setData(shown)
     }
-    popupRef.current?.remove()
-    popupRef.current = null
+    // A parent that controls the set keeps a popup whose permit is still in it.
+    if (!permits || popupId.current === null || !byId.has(popupId.current)) {
+      popupRef.current?.remove()
+      popupRef.current = null
+      popupId.current = null
+    }
     if (!fitted.current) {
       // A near-me view that was asked for already owns the camera; the all-Toronto fit would undo it.
-      const bounds = live.current.near ? null : boundsOf(data.permits)
+      const target = fitTo === 'results' && permits && permits.features.length > 0 ? permits : data.permits
+      const bounds = live.current.near ? null : boundsOf(target)
       if (bounds) map.fitBounds(bounds, { padding: FIT_PADDING_PX, duration: 0, maxZoom: MAX_ZOOM })
       fitted.current = true
+      emitBounds()
     }
-  }, [data, shapes, filtered, classes, styleTick])
+    // pick, fitTo and byId are read at the moment the layers are added; their own effects keep them current.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, shapes, shown, classes, styleTick, bare])
+
+  // The selected and hovered rings.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || styleTick === 0 || !styleReady.current) return
+    ;(map.getSource(PICK) as GeoJSONSource | undefined)?.setData(pick)
+  }, [pick, styleTick, data, shown])
 
   // The search circle and pin: added after the permit layers so they sit under the dots, and added
   // again after a style swap. Cleared, the source is emptied.
@@ -546,10 +707,35 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
     const ring = (circlePolygon(near, DEFAULT_RADIUS_M).geometry.coordinates[0] ?? []) as [number, number][]
     const bounds = new LngLatBounds()
     for (const c of ring) bounds.extend(c)
-    map.fitBounds(bounds, { padding: fitPadding(map), maxZoom: MAX_ZOOM, duration: live.current.reduced ? 0 : FIT_EASE_MS, essential: true })
+    map.fitBounds(bounds, { padding: fitPadding(map, live.current.bare), maxZoom: MAX_ZOOM, duration: live.current.reduced ? 0 : FIT_EASE_MS, essential: true })
     // Only the chosen point matters here, not the object identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [near?.lon, near?.lat])
+
+  // Refit to the parent's results when asked to. A request made before the layers exist waits for them.
+  const handledFit = useRef(fitNonce)
+  useEffect(() => {
+    const map = mapRef.current
+    if (fitTo !== 'results' || handledFit.current === fitNonce) return
+    if (!map || styleTick === 0 || !map.getSource(PERMITS) || !permits) return
+    handledFit.current = fitNonce
+    const bounds = boundsOf(permits)
+    if (bounds) map.fitBounds(bounds, { padding: FIT_PADDING_PX, maxZoom: MAX_ZOOM, duration: reduced ? 0 : FIT_EASE_MS, essential: true })
+  }, [fitNonce, fitTo, permits, styleTick, data, reduced])
+
+  // "Show on map": ease to one permit and open its popup. Also waits for the layers.
+  const handledFocus = useRef(focusNonce)
+  useEffect(() => {
+    const map = mapRef.current
+    if (handledFocus.current === focusNonce) return
+    if (!map || styleTick === 0 || !map.getSource(PERMITS)) return
+    handledFocus.current = focusNonce
+    const feature = focusId === null ? undefined : byId.get(focusId)
+    if (!feature) return
+    const at = feature.geometry.coordinates as [number, number]
+    map.easeTo({ center: at, zoom: Math.min(FOCUS_ZOOM, MAX_ZOOM), duration: reduced ? 0 : EASE_MS, essential: true })
+    showPopup(map, popupRef, popupId, feature.properties, at, false)
+  }, [focusNonce, focusId, byId, styleTick, data, reduced])
 
   // The layer toggle.
   useEffect(() => {
@@ -559,13 +745,14 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
     if (!showPermits) {
       popupRef.current?.remove()
       popupRef.current = null
+      popupId.current = null
     }
   }, [showPermits, styleTick, data])
 
   return (
-    <div className="mx-map" aria-busy={load.status === 'loading'} data-near-open={near !== null && cardOpen}>
+    <div className="mx-map" aria-busy={load.status === 'loading'} data-chrome={chrome} data-near-open={!bare && near !== null && cardOpen}>
       <div className="mx-map-canvas" ref={container} role="region" aria-label={mxCopy.aria.map}>
-        {tip && (
+        {tip && !bare && (
           <div className="mx-tooltip" style={{ left: tip.x, top: tip.y }}>
             {tip.text}
           </div>
@@ -576,28 +763,28 @@ export function MultiplexMap({ onSelectWard, initialNear }: Props) {
           {load.message}
         </p>
       )}
-      <div className="mx-top">
-        <MultiplexSearch onPick={onPick} onClear={onClear} active={near !== null} />
-        {near && !cardOpen && (
-          <button type="button" className="mx-near-reopen" onClick={() => setCardOpen(true)}>
-            {mxSearchCopy.card.reopen}
-          </button>
-        )}
-        {data && filtered && counts && (
-          <MultiplexFilterPanel
-            filters={filters}
-            onChange={setFilters}
-            shown={filtered.features.length}
-            total={data.permits.features.length}
-            showPermits={showPermits}
-            onShowPermits={setShowPermits}
-          />
-        )}
-      </div>
-      {near && cardOpen && <NearCard near={near} onClose={onCloseCard} />}
-      {data && filtered && counts && (
+      {!bare && (
         <>
-          <MultiplexLegend wards={data.wards} counts={counts} classes={classes} fetchedAt={data.meta.fetchedAt} />
+          <div className="mx-top">
+            <MultiplexSearch onPick={onPick} onClear={onClear} active={near !== null} />
+            {near && !cardOpen && (
+              <button type="button" className="mx-near-reopen" onClick={() => setCardOpen(true)}>
+                {mxSearchCopy.card.reopen}
+              </button>
+            )}
+            {data && filtered && counts && (
+              <MultiplexFilterPanel
+                filters={filters}
+                onChange={setFilters}
+                shown={filtered.features.length}
+                total={data.permits.features.length}
+                showPermits={showPermits}
+                onShowPermits={setShowPermits}
+              />
+            )}
+          </div>
+          {near && cardOpen && <NearCard near={near} onClose={onCloseCard} />}
+          {data && filtered && counts && <MultiplexLegend wards={data.wards} counts={counts} classes={classes} fetchedAt={data.meta.fetchedAt} />}
         </>
       )}
     </div>

@@ -2,6 +2,8 @@
 
 Status: slide-by-slide draft, 2026-10-17. Build the slides after the Hour-24 lock, when the `[LOCKED: …]` numbers exist. Rule (S10 acceptance): **every number on a slide has its source in that slide's speaker notes, or it's cut.** Sources are rows of [`facts.md`](facts.md) or `ward_summary.json` at `headline-locked`.
 
+**Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
+
 Design: the app's tokens (`contracts/design-tokens.css`): warm paper background, ink text, green for "may fit", grey for "doesn't fit", gold for permits. One idea per slide; big numbers; screenshots from the real app, never mock-ups. Footer on every slide with a result: "Screening only, not a permit or legal advice."
 
 ---
@@ -30,15 +32,15 @@ Notes: facts.md row 3 (news release Oct 2 2026; plans page).
 (Live demo slide: switch to the app. Fallback: a 20-second screen recording of the address check.)
 
 ### 5 · Could vs. did, Ward 04
-Big: "`[LOCKED: could]` lots could fit a free design." / "`[LOCKED: did]` multiplex permits since May 2023."
+Big: "3,992 lots could fit a free design." / "83 multiplex permits since May 2023."
 Small: "Upper bound: where a design may fit, not what gets built."
 Screenshot: the ward map with green/grey lots and gold dots (no addresses).
 
 Notes: `ward_summary.json` wards.04.headline at `headline-locked`; permit rule = Rule A (facts.md row 4 for the sanity check).
 
 ### 6 · Why lots don't fit
-The most common reason in plain words, with its count: `[LOCKED: top rule]`, `[LOCKED: count]`.
-"`[LOCKED: attached_pct]`% of house lots are semis or row houses, where the free designs don't apply."
+The most common reason in plain words, with its count: the house is attached (a semi or row house), 8,030.
+"44.2% of house lots are semis or row houses, where the free designs don't apply."
 
 Notes: `ward_summary.json` wards.04.top_blocking_rules and attached_share_pct.
 
@@ -52,7 +54,7 @@ Notes: no numbers on this slide besides "eight" languages (the AI_LANGS list).
 Three columns:
 - **City open data**: lots, zoning, permits, 3D buildings.
 - **Rules in code**: every rule carries its Zoning By-law 569-2013 section.
-- **AI only phrases**: placeholders, not digits; a validator rejects any number the engine didn't produce (`[LOCKED: rejection count]` rejected this weekend).
+- **AI only phrases**: placeholders, not digits; a validator rejects any number the engine didn't produce (4 rejected this weekend).
 Logos only if the sponsors ask: Gemini, Tiger Data.
 
 Notes: rejection count from `ai/logs/rejections.jsonl` at submission time.

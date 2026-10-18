@@ -26,12 +26,12 @@ Every number on a slide, in the Devpost or said in the demo comes from this tabl
 
 | 16 | A multiplex of up to six units pays no development charges or parkland fees on its added homes: none on the second to fourth units, the fifth and sixth reduced to $0, and no parkland cash-in-lieu on the second to sixth, while the lot has no more than six units. | [By-law 845-2025](https://www.toronto.ca/legdocs/bylaws/2025/law0845.pdf), enacted July 24, 2025, amending Municipal Code 415-6 A (2) ("shall not be imposed with respect to the second, third or fourth residential [unit]" … "for the fifth or sixth … shall be reduced to zero") and 415-30 A (16) (parkland, second to sixth unit). Read by Simone, 2026-10-17 | **Say "up to six units" and cite By-law 845-2025** (T21, settled by Andrew). The City's "Considerations when building multiplexes" page still says four (dated June 30, 2025): it is out of date, don't cite it. A garden or laneway suite on the City's deferral program doesn't count toward the six; for parkland, a garden or laneway suite allows up to seven units in total (415-30 A (16): "no more than six total residential dwelling units (or seven residential dwelling units where there is a Garden or Laneway Suite)"). **Never name the councillors** who moved or seconded the by-law (its first lines do). |
 
-## Locked numbers (from `ward_summary.json` at `headline-locked`, never from this file)
+## Locked numbers (from `ward_summary.json` at `headline-locked`)
 
 | Number | Current value | Final when |
 |---|---|---|
-| Ward 04 (the demo ward, decision 18) "could" and "did" | preliminary 3,992 lots may fit (22.0% of house lots) against 81 multiplex permits since May 2023 (`ward_summary.json` from A10) | after the Hour-24 lock |
-| Citywide, preliminary (A10, 2026-10-17 18:19) | 191,174 lots may fit (45.4% of 421,204 house lots, an upper bound) against 1,444 multiplex permits since May 2023; Ward 04: 3,992 against 81 | after the Hour-24 lock |
+| Ward 04 (the demo ward, decision 18) | **locked:** 3,992 lots may fit (22.0% of 18,174 house lots, an upper bound) against 83 multiplex permits since May 2023, about one per 48; top reason the attached-house rule (8,030 lots); 44.2% of house lots attached | 2026-10-17 22:33 |
+| Citywide | **locked:** 191,174 lots may fit (45.4% of 421,204 house lots, an upper bound) against 1,447 multiplex permits since May 2023; 495,456 lots screened | 2026-10-17 22:33 |
 
 ## Cut: could not be confirmed
 

@@ -28,11 +28,12 @@
 
 body {
   margin: 0;
-  background-color: var(--suplex-paper);
-  /* Faint graph paper round the sheet, like the web's top bar. */
+  /* The base map's land (web BaseMap/mapStyle.ts), which is what the app shows behind its panels,
+     with the faintest of the sheet's grid lines over it. */
+  background-color: var(--suplex-surface);
   background-image:
-    linear-gradient(to right, var(--bp-major) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--bp-major) 1px, transparent 1px);
+    linear-gradient(to right, var(--bp-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--bp-minor) 1px, transparent 1px);
   background-size: 32px 32px;
   color: var(--suplex-ink);
   font: 500 var(--text-md)/1.55 var(--font-ui);
@@ -47,8 +48,9 @@ body {
   margin: var(--space-8) auto;
   padding: var(--sheet-pad);
   border-radius: var(--radius);
-  background: var(--suplex-surface);
-  box-shadow: var(--shadow);
+  /* A fresh sheet a shade lighter than the land it lies on, lifted by the panels' shadow. */
+  background: color-mix(in srgb, var(--suplex-surface) 55%, white);
+  box-shadow: var(--shadow), 0 1px 3px rgba(23, 69, 73, 0.12);
 }
 .bp {
   position: absolute;
@@ -133,37 +135,99 @@ h1 {
 }
 .notice.sample { border-left: 4px solid var(--suplex-permit-outline); }
 
-/* Toolbar */
+/* Toolbar: one ruled strip, the language on the left and the actions on the right. */
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3);
-}
-.lang-picker { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
-.lang-row { display: flex; align-items: center; gap: var(--space-2); }
-.badge.review.reviewed { border-color: var(--suplex-fit); color: var(--suplex-ink); }
-select, button {
-  font: inherit;
-  font-size: var(--text-sm);
-  min-height: 38px;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--suplex-line-strong);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border: 1px solid var(--bp-rule);
   border-radius: var(--radius-sm);
   background: var(--suplex-surface);
-  color: var(--suplex-ink);
 }
-button { cursor: pointer; }
-button:hover { background: var(--suplex-highlight); }
+.lang-picker, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.toolbar label { margin-right: var(--space-1); }
+.badge.review::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 6px 1px 0;
+  border-radius: 50%;
+  background: var(--suplex-ink-muted);
+}
+.badge.review.reviewed { border-color: var(--suplex-fit); color: var(--suplex-ink); }
+.badge.review.reviewed::before { background: var(--suplex-fit); }
+
+select, button, .button-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--bp-rule);
+  border-radius: 6px;
+  background: var(--suplex-surface);
+  color: var(--deep-teal);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out;
+}
+button, .button-link, select { cursor: pointer; }
+button:hover, .button-link:hover, select:hover {
+  border-color: var(--suplex-accent);
+  background: color-mix(in srgb, var(--suplex-highlight) 45%, var(--suplex-surface));
+}
+button:active, .button-link:active { transform: translateY(1px); }
 button.primary {
   border-color: var(--suplex-accent);
   background: var(--suplex-accent);
   color: var(--suplex-accent-ink);
   font-weight: 600;
-  box-shadow: var(--shadow);
 }
 button.primary:hover { background: color-mix(in srgb, var(--suplex-accent) 85%, var(--suplex-ink)); }
-.toolbar a { align-self: center; font-size: var(--text-sm); }
+
+/* The select drops its native arrow for a teal chevron, so it matches the buttons beside it. */
+.select-wrap { position: relative; display: inline-flex; }
+.select-wrap select { appearance: none; padding-right: calc(var(--space-3) + 16px); }
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--suplex-accent);
+  border-bottom: 1.5px solid var(--suplex-accent);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+@media (max-width: 720px) {
+  .toolbar { padding: var(--space-3); }
+  .actions { width: 100%; }
+  .actions > * { flex: 1 1 auto; justify-content: center; }
+}
 
 /* A rule between groups, from one inner rule of the sheet to the other (the web's .section-rule). */
 .sheet-rule {

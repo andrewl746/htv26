@@ -150,7 +150,19 @@
     select.append(el("option", { value: code, selected: code === S.lang, text: name }));
   }
 
-  const copyButton = el("button", { type: "button", class: "primary", text: UI.copy, onclick: async () => {
+  // A small line icon in the sheet's teal, drawn on a 16-unit grid; decorative, so hidden from readers.
+  const ICONS = {
+    copy: "M5.5 5.5h7v8h-7zM3.5 10.5v-8h7",
+    print: "M4.5 6.5v-4h7v4M4.5 11.5h-2v-5h11v5h-2M4.5 9.5h7v4h-7z",
+    map: "M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5zM5.5 2v10M10.5 4v10",
+  };
+  function icon(name) {
+    const mark = svg("svg", { class: "icon", viewBox: "0 0 16 16", "aria-hidden": "true" });
+    mark.append(svg("path", { d: ICONS[name] }));
+    return mark;
+  }
+  const copyLabel = el("span", { text: UI.copy });
+  const copyButton = el("button", { type: "button", class: "primary", onclick: async () => {
     const parts = [briefing.title, ""];
     for (const section of briefing.sections) parts.push(section.heading, section.text, "");
     parts.push(briefing.disclaimer, "", location.href);
@@ -165,9 +177,9 @@
       document.execCommand("copy");
       area.remove();
     }
-    copyButton.textContent = UI.copied;
-    setTimeout(() => { copyButton.textContent = UI.copy; }, 2000);
-  } });
+    copyLabel.textContent = UI.copied;
+    setTimeout(() => { copyLabel.textContent = UI.copy; }, 2000);
+  } }, icon("copy"), copyLabel);
 
   // Whether a speaker has reviewed the language actually shown (English when the translation is unavailable).
   const shown = labels.languages[textLang];
@@ -178,14 +190,18 @@
   });
   select.setAttribute("aria-describedby", "review-status");
 
+  // One ruled strip: the language and its review status on the left, the actions on the right.
   const toolbar = el("div", { class: "toolbar" },
     el("div", { class: "lang-picker" },
-      el("div", { class: "lang-row" }, el("label", { for: "lang", text: P.language }), select),
+      el("label", { for: "lang", text: P.language }),
+      el("span", { class: "select-wrap" }, select),
       reviewBadge,
     ),
-    copyButton,
-    el("button", { type: "button", text: P.print, onclick: () => window.print() }),
-    el("a", { href: briefing.links.ward_map, text: P.ward_map_link }),
+    el("div", { class: "actions" },
+      copyButton,
+      el("button", { type: "button", onclick: () => window.print() }, icon("print"), el("span", { text: P.print })),
+      el("a", { class: "button-link", href: briefing.links.ward_map }, icon("map"), el("span", { text: P.ward_map_link })),
+    ),
   );
 
   // --- sections -------------------------------------------------------------------------------

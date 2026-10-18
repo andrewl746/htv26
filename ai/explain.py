@@ -88,9 +88,14 @@ def explain(
     lang = body["lang"]
 
     # No model in the key: a pre-generation run with another model fills the entries the service reads.
+    # Nor meta.generated_at (new on every live /check), meta.cached (true when the demo cache answers) or
+    # next_steps (the explanation never reads them; contracts v0.1.8): none changes the explanation, and with
+    # them in the key a cached answer could never be hit on stage.
+    keyed_meta = {k: v for k, v in check.get("meta", {}).items() if k not in ("generated_at", "cached")}
+    keyed_check = {k: v for k, v in check.items() if k != "next_steps"}
     key = cache_key({
         "endpoint": "explain",
-        "check": check,
+        "check": {**keyed_check, "meta": keyed_meta},
         "design_id": design_id,
         "prompt": prompt_file("explain.md"),
         "urls": [settings.suplex_web_url, settings.suplex_ai_url],

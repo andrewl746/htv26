@@ -22,6 +22,9 @@ export const pending = {
 export const missing = {
   /** The banner while the app runs on /contracts/fixtures (no VITE_API_BASE). */
   sample_data: 'Sample data: made-up addresses and lots for testing, not real Toronto results.',
+  /** The banner on a lot where none of the four designs could be checked (condo, non-residential zone, older by-law, ...). */
+  not_supported_title: "Multiplexes can't be checked here",
+  not_supported_note: 'None of the four free City designs were checked on this lot, so there is no result to show.',
 }
 
 /** Fills the {{key}} placeholders used throughout contracts/copy. */

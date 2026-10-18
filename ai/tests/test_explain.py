@@ -79,6 +79,38 @@ def test_same_call_twice_hits_the_cache(client):
     assert {**first, "cached": True} == second
 
 
+def test_a_fresh_check_of_the_same_lot_hits_the_cache(client):
+    """Every live /check carries a new meta.generated_at, and a demo-cache answer has meta.cached true;
+    neither changes the explanation, so neither may change the key (Andrew, 22:24 board)."""
+    fake = use(FakeGemini(GOOD))
+    client.post("/explain", json=REQUEST)
+    later = json.loads(json.dumps(REQUEST))
+    later["check"]["meta"]["generated_at"] = "2026-10-18T09:30:00Z"
+    later["check"]["meta"]["cached"] = True
+    assert client.post("/explain", json=later).json()["cached"] is True
+    assert len(fake.prompts) == 1
+
+
+def test_reworded_next_steps_do_not_change_the_key(client):
+    """The explanation never reads next_steps (contracts v0.1.8), so rewording them must not miss the cache."""
+    fake = use(FakeGemini(GOOD))
+    client.post("/explain", json=REQUEST)
+    reworded = json.loads(json.dumps(REQUEST))
+    reworded["check"]["next_steps"][0]["text"] = "Reworded, as Yuvi's PR #24 did to the real steps."
+    reworded["check"]["next_steps"].pop()
+    assert client.post("/explain", json=reworded).json()["cached"] is True
+    assert len(fake.prompts) == 1
+
+
+def test_a_different_engine_version_is_a_different_key(client):
+    fake = use(FakeGemini(GOOD))
+    client.post("/explain", json=REQUEST)
+    newer = json.loads(json.dumps(REQUEST))
+    newer["check"]["meta"]["engine_version"] = "9.9.9"
+    assert client.post("/explain", json=newer).json()["cached"] is False
+    assert len(fake.prompts) == 2
+
+
 def test_context_does_not_change_the_cache_key(client):
     fake = use(FakeGemini(GOOD))
     client.post("/explain", json=REQUEST)

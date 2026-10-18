@@ -11,6 +11,7 @@ import {
   streetGrid,
   type BuiltBuilding,
   type MergedStreet,
+  type PartSlot,
 } from './buildings'
 import { cutawayDepthMaterial } from './cutaway'
 import { LOOK } from './look'
@@ -20,6 +21,8 @@ import { growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { slotMaterial, useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
 
+/** Windows, trim and doors sit on the walls: their shadows don't show, but each would be another shadow-map draw. */
+const NO_SHADOW: ReadonlySet<PartSlot> = new Set<PartSlot>(['glass', 'trim', 'door'])
 /**
  * The street merges in tasks of at most this long, one after another, so frames (the map's flight
  * or the ripple) still draw in between. Idle callbacks would wait: the scene leaves little idle time.
@@ -32,14 +35,24 @@ const MERGE_SLICE_MS = 3
 const UPLOAD_LEAD_S = 0.6
 
 /** A neighbour's mesh: it sinks with its slot, and so does its shadow. */
-function StreetMesh({ geometry, material, ref }: { geometry: BufferGeometry; material: Material; ref?: Ref<Mesh> }) {
+function StreetMesh({
+  geometry,
+  material,
+  slot,
+  ref,
+}: {
+  geometry: BufferGeometry
+  material: Material
+  slot: PartSlot
+  ref?: Ref<Mesh>
+}) {
   return (
     <mesh
       ref={ref}
       geometry={geometry}
       material={material}
       customDepthMaterial={cutawayDepthMaterial}
-      castShadow
+      castShadow={!NO_SHADOW.has(slot)}
       receiveShadow
       dispose={null}
     />
@@ -55,7 +68,7 @@ export function GrowingBuilding({ building, materials }: { building: BuiltBuildi
   return (
     <group ref={group} position={[building.x, 0, building.z]} visible={false}>
       {building.parts.map((part) => (
-        <StreetMesh key={part.slot} geometry={part.geometry} material={slotMaterial(materials, part.slot, building.colorIndex)} />
+        <StreetMesh key={part.slot} geometry={part.geometry} material={slotMaterial(materials, part.slot, building.colorIndex)} slot={part.slot} />
       ))}
     </group>
   )
@@ -170,8 +183,10 @@ function MergedStreet({
 }) {
   const parts = useMemo(
     () => [
-      ...merged.walls.flatMap((geometry, i) => (geometry ? [{ key: `wall-${i}`, geometry, material: materials.walls[i] }] : [])),
-      ...merged.shared.map((p) => ({ key: p.slot, geometry: p.geometry, material: slotMaterial(materials, p.slot, 0) })),
+      ...merged.walls.flatMap((geometry, i) =>
+        geometry ? [{ key: `wall-${i}`, slot: 'wall' as const, geometry, material: materials.walls[i] }] : [],
+      ),
+      ...merged.shared.map((p) => ({ key: p.slot, slot: p.slot, geometry: p.geometry, material: slotMaterial(materials, p.slot, 0) })),
     ],
     [merged, materials],
   )
@@ -204,7 +219,7 @@ function MergedStreet({
   return (
     <group>
       {parts.map((p) => (
-        <StreetMesh key={p.key} ref={attach} geometry={p.geometry} material={p.material} />
+        <StreetMesh key={p.key} ref={attach} geometry={p.geometry} material={p.material} slot={p.slot} />
       ))}
     </group>
   )

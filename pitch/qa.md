@@ -2,6 +2,8 @@
 
 Status: answers drafted (S10), 2026-10-17. Facts come from [`facts.md`](facts.md) (row numbers in brackets); `[LOCKED: …]` from `ward_summary.json` at `headline-locked`. Keep answers under 20 seconds.
 
+**Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
+
 Ground rules: "may fit", never "will be built"; no candidate or party names; no ranking of wards; never "threat" or "opportunity"; it's screening, not a permit or legal advice.
 
 ---
@@ -24,7 +26,7 @@ LotMore leads into its own paid architecture services. Suplex is free and neutra
 No. There's no list or export of lots, and the map never shows addresses. Opening one lot shows the same screening anyone can look up for an address, with "screening only" on every result.
 
 **"How accurate is it?"**
-It's a first screen, not a permit. Lot lines in the City's data aren't survey-accurate, so anything within half a metre reads "too close to call". We list what we don't check on every result, and we hand-checked `[LOCKED: n]` real lots against the by-law.
+It's a first screen, not a permit. Lot lines in the City's data aren't survey-accurate, so anything within half a metre reads "too close to call". We list what we don't check on every result, and we hand-checked 19 real lots against the by-law.
 
 **"Does it arm opposition to new homes?"**
 It shows the same facts to everyone, in neutral words: what's allowed, and how much has been permitted. No rankings, no addresses on the map.
@@ -39,15 +41,15 @@ Yes, and we credit it; we use its permit rule. Our count, permits creating 2 to 
 It's 19 m long. The by-law allows 19 m for a detached houseplex only on lots at least 36 m deep (frontage under 10 m) or 40 m deep (frontage 10 m or more); elsewhere the limit is 17 m. That's a finding, not a bug, and the checklist shows the section. *(Holds unless Andrew's T3 re-read changes decision 17.)*
 
 **"Why is the AI allowed anywhere near this?"**
-It never decides anything. It phrases numbers the engine computed, writes placeholders instead of digits, and a validator rejects any number it didn't get, including after translation. It rejected `[LOCKED: count]` drafts this weekend; we can show the log.
+It never decides anything. It phrases numbers the engine computed, writes placeholders instead of digits, and a validator rejects any number it didn't get, including after translation. It rejected 4 drafts this weekend; we can show the log.
 
 ## Likely extra questions
 
 **"Where does the data come from, and how current is it?"**
-All City of Toronto open data: property boundaries, zoning, address points, building permits, 3D massing. Data as of `[LOCKED: data_dates]`; the pipeline re-runs on the City's daily refresh.
+All City of Toronto open data: property boundaries, zoning, address points, building permits, 3D massing. Data as of permits as of October 17, 2026, lots and addresses as of October 17, 2026, zoning as of February 20, 2026; the pipeline re-runs on the City's daily refresh.
 
 **"What about semis and row houses?"**
-The free designs are detached buildings that need side yards on both sides, so attached houses are marked "not checked" with that reason. In Ward 04, `[LOCKED: attached_pct]`% of house lots are semis or row houses. Owners there may still add homes in other ways, such as basement or garden suites, which we don't check.
+The free designs are detached buildings that need side yards on both sides, so attached houses are marked "not checked" with that reason. In Ward 04, 44.2% of house lots are semis or row houses. Owners there may still add homes in other ways, such as basement or garden suites, which we don't check.
 
 **"Is the AI translation reliable?"**
 Every number in a translation is checked again and must match the English, and a native speaker reviewed `[languages reviewed]`. If a translation fails the check, we show English with a notice instead.

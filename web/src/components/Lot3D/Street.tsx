@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { BufferGeometry, Group, Material } from 'three'
 import type { ContextBuilding } from '@contracts/types'
-import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, setSlot, streetGrid, type BuiltBuilding } from './buildings'
+import { applyGrowth, buildBuilding, disposeBuilt, mergeStreet, setSlot, streetGrid, type BuiltBuilding, type PartSlot } from './buildings'
 import { cutawayDepthMaterial } from './cutaway'
 import { LOOK } from './look'
 import { setOccluders, slotOf, SLOTS } from './occlusion'
@@ -10,14 +10,17 @@ import { growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { slotMaterial, useStreetMaterials, type StreetMaterials } from './useStreetMaterials'
 
+/** Windows, trim and doors sit on the walls: their shadows don't show, but each would be another shadow-map draw. */
+const NO_SHADOW: ReadonlySet<PartSlot> = new Set<PartSlot>(['glass', 'trim', 'door'])
+
 /** A neighbour's mesh: it sinks with its slot, and so does its shadow. */
-function StreetMesh({ geometry, material }: { geometry: BufferGeometry; material: Material }) {
+function StreetMesh({ geometry, material, slot }: { geometry: BufferGeometry; material: Material; slot: PartSlot }) {
   return (
     <mesh
       geometry={geometry}
       material={material}
       customDepthMaterial={cutawayDepthMaterial}
-      castShadow
+      castShadow={!NO_SHADOW.has(slot)}
       receiveShadow
       dispose={null}
     />
@@ -33,7 +36,7 @@ export function GrowingBuilding({ building, materials }: { building: BuiltBuildi
   return (
     <group ref={group} position={[building.x, 0, building.z]} visible={false}>
       {building.parts.map((part) => (
-        <StreetMesh key={part.slot} geometry={part.geometry} material={slotMaterial(materials, part.slot, building.colorIndex)} />
+        <StreetMesh key={part.slot} geometry={part.geometry} material={slotMaterial(materials, part.slot, building.colorIndex)} slot={part.slot} />
       ))}
     </group>
   )
@@ -88,9 +91,9 @@ function MergedStreet({ built, materials }: { built: BuiltBuilding[]; materials:
   useEffect(() => () => [...merged.walls, ...merged.shared.map((p) => p.geometry)].forEach((g) => g?.dispose()), [merged])
   return (
     <group>
-      {merged.walls.map((g, i) => g && <StreetMesh key={i} geometry={g} material={materials.walls[i]} />)}
+      {merged.walls.map((g, i) => g && <StreetMesh key={i} geometry={g} material={materials.walls[i]} slot="wall" />)}
       {merged.shared.map((p) => (
-        <StreetMesh key={p.slot} geometry={p.geometry} material={slotMaterial(materials, p.slot, 0)} />
+        <StreetMesh key={p.slot} geometry={p.geometry} material={slotMaterial(materials, p.slot, 0)} slot={p.slot} />
       ))}
     </group>
   )

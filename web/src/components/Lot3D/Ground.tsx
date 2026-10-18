@@ -19,7 +19,15 @@ export function Ground({ radius, drawn }: { radius: number; drawn: boolean }) {
     for (const t of [map, bump]) t.repeat.set((2 * radius) / LAWN_TILE_M, (2 * radius) / LAWN_TILE_M)
     return new MeshStandardMaterial({ map, bumpMap: bump, bumpScale: 0.6, roughness: 1 })
   }, [drawn, radius])
-  useEffect(() => () => material.dispose(), [material])
+  // The lawn maps are this disc's own clones, and material.dispose() leaves maps alone.
+  useEffect(
+    () => () => {
+      material.map?.dispose()
+      material.bumpMap?.dispose()
+      material.dispose()
+    },
+    [material],
+  )
   return (
     <mesh rotation={FLAT} receiveShadow>
       <circleGeometry args={[radius, 96]} />

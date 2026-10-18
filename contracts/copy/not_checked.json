@@ -1,17 +1,60 @@
 [
-  {"id": "site_specific_exceptions", "label": "Site-specific exceptions"},
-  {"id": "pre_2013_bylaws", "label": "Lots still under pre-2013 bylaws"},
-  {"id": "heritage", "label": "Heritage designation or districts"},
-  {"id": "ravine_protection", "label": "The ravine protection area"},
-  {"id": "trca_regulated_area", "label": "The TRCA regulated area"},
-  {"id": "protected_trees", "label": "Protected trees (30 cm and over)"},
-  {"id": "sewer_capacity", "label": "Sewer capacity"},
-  {"id": "main_wall_height", "label": "Main wall height"},
-  {"id": "encroachments", "label": "Encroachments"},
-  {"id": "bedroom_caps", "label": "Bedroom caps"},
-  {"id": "sixplex_height_conditions", "label": "The 10.5 m sixplex conditions"},
-  {"id": "neighbour_front_setbacks", "label": "Neighbour-averaged front setbacks"},
-  {"id": "minor_variances", "label": "Minor variances"},
+  {
+    "id": "site_specific_exceptions",
+    "label": "Site-specific exceptions"
+  },
+  {
+    "id": "pre_2013_bylaws",
+    "label": "Lots still under pre-2013 bylaws"
+  },
+  {
+    "id": "heritage",
+    "label": "Heritage designation or districts"
+  },
+  {
+    "id": "ravine_protection",
+    "label": "The ravine protection area"
+  },
+  {
+    "id": "trca_regulated_area",
+    "label": "The TRCA regulated area"
+  },
+  {
+    "id": "protected_trees",
+    "label": "Protected trees (30 cm and over)"
+  },
+  {
+    "id": "sewer_capacity",
+    "label": "Sewer, water and Toronto Hydro service capacity"
+  },
+  {
+    "id": "topography",
+    "label": "Topography and slope (the lot shape comes from City data, not a survey)"
+  },
+  {
+    "id": "main_wall_height",
+    "label": "Main wall height"
+  },
+  {
+    "id": "encroachments",
+    "label": "Encroachments"
+  },
+  {
+    "id": "bedroom_caps",
+    "label": "Bedroom caps"
+  },
+  {
+    "id": "sixplex_height_conditions",
+    "label": "The 10.5 m sixplex conditions"
+  },
+  {
+    "id": "neighbour_front_setbacks",
+    "label": "Neighbour-averaged front setbacks"
+  },
+  {
+    "id": "minor_variances",
+    "label": "Minor variances"
+  },
   {
     "id": "irregular_lot_definitions",
     "label": "The exact by-law definitions of lot depth and lot frontage on irregular lots (we measure where the building would sit)"

@@ -1,11 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-62 -15 1130 1130" fill="none">
 <!-- The logo from assets/htv logo.svg, squared and with thicker lines so it reads at tab size.
-     The ink design token on light tab bars, white on dark ones. -->
-<style>
-g { stroke: #14240A; }
-@media (prefers-color-scheme: dark) { g { stroke: #FFFFFF; } }
-</style>
-<g stroke-width="44" stroke-linecap="round">
+     The palette's mid teal (palette-grey in contracts/design-tokens.css): at least 3:1 on light
+     and dark tab bars alike. -->
+<g stroke="#348E8E" stroke-width="44" stroke-linecap="round">
 <path d="M9.50244 460V947.5L502.988 1090"/>
 <path d="M996.047 460V947.5L502.561 1090"/>
 <path d="M996.047 811.5L502.561 954"/>

@@ -185,8 +185,9 @@ button {
   position: relative;
 }
 
+/* 16 of the drafting sheet's 32 px units, so the box's ruler ends on a full tick at both sides. */
 .search-hero {
-  width: min(560px, 100%);
+  width: min(512px, 100%);
 }
 
 .search-compact {
@@ -203,8 +204,31 @@ button {
   font: inherit;
 }
 
+/* The landing search box is a ruler: ticks down from the top edge and up from the bottom one, every
+   8 px, longer every 16 and 32 px, in the drafting sheet's teal. */
 .search-hero .search-input {
+  --ruler-tick: color-mix(in srgb, var(--suplex-accent) 45%, transparent);
+  --ruler-unit: repeating-linear-gradient(to right, var(--ruler-tick) 0 1px, transparent 1px 32px);
+  --ruler-half: repeating-linear-gradient(to right, var(--ruler-tick) 0 1px, transparent 1px 16px);
+  --ruler-eighth: repeating-linear-gradient(to right, var(--ruler-tick) 0 1px, transparent 1px 8px);
   padding: var(--space-4) var(--space-6);
+  background-image:
+    var(--ruler-unit), var(--ruler-half), var(--ruler-eighth), var(--ruler-unit), var(--ruler-half), var(--ruler-eighth);
+  background-repeat: no-repeat;
+  background-position:
+    left top,
+    left top,
+    left top,
+    left bottom,
+    left bottom,
+    left bottom;
+  background-size:
+    100% 10px,
+    100% 7px,
+    100% 4px,
+    100% 10px,
+    100% 7px,
+    100% 4px;
   font-size: var(--text-lg);
   box-shadow: var(--shadow);
 }

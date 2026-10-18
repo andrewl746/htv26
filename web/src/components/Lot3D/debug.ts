@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useThree } from '@react-three/fiber'
 import type { CheckResponse, ContextBuilding, LocalPoint } from '@contracts/types'
 
 // Dev-only views for checking the drawn designs against the City's sheets and for measuring the
@@ -55,3 +57,22 @@ export function stressed(check: CheckResponse, buildings: number): CheckResponse
 
 /** `?off=ao,contact,env`: switch parts of the drawn look off, to find what costs frame time. */
 export const OFF = new Set(import.meta.env.DEV ? (params.get('off') ?? '').split(',') : [])
+
+declare global {
+  interface Window {
+    /** Dev only: poke the 3D scene from the console or a test driver. */
+    __suplex3d?: { stepDown: () => void; programs: () => number }
+  }
+}
+
+/** Dev only: `window.__suplex3d` steps the quality down and counts compiled shader programs. */
+export function DebugBridge({ stepDown }: { stepDown: () => void }) {
+  const gl = useThree((s) => s.gl)
+  useEffect(() => {
+    window.__suplex3d = { stepDown, programs: () => gl.info.programs?.length ?? 0 }
+    return () => {
+      delete window.__suplex3d
+    }
+  }, [gl, stepDown])
+  return null
+}

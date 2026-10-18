@@ -1,4 +1,4 @@
-import type { ContextBuilding, Design, DesignHome, LocalPoint, Result, RuleRow } from '@contracts/types'
+import type { ContextBuilding, Design, DesignHome, LocalPoint, Result, RuleId, RuleRow } from '@contracts/types'
 import { disclaimers, fill, formatNumber, labels, pending } from '../../copy'
 import { slabAnchor, type FailSlab } from './failSlabs'
 import { midpoint, toScene, type Vec3 } from './geometry'
@@ -95,25 +95,41 @@ export function homeLabels(placement: LocalPoint[], design: Design): SceneLabel[
 
 /** The fail slab's label floats this far over the slab's top. */
 const FAIL_LABEL_RISE_M = 1.2
+/**
+ * Rules the lot must reach (its width, its depth): their label reads "Needs 7.6 m · This lot
+ * 6.1 m". The others set a maximum on the design (length, height, coverage, homes), where the
+ * actual value is the design's, not the lot's, so their label gives the signed margin instead.
+ */
+const LOT_MINIMUMS: RuleId[] = ['lot_width', 'lot_depth']
+const MINUS = '−'
 
-function measure(value: number | string, unit: RuleRow['unit']): string {
-  if (typeof value === 'string') return value
+function measure(value: number, unit: RuleRow['unit']): string {
   const number = formatNumber(value)
   if (!unit) return number
   return unit === 'pct' ? `${number}${labels.units.pct}` : `${number} ${labels.units[unit]}`
 }
 
+function signed(value: number, unit: RuleRow['unit']): string {
+  return `${value < 0 ? MINUS : '+'}${measure(Math.abs(value), unit)}`
+}
+
 /**
- * "Doesn't fit · Lot width · Needs 7.6 m · This lot 6.1 m", with the by-law section under it; or
- * "Too close to call · ..." over the striped slab. Every word comes from contracts/copy.
+ * "Doesn't fit · Lot width · Needs 7.6 m · This lot 6.1 m" or "Doesn't fit · Building length ·
+ * Margin −2 m", with the by-law section under it; or "Too close to call · ..." over the striped
+ * slab. Every word comes from contracts/copy; a rule whose values are words (not numbers) shows
+ * no values.
  */
 export function failLabel(slab: FailSlab): SceneLabel {
   const { rule } = slab
   const parts: string[] = [labels.results[slab.kind]]
   if (rule) {
     parts.push(labels.rules[rule.rule_id])
-    if (rule.required !== null) parts.push(`${labels.ui.column_required} ${measure(rule.required, rule.unit)}`)
-    if (rule.actual !== null) parts.push(`${labels.ui.column_actual} ${measure(rule.actual, rule.unit)}`)
+    const { required, actual, margin, unit } = rule
+    if (LOT_MINIMUMS.includes(rule.rule_id) && typeof required === 'number' && typeof actual === 'number') {
+      parts.push(`${labels.ui.column_required} ${measure(required, unit)}`, `${labels.ui.column_actual} ${measure(actual, unit)}`)
+    } else if (typeof margin === 'number') {
+      parts.push(`${labels.ui.column_margin} ${signed(margin, unit)}`)
+    }
   }
   return {
     key: 'fail',

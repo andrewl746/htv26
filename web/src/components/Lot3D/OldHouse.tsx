@@ -3,6 +3,7 @@ import type { Group } from 'three'
 import type { ContextBuilding } from '@contracts/types'
 import { applyGrowth, buildBuilding, disposeBuilt, streetGrid } from './buildings'
 import { LOOK } from './look'
+import type { StreetFrame } from './streetFrame'
 import { ease, growSpan, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { slotMaterial, useStreetMaterials } from './useStreetMaterials'
@@ -15,11 +16,19 @@ const SQUASH_WIDEN = 0.15
  * the ground (its label is in labels.ts). Without a design to place, as on a lot that is not
  * checked, the house simply stays.
  */
-export function OldHouse({ buildings, squash }: { buildings: ContextBuilding[]; squash: boolean }) {
+export function OldHouse({
+  buildings,
+  squash,
+  street,
+}: {
+  buildings: ContextBuilding[]
+  squash: boolean
+  street: StreetFrame | null
+}) {
   const built = useMemo(() => {
     const grid = streetGrid(buildings)
-    return buildings.filter((b) => b.on_lot).map((b) => buildBuilding(b, grid, LOOK))
-  }, [buildings])
+    return buildings.filter((b) => b.on_lot).map((b) => buildBuilding(b, grid, LOOK, street))
+  }, [buildings, street])
   useEffect(() => () => disposeBuilt(built), [built])
   const materials = useStreetMaterials({ cutaway: false })
   const groups = useRef<(Group | null)[]>([])

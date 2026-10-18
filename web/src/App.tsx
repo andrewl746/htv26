@@ -5,6 +5,7 @@ import { Scene } from './components/Lot3D/Scene'
 import { PlanTab } from './components/Plan/PlanTab'
 import { ResultPanel } from './components/ResultPanel/ResultPanel'
 import { Search } from './components/Search/Search'
+import { WardMap } from './components/WardMap'
 import { labels } from './copy'
 import { PANEL_WIDTH_PX } from './layout'
 import { useApp } from './state/store'
@@ -19,8 +20,8 @@ export default function App() {
   const inLot = view === 'lot'
   // The street is built as the check comes back (before the flight starts) and shown from the
   // handoff, over the flight's last stretch.
-  // The plan view keeps the street built behind it, so the way back to the 3D lot is instant.
-  const sceneCheck = inLot || view === 'flying' || view === 'plan' ? check : null
+  // The plan and ward views keep the street built behind them, so the way back to the 3D lot is instant.
+  const sceneCheck = view === 'landing' ? null : check
   return (
     <main className="app" style={{ '--panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties}>
       <BaseMap />
@@ -34,6 +35,7 @@ export default function App() {
       {(view === 'landing' || view === 'flying') && <Landing leaving={view === 'flying'} />}
       {inLot && <LotChrome />}
       {view === 'plan' && <PlanTab />}
+      {view === 'ward' && <WardView />}
     </main>
   )
 }
@@ -55,5 +57,27 @@ function LotChrome() {
       </div>
       <ResultPanel />
     </>
+  )
+}
+
+/** The ward map (MASTERSPEC 6.5) for the checked lot's ward, or a ward named in the URL. */
+function WardView() {
+  const wardId = useApp((s) => s.wardId)
+  const check = useApp((s) => s.check)
+  const lang = useApp((s) => s.lang)
+  const hasLot = useApp((s) => s.checkKey !== null)
+  const openLot = useApp((s) => s.openLot)
+  const showLot = useApp((s) => s.showLot)
+  if (!wardId) return null
+  return (
+    <div className="ward-view">
+      <WardMap
+        wardId={wardId}
+        searchedLotId={check?.lot.ward_id === wardId ? check.lot.lot_id : null}
+        onSelectLot={(lotId) => openLot(lotId)}
+        lang={lang}
+        onBack={hasLot ? () => showLot() : undefined}
+      />
+    </div>
   )
 }

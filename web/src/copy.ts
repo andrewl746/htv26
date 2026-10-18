@@ -6,24 +6,13 @@ import reasons from '@contracts/copy/reasons.json'
 export { disclaimers, labels, reasons }
 
 /**
- * Strings the web app needs that contracts/copy does not have yet. Simone owns contracts/copy and
- * has been asked to add them; delete each entry here once it lands there.
+ * The 3D scene and the ward map still read these three from here; the strings themselves live in
+ * contracts/copy/labels.json now. Everything in /web outside those folders uses `labels.ui`.
  */
 export const pending = {
-  tagline: 'Before you build, before you vote.',
-  home_bedrooms: '{{bedrooms}} bedrooms',
-  home_bedrooms_one: '{{bedrooms}} bedroom',
-  load_error: "This couldn't load. Please try again in a moment.",
-  m2: 'm²',
-  /** The label on the red slice in the 3D view (MASTERSPEC 6.3), for a rule the lot itself fails. */
-  fail_lot: '{{rule}}: needs {{required}}, this lot has {{actual}}',
-  /** The same, for a rule where the design is bigger than the lot allows. */
-  fail_design: '{{rule}}: {{allowed}} allowed here, the design needs {{design}}',
-  ward_unavailable: "The ward numbers aren't ready yet. Please try again in a moment.",
-  data_dates: 'Data as of {{date}}',
-  not_checked_line: '{{count}} lots not checked: {{reasons}}',
-  trend_tooltip_one: '{{month}}: 1 multiplex permit',
-  trend_tooltip_other: '{{month}}: {{count}} multiplex permits',
+  home_bedrooms: labels.ui.home_bedrooms,
+  home_bedrooms_one: labels.ui.home_bedrooms_one,
+  load_error: labels.ui.load_error,
 }
 
 /** Fills the {{key}} placeholders used throughout contracts/copy. */

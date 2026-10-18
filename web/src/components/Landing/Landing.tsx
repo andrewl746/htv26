@@ -1,4 +1,4 @@
-import { disclaimers, labels, pending } from '../../copy'
+import { disclaimers, labels } from '../../copy'
 import { EXAMPLES } from '../../examples'
 import { useApp } from '../../state/store'
 import { Search } from '../Search/Search'
@@ -13,7 +13,7 @@ export function Landing({ leaving }: { leaving: boolean }) {
     <section className={leaving ? 'landing landing-leaving' : 'landing'} aria-hidden={leaving || undefined}>
       <div className="landing-card">
         <h1 className="landing-title">Suplex</h1>
-        <p className="landing-tagline">{pending.tagline}</p>
+        <p className="landing-tagline">{labels.ui.tagline}</p>
         <Search variant="hero" />
         <div className="examples">
           <span>{labels.ui.try_examples}</span>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { disclaimers, fill, labels, pending } from '../../copy'
+import { disclaimers, fill, labels } from '../../copy'
 import { useApp } from '../../state/store'
 import { DesignTabs } from '../ResultPanel/DesignTabs'
 import { Header } from '../ResultPanel/Header'
@@ -96,7 +96,7 @@ export function PlanTab() {
                 ? labels.ui.address_not_found
                 : error === 'outside_toronto'
                   ? labels.ui.outside_toronto
-                  : pending.load_error}
+                  : labels.ui.load_error}
             </p>
           ) : (
             <>

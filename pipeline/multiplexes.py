@@ -1,10 +1,12 @@
 """Permitted multiplexes for the "Multiplexes near you" layer (street-level, no house numbers).
 
     python pipeline/multiplexes.py              # write data/out/multiplexes.geojson and print the summary
-    python pipeline/multiplexes.py --snapshot   # also copy it to pipeline/snapshots/ (small, committed, for the demo)
+    python pipeline/multiplexes.py --snapshot   # also copy it (and the ward polygons) to pipeline/snapshots/ (small, committed, for the demo)
     python pipeline/multiplexes.py --summary    # print the summary of the existing file only
 
 Reads data/out/permits.parquet (python pipeline/download.py --permits, then python pipeline/permits.py).
+Also writes data/out/multiplex_wards.geojson: the 25 ward polygons, simplified, for the web choropleth (no counts in it;
+the web counts from the filtered permits). Source: data/raw/city-wards-data-4326.gpkg.
 A permit is not a finished building: "cleared" means the City closed the permit, "active" means permitted.
 Unit counts are gross (units lost to demolition are not netted). Permits that cannot be geocoded are left out.
 The Toronto Multiplex Tracker was checked on 2026-10-17 as a cross-check only: it drops rows with an LLM label
@@ -19,12 +21,21 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
+import geopandas as gpd
 import pandas as pd
+import shapely
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "out"
 SNAPSHOT = ROOT / "pipeline" / "snapshots" / "multiplexes.geojson"
 NAME = "multiplexes.geojson"
+WARDS_SRC = ROOT / "data" / "raw" / "city-wards-data-4326.gpkg"
+WARDS_SNAPSHOT = ROOT / "pipeline" / "snapshots" / "multiplex_wards.geojson"
+WARDS_NAME = "multiplex_wards.geojson"
+WARD_SIMPLIFY_DEG = 0.0004  # shapely tolerance in degrees (about 40 m); keeps the file under WARD_MAX_BYTES
+WARD_DECIMALS = 5
+WARD_MAX_BYTES = 400_000
+WARD_COUNT = 25
 
 # STATUS values that are not a permitted project
 DROP_STATUS = ["cancel", "refus", "abandon", "withdrawn"]
@@ -109,6 +120,28 @@ def write(frame: pd.DataFrame, stats: dict[str, int]) -> dict:
     return doc
 
 
+def write_wards() -> Path:
+    """Write simplified ward polygons (EPSG:4326, properties ward + name only) to data/out/multiplex_wards.geojson."""
+    w = gpd.read_file(WARDS_SRC, engine="pyogrio").to_crs(4326)
+    feats = []
+    for r in w.sort_values("AREA_SHORT_CODE").itertuples():
+        g = shapely.set_precision(r.geometry.simplify(WARD_SIMPLIFY_DEG, preserve_topology=True), 10 ** -WARD_DECIMALS)
+        if not g.is_valid:
+            raise ValueError(f"ward {r.AREA_SHORT_CODE}: simplified geometry is not valid")
+        feats.append({"type": "Feature", "geometry": json.loads(shapely.to_geojson(g)),
+                      "properties": {"ward": str(r.AREA_SHORT_CODE).zfill(2), "name": r.AREA_NAME}})
+    if len(feats) != WARD_COUNT:
+        raise ValueError(f"expected {WARD_COUNT} wards, got {len(feats)}")
+    path = OUT / WARDS_NAME
+    OUT.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"type": "FeatureCollection", "features": feats}, separators=(",", ":")))
+    size = path.stat().st_size
+    print(f"ward polygons: {len(feats)} wards, {size / 1000:.0f} KB, tolerance {WARD_SIMPLIFY_DEG} deg")
+    if size > WARD_MAX_BYTES:
+        raise ValueError(f"{WARDS_NAME} is {size} bytes, over {WARD_MAX_BYTES}; raise WARD_SIMPLIFY_DEG")
+    return path
+
+
 def summary(doc: dict) -> None:
     f = pd.DataFrame([x["properties"] for x in doc["features"]])
     print(f"== permitted multiplexes (fetched {doc['source_dates'].get('fetched_at', '?')}, built {doc['generated_at']}) ==")
@@ -132,9 +165,11 @@ def main() -> None:
         return
     permits = pd.read_parquet(OUT / "permits.parquet")
     doc = write(*build_frame(permits))
+    wards = write_wards()
     if args.snapshot:
         SNAPSHOT.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(OUT / NAME, SNAPSHOT)
+        shutil.copyfile(wards, WARDS_SNAPSHOT)
     summary(doc)
 
 

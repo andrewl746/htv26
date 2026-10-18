@@ -46,6 +46,17 @@ A separate agent re-derived the counts from the parquet (match, per ward and by 
 and searched the whole file for numbers. It found the work-type mislabels and `Mcroberts` casing; both are fixed here.
 Coordinates stay at 5 decimals, the same as the existing `permits.geojson`.
 
+## Ward polygons
+
+`python pipeline/multiplexes.py` also writes `data/out/multiplex_wards.geojson` (copy in `pipeline/snapshots/` with `--snapshot`)
+for the web choropleth. Source: `data/raw/city-wards-data-4326.gpkg` (`AREA_SHORT_CODE` = ward number, `AREA_NAME` = ward name).
+25 Polygon features in EPSG:4326, properties exactly `ward` ("01".."25") and `name`; no counts (the web counts from the filtered permits).
+Shapely `simplify(0.0004, preserve_topology=True)` (about 40 m), coordinates rounded to 5 decimals. Size 29 KB (target 400 KB).
+
+- All 25 wards present once; ward 04 is Parkdale-High Park (25-ward model).
+- Every geometry is valid after simplifying and rounding.
+- All 1,553 multiplex points fall inside the polygon of their own `ward`: 0 mismatches, none on a boundary.
+
 ## Not done yet
 
 Phases 2 and 3 (map layer, popups, filters, ward counts, lots like yours, AI context) wait for the Phase 1 check.

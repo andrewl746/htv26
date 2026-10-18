@@ -29,6 +29,7 @@ import { Pin } from './Pin'
 import { QualityMonitor } from './QualityMonitor'
 import { SceneLabels } from './SceneLabels'
 import { SettleWatch, ShadowFreeze } from './Settle'
+import { Sky } from './Sky'
 import { Sequence } from './Sequence'
 import { Street } from './Street'
 import { Studio } from './Studio'
@@ -44,6 +45,8 @@ const GROUND_SCALE = 4
 const DEFAULT_FRAMING: Framing = { distanceM: restDistance(0, 0), viewBearingDeg: restViewBearingDeg(null) }
 const FOG_NEAR_M = 90
 const FOG_FAR_M = 320
+/** The drawn look's daytime sky: haze at the horizon (also the fog) and blue overhead. */
+const SKY = { horizon: '#dfe7ec', zenith: '#8fb6dc' }
 /** Dev elevation view: how far in front of the design the camera stands. */
 const ELEVATION_DISTANCE_M = 70
 /**
@@ -172,8 +175,12 @@ export function Scene({
       >
         {import.meta.env.DEV && <DebugBridge stepDown={stepQuality} />}
         <Sequence lotKey={lotKey} designKey={designId ?? ''} timeline={timeline} reduced={reduced}>
-          <fog attach="fog" args={[tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
-          {ELEVATION_VIEW && <color attach="background" args={['white']} />}
+          <fog attach="fog" args={[drawn ? SKY.horizon : tokenHex('--suplex-sky-bottom'), FOG_NEAR_M, FOG_FAR_M]} />
+          {ELEVATION_VIEW ? (
+            <color attach="background" args={['white']} />
+          ) : (
+            <Sky horizon={drawn ? SKY.horizon : tokenHex('--suplex-sky-bottom')} zenith={drawn ? SKY.zenith : null} />
+          )}
           <Camera
             lotKey={lotKey}
             distanceM={framing.distanceM}

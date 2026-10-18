@@ -1,14 +1,15 @@
-import { useState, type CSSProperties } from 'react'
-import type { Lang } from '@contracts/types'
-import { pending } from '../../copy'
+import { useMemo, useState, type CSSProperties } from 'react'
+import type { CheckResponse, Lang } from '@contracts/types'
+import { fill, formatNumber, pending } from '../../copy'
 import { PANEL_WIDTH_PX } from '../../layout'
 import { wardCopy } from './copy'
 import { useWardData } from './data'
 import { DesignFilterControl } from './DesignFilterControl'
 import { isDisabled, type DesignFilter } from './designs'
 import { Legend } from './Legend'
+import { circleRing, countFitsNear } from './nearYourLot'
 import { WardMapCanvas } from './WardMapCanvas'
-import { WardPanel } from './WardPanel'
+import { WardPanel, type NearYourLot } from './WardPanel'
 import './wardMap.css'
 
 export interface WardMapProps {
@@ -21,6 +22,11 @@ export interface WardMapProps {
   lang?: Lang
   /** Shows "Back to your lot" in the panel when given. */
   onBack?: () => void
+  /**
+   * The address check the map opened from. With it, the ward panel gets a "Near your lot" box and
+   * the map a dashed circle around `context.origin`; without it neither shows.
+   */
+  check?: CheckResponse | null
 }
 
 /**
@@ -28,10 +34,28 @@ export interface WardMapProps {
  * permit dots, a design filter, a legend and the ward panel. It fills its parent. It never shows
  * an address or a parcel id, and nothing on it lists, exports or downloads lots.
  */
-export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en', onBack }: WardMapProps) {
+export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en', onBack, check = null }: WardMapProps) {
   const load = useWardData(wardId)
   const [filter, setFilter] = useState<DesignFilter>('all')
   const panelStyle = { '--ward-panel-width': `${PANEL_WIDTH_PX}px` } as CSSProperties
+
+  const loaded = load.status === 'ready' ? load.data : null
+  const origin = check?.context.origin
+  const radiusM = check?.permits_nearby.radius_m
+  const didCount = check?.permits_nearby.count
+  const originLon = origin?.lon
+  const originLat = origin?.lat
+
+  // The dashed circle: 64 corners around the lot, at the check's own radius.
+  const nearRing = useMemo(
+    () => (originLon === undefined || originLat === undefined || radiusM === undefined ? null : circleRing({ lon: originLon, lat: originLat }, radiusM)),
+    [originLon, originLat, radiusM],
+  )
+  // N counts this ward's lots in the browser from the ward file; M is the engine's own count.
+  const near = useMemo<NearYourLot | null>(() => {
+    if (!loaded || originLon === undefined || originLat === undefined || radiusM === undefined || didCount === undefined) return null
+    return { radiusM, couldCount: countFitsNear(loaded.lots.features, { lon: originLon, lat: originLat }, radiusM), didCount }
+  }, [loaded, originLon, originLat, radiusM, didCount])
 
   if (load.status !== 'ready') {
     return (
@@ -56,12 +80,14 @@ export function WardMap({ wardId, searchedLotId = null, onSelectLot, lang = 'en'
   // A ward without the sixplex overlay cannot keep a sixplex selected.
   const active: DesignFilter = isDisabled(filter, data.ward.sixplex_overlay) ? 'all' : filter
 
+  const mapLabel = nearRing && radiusM !== undefined ? `${wardCopy.map_aria} ${fill(wardCopy.near_ring_label, { radius_m: formatNumber(radiusM, true) })}.` : wardCopy.map_aria
+
   return (
     <div className="ward-map" style={panelStyle}>
-      <WardMapCanvas data={data} filter={active} searchedLotId={searchedLotId} onSelectLot={onSelectLot} ariaLabel={wardCopy.map_aria} />
+      <WardMapCanvas data={data} filter={active} searchedLotId={searchedLotId} onSelectLot={onSelectLot} ariaLabel={mapLabel} nearRing={nearRing} />
       <DesignFilterControl value={active} onChange={setFilter} overlay={data.ward.sixplex_overlay} />
       <Legend />
-      <WardPanel ward={data.ward} lang={lang} trend={data.trend} onBack={onBack} />
+      <WardPanel ward={data.ward} lang={lang} trend={data.trend} near={near} onBack={onBack} />
     </div>
   )
 }

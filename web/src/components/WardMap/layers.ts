@@ -1,3 +1,4 @@
+import type { Feature, FeatureCollection, Polygon } from 'geojson'
 import type { ExpressionSpecification, FilterSpecification, GeoJSONSource, Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import engineConfig from '@contracts/engine_config.json'
 import { tokenHex } from '../../styles/tokens'
@@ -9,6 +10,7 @@ import type { WardData } from './data'
 
 export const LOTS = 'lots'
 export const PERMITS = 'permits'
+const NEAR_RING = 'near-ring'
 const STRIPES_IMAGE = 'borderline-stripes'
 
 const STRIPE_TILE_PX = 12
@@ -25,6 +27,11 @@ const PERMIT_RADIUS: [zoomA: number, radiusA: number, zoomB: number, radiusB: nu
 const PERMIT_STROKE_PX = 1.5
 const SEARCHED_WIDTH_PX = 3
 const SEARCHED_CASING_PX = 6
+/** "Near your lot" circle: a thin dashed line over a paler casing so it reads on green and grey. */
+const NEAR_RING_WIDTH_PX = 2
+const NEAR_RING_CASING_PX = 4
+const NEAR_RING_DASH: number[] = [3, 2]
+const NEAR_RING_CASING_OPACITY = 0.8
 /** A fill that draws nothing but still answers hover and click: "not checked" lots show no fill. */
 const HIT_ONLY = 'rgba(255, 255, 255, 0.01)'
 
@@ -161,4 +168,39 @@ export function applyData(map: MapLibreMap, data: WardData): void {
   lots.setData(data.lots)
   permits.setData(data.permits)
   map.setFilter('permits-dots', permitFilter(data.ward.ward_id))
+}
+
+/**
+ * Draws (or moves, or removes) the "Near your lot" circle: a dashed line with no fill, above the
+ * lots and below the permit dots, in no layer that answers hover or click. Safe to call at any time
+ * after the style has loaded.
+ */
+export function applyNearRing(map: MapLibreMap, ring: Feature<Polygon> | null): void {
+  const data: FeatureCollection<Polygon> = { type: 'FeatureCollection', features: ring ? [ring] : [] }
+  const source = map.getSource(NEAR_RING) as GeoJSONSource | undefined
+  if (source) {
+    source.setData(data)
+    return
+  }
+  if (!ring) return
+  const before = map.getLayer('permits-dots') ? 'permits-dots' : undefined
+  map.addSource(NEAR_RING, { type: 'geojson', data })
+  map.addLayer(
+    {
+      id: 'near-ring-casing',
+      type: 'line',
+      source: NEAR_RING,
+      paint: { 'line-color': tokenHex('--suplex-surface'), 'line-width': NEAR_RING_CASING_PX, 'line-opacity': NEAR_RING_CASING_OPACITY },
+    },
+    before,
+  )
+  map.addLayer(
+    {
+      id: 'near-ring',
+      type: 'line',
+      source: NEAR_RING,
+      paint: { 'line-color': tokenHex('--suplex-accent'), 'line-width': NEAR_RING_WIDTH_PX, 'line-dasharray': NEAR_RING_DASH },
+    },
+    before,
+  )
 }

@@ -83,7 +83,8 @@
     "tagline": "Before you build, before you vote.",
     "home_bedrooms": "{{bedrooms}} bedrooms",
     "home_bedrooms_one": "{{bedrooms}} bedroom",
-    "load_error": "This couldn't load. Please try again in a moment."
+    "load_error": "This couldn't load. Please try again in a moment.",
+    "sample_data": "Sample data: made-up addresses and lots for testing, not real Toronto results."
   },
   "ward_panel": {
     "could": "Could: {{could_lots}} lots may fit a free City design ({{could_pct}}% of house lots).",

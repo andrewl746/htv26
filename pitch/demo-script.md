@@ -2,6 +2,8 @@
 
 Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …]` from the Hour-24 batch run; every other number is in [`facts.md`](facts.md). Rehearse with a timer and log each run in [`rehearsal-log.md`](rehearsal-log.md).
 
+**Numbers filled from the `headline-locked` ward_summary.json (2026-10-17, 22:33).** Every number below equals it; the briefing and explanations were pre-generated on the same data with `gemini-3.8-flash`.
+
 **Before judges arrive:** demo laptop on the demo cache (`SUPLEX_DEMO_CACHE=1`), API on :8000, AI service on :8001, web on :5173, browser zoom 100%, the backup addresses from [`demo.md`](demo.md) on a sticky note (326 Quebec Ave: all four designs fit; 281 Armadale Ave: too close to call; 155 Vine Ave: a row house), `/b/04?lang=en` pre-loaded in a second tab, Wi-Fi off once everything is cached (the rehearsal at Hour 30 proves this works).
 
 **Words to never say:** "will be built", "threat", "opportunity", "best/worst ward", any candidate's or party's name. Say "may fit", "could", "screening".
@@ -11,7 +13,7 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 ## 0:00–0:30 · Hook (speaker: `[name]`)
 
 > "Since 2023, every house lot in Toronto has been allowed four homes. This month, the City gave away free blueprints. But nobody can tell you whether they fit on your street, or whether the policy is working.
-> Type any address and watch the City's design rise on that lot in 3D. Then zoom out: in your ward, `[LOCKED: could]` lots could fit a free design, but only `[LOCKED: did]` multiplex permits have been issued since 2023."
+> Type any address and watch the City's design rise on that lot in 3D. Then zoom out: in your ward, 3,992 lots could fit a free design, but only 83 multiplex permits have been issued since 2023."
 
 *If a judge looks sceptical about the numbers:* "Both come from City open data, and every number in the app links to its source."
 
@@ -31,8 +33,8 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 1. Click **See your ward**. "The street fades into the ward map."
 2. As lots fill and permit dots drop: "Green lots may fit a free design. Grey lots don't. Gold dots are multiplex permits actually issued since May 2023, before the free designs existed."
-3. Read the counters: "`[LOCKED: could]` lots could; `[LOCKED: did]` permits did. About one permit for every `[LOCKED: lots_per_permit]` lots that could."
-4. Name the most common reason lots don't fit: `[LOCKED: top rule, in plain words]`.
+3. Read the counters: "3,992 lots could; 83 permits did. About one permit for every 48 lots that could."
+4. Name the most common reason lots don't fit: the house is attached (a semi or row house).
 5. Point at the trend chart: "Permits per month from Tiger Data; this marker is when the free designs arrived, so this is the baseline for whether they change anything."
 6. "There are no addresses on this map and no list of lots, on purpose."
 
@@ -45,7 +47,7 @@ Status: draft (S10), 2026-10-17. Timings from MASTERSPEC 2.8. Fill `[LOCKED: …
 
 ## 3:20–4:00 · How it works and limits (Simone)
 
-> "Everything comes from City open data. The rules are in code, with the by-law section on every one. The AI only phrases numbers the engine computed: it writes placeholders instead of digits, and a validator rejects any number it didn't get; it caught `[LOCKED: rejection count]` drafts this weekend.
+> "Everything comes from City open data. The rules are in code, with the by-law section on every one. The AI only phrases numbers the engine computed: it writes placeholders instead of digits, and a validator rejects any number it didn't get; it caught 4 drafts this weekend.
 > It's a screening, not a permit. We show what we don't check, we flag anything within the uncertainty band, and the counts are upper bounds: where a design may fit, not what gets built."
 
 End on the one-liner: *"Before you build, before you vote."*

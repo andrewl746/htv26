@@ -8,9 +8,21 @@ from pathlib import Path
 from typing import Any
 
 
+def _same_numbers(value: Any) -> Any:
+    """Whole floats become ints, so 22.0 from Python and 22 from JavaScript's JSON.stringify are one key."""
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, dict):
+        return {k: _same_numbers(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_same_numbers(v) for v in value]
+    return value
+
+
 def cache_key(inputs: Any) -> str:
-    """sha256 of the inputs as canonical JSON, so the same inputs always give the same key."""
-    canonical = json.dumps(inputs, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    """sha256 of the inputs as canonical JSON, so the same inputs always give the same key, whichever
+    client sent them (a browser writes 22.0 as 22)."""
+    canonical = json.dumps(_same_numbers(inputs), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 

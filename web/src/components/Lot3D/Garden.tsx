@@ -6,7 +6,8 @@ import { fromFrame, inFrame, type StreetFrame } from './streetFrame'
 import { ease, progress } from './timeline'
 import { useSequenceFrame } from './useSequence'
 import { BED, FENCE, PATIO, Pieces, SHED, YardKit, type Plant } from './yardKit'
-import { usePlants, yardMaterial, yardUniforms } from './Yards'
+import { Plants } from './Plants'
+import { yardMaterial } from './yardMaterial'
 
 // The drawn look's garden behind the new building: wooden fences down the sides and across the
 // back, a shed, a patio with a table, chairs and an umbrella, a flower bed, a raised vegetable bed
@@ -65,7 +66,7 @@ function plan(lot: LocalPoint[], design: DesignResult | null, street: StreetFram
 export function Garden({ lot, design, street }: { lot: LocalPoint[]; design: DesignResult | null; street: StreetFrame }) {
   const garden = useMemo(() => plan(lot, design, street), [lot, design, street])
   useEffect(() => () => garden.geometry?.dispose(), [garden])
-  const material = useMemo(() => yardMaterial(yardUniforms(true)), [])
+  const material = useMemo(() => yardMaterial(true), [])
   useEffect(() => () => material.dispose(), [material])
 
   const group = useRef<Group>(null)
@@ -77,14 +78,13 @@ export function Garden({ lot, design, street }: { lot: LocalPoint[]; design: Des
     group.current.visible = own.current > 0
     group.current.scale.set(1, Math.max(own.current, 0.001), 1)
   })
-  const plants = usePlants(garden.plants, () => own.current)
 
   return (
     <group>
       <group ref={group} visible={false}>
         {garden.geometry && <mesh geometry={garden.geometry} material={material} castShadow receiveShadow dispose={null} />}
       </group>
-      {plants}
+      <Plants plants={garden.plants} ownGrowth={() => own.current} />
     </group>
   )
 }

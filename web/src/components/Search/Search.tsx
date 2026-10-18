@@ -2,7 +2,7 @@ import { useEffect, useId, useState, type KeyboardEvent } from 'react'
 import type { SearchResult } from '@contracts/types'
 import { search } from '../../api/client'
 import { isAbort } from '../../api/errors'
-import { labels, pending } from '../../copy'
+import { labels } from '../../copy'
 import { useApp } from '../../state/store'
 import { streetPart } from './streetPart'
 
@@ -127,7 +127,7 @@ export function Search({ variant }: { variant: 'hero' | 'compact' }) {
         )}
         {shown.state === 'error' && (
           <p className="search-message" role="status">
-            {pending.load_error}
+            {labels.ui.load_error}
           </p>
         )}
       </div>

@@ -2,6 +2,7 @@ import { disclaimers, labels } from '../../copy'
 import { EXAMPLES } from '../../examples'
 import { useApp } from '../../state/store'
 import { Search } from '../Search/Search'
+import { Blueprint } from './Blueprint'
 
 /**
  * The first screen (MASTERSPEC 6.2): the search, the tagline, the disclaimer and two examples,
@@ -12,6 +13,7 @@ export function Landing({ leaving }: { leaving: boolean }) {
   return (
     <section className={leaving ? 'landing landing-leaving' : 'landing'} aria-hidden={leaving || undefined}>
       <div className="landing-card">
+        <Blueprint />
         <h1 className="landing-title">Suplex</h1>
         <p className="landing-tagline">{labels.ui.tagline}</p>
         <Search variant="hero" />

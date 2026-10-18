@@ -83,7 +83,7 @@ The "did" half of the headline is the permits the City has actually issued. We l
 
 ## Accomplishments we're proud of
 
-- `[LOCKED: number]` lots checked citywide against all four designs, with the by-law section on every rule.
+- `[LOCKED: number]` house lots checked citywide against all four designs, with the by-law section on every rule.
 - An AI layer that cannot introduce a number: every number on screen came from the engine and links to its source.
 - A neutral civic tool: no candidate names, no rankings, no addresses on the map, "screening only" on every result.
 

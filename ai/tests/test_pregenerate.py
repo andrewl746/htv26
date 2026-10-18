@@ -89,6 +89,18 @@ def test_refresh_regenerates_english_once(settings):
     assert fresh.calls == 1  # English regenerated; French is keyed by the (identical) English text, so cached
 
 
+def test_addresses_only_refreshes_explanations_without_the_ward(settings):
+    run(FakeGemini(), "--langs", "en", "--address-id", "fixture-1")
+    fresh = FakeGemini()
+    assert run(fresh, "--addresses-only", "--refresh", "--address-id", "fixture-1") == 0
+    assert fresh.calls == 4  # the four designs' explanations; no ward briefing request
+
+
+def test_addresses_only_needs_an_address(settings):
+    with pytest.raises(SystemExit):
+        run(FakeGemini(), "--addresses-only")
+
+
 def test_pacing_waits_between_calls():
     waits: list[float] = []
     now = [0.0]
